@@ -1,0 +1,79 @@
+\section{Historias de usuario}
+
+A continuación se definen las historias de usuario, primero clasificándolas por usuario y luego seccionándolas por la finalidad:
+
+\section*{1. Anotador}
+
+\subsection*{Gestión básica}
+US-01: Como anotador, quiero registrarme e iniciar sesión para acceder a la plataforma de anotación.
+
+US-02: Como anotador, quiero ver un listado de datasets disponibles para seleccionar sobre cuál trabajar.
+
+\subsection*{Visualización de triples}
+US-03: Como anotador, quiero ver un conjunto de triples RDF de forma natural para entender la información a verbalizar.
+
+US-04: Como anotador, quiero seleccionar los triples agrupados por complejidad para orientar el foco de la sesión.
+
+\subsection*{Generación de texto}
+US-05: Como anotador, quiero escribir sentencias en español a partir de los triples para generar datos de entrenamiento.
+
+US-06: Como anotador, quiero escribir sentencias en español a partir del inglés para generar datos de entrenamiento.
+
+US-07: Como anotador, quiero editar sentencias generadas automáticamente para corregir errores.
+
+US-08: Como anotador, quiero ver alertas automáticas tras terminar el trabajo para corregir errores.
+
+\begin{itemize}
+\item US-08-R-01: Las alertas deben cubrir errores ortográficos, gramaticales (sintaxis) y semánticos. En caso de que el anotador decida omitir las alertas deberá explicar el porqué de cada omisión para que lo revalide el revisor.
+\end{itemize}
+
+\subsection*{Validación}
+US-09: Como anotador, quiero validar si un texto cubre todos los triples para asegurar calidad.
+
+US-10: Como anotador, quiero corregir errores como falta de variedad lingüística en las sentencias, entidad señalada incorrecta (RDF) o faltas ortográficas entre otras en textos generados.
+
+\subsection*{Productividad}
+US-11: Como anotador, quiero ver estadísticas de mi trabajo como nº anotaciones realizadas para ver mi progreso.
+
+US-12: Como anotador, quiero ver errores corregidos en revisión para evitar volverlos a cometer.
+
+\section*{2. Revisor}
+
+\subsection*{Evaluación humana}
+US-13: Como revisor, quiero evaluar textos generados según criterios como naturalidad o fluidez, adecuación o completitud, cobertura o diversidad para medir calidad.
+
+\begin{itemize}
+\item US-13-R-01: Se debe aceptar obligatoriamente por cada criterio, eso ayuda a mantener el foco en la corrección. Así, cada check será una fase de corrección y hasta que no dé check para el criterio actual no me aparecerá el siguiente criterio y su opción de check.
+\item US-12-R-02: Debo poder cambiar el texto para corregir errores. Pero será necesario comentar brevemente el porqué de esa corrección, tanto para re-corrección como para el usuario anotador.
+\end{itemize}
+
+US-14: Como revisor, quiero ver estadísticas de mi trabajo como número de anotaciones revisadas para ver mi progreso.
+
+\section*{3. Agente IA}
+
+\subsection*{Generación automática}
+US-15: Como sistema, quiero generar texto automáticamente a partir de triples RDF para asistir a los anotadores.
+
+US-16: Como sistema, quiero generar traducciones automáticamente a partir de triples RDF para asistir a los anotadores.
+
+US-17: Como sistema, quiero generar alertas cuando discrepe de la validez de una traducción para ayudar a detectar errores.
+
+\subsection*{Asistencia inteligente}
+US-18: Como sistema, quiero generar alertas cuando se detecte poca diversidad lingüística entre dos o más sentencias.
+
+\section*{4. Administrador}
+
+\subsection*{Gestión de datasets}
+US-19: Como administrador, quiero subir datasets RDF para utilizarlos en la plataforma.
+
+US-20: Como administrador, quiero poder descargar avances en el dataset RDF para utilizarlos fuera de la plataforma.
+
+US-21: Como administrador, quiero ver estadísticas de cantidad de triples, cobertura de la tarea de traducción, errores de traducción automática subsanados en anotación, errores de anotación subsanados en revisión y cadenas en disputa (errores en revisión tras detectar errores en anotación).
+
+\subsection*{Gestión de usuarios}
+US-22: Como administrador, quiero gestionar roles (anotador, revisor, admin).
+
+US-23: Como administrador, quiero monitorizar la actividad de los usuarios.
+
+\subsection*{Configuración}
+US-24: Como administrador, quiero configurar criterios de evaluación personalizados.

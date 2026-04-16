@@ -1,0 +1,49 @@
+
+· Documentación de los logs
+
+En el fichero <año>-<mes>-<dia>-error.txt se guardarán todas las peticiones que se hagan al servidor que se devuelvan
+con error 500 (servidor), no se guardarán las peticiones que se devuelvan forbidden o no exits.
+
+Se guardarán todas las peticiones que tengan formularios o datos json siguiendo el siguiente ejemplo.
+El tiempo se guardará con el formato <año>.<mes>.<día>.<hora>.<minuto>.<segundo>.<milisegundos> por
+cada petición. Todos los logs se crearan en la carpeta logs, se creará un fichero por hora llamado
+<año>-<mes>-<dia>-<hora>.txt donde se escribiran los logs de esa hora. Dado que es multiusuario, solo
+un hilo de ejecución tendrá acceso a ese fichero en escritura. Conforme vayan entrando las peticiones
+se mandarán peticiones asíncronas a ese hilo para que las vaya escribiendo. Nótese que tal que entran
+peticiones se deberá escribir en los ficheros de log de entrada y conforme se devuelven peticiones con error
+de servidor se deberá escribir en los ficheros de log de error.
+
+// File: log/2026.04.16.22.txt
+// White line starting file
+2026.04.16.22.45.12.763 POST /register {
+    surname: 'Jack',
+    lastName: 'Robinson',
+    email: 'jack@gmail.com',
+    password: '12345678'
+}
+// White line separing the petitions
+POST /register {
+    surname: 'Eve',
+    lastName: 'Howard',
+    email: 'eve@gmail.com',
+    password: '87654321'
+}
+
+POST /login {
+    email: 'eve@gmail.com'
+    password: '87654543'
+}
+// White line ending file
+
+// File: log/2026.04.16.error.txt
+// White line starting file
+GET /benchmark/1 {
+    code: 500,
+    reason: 'Problema de la conexión con la base de datos',
+}
+
+GET /benchmarks {
+    code: 500,
+    reason: 'Error interno del servidor genérico',
+}
+// White line ending file

@@ -1,0 +1,47 @@
+{
+  "name": "lanbench",
+  "version": "0.0.0",
+  "description": "The application is a web platform designed to generate, annotate, and evaluate Spanish text from RDF triples based on the WebNLG dataset.",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha \"tests/**/*.test.js\"",
+    "test:all": "mocha \"tests/**/*.test.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andcarde/lanbench.git"
+  },
+  "keywords": [
+    "workbench",
+    "nlg",
+    "spanish"
+  ],
+  "author": "andcarde",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/andcarde/lanbench/issues"
+  },
+  "homepage": "https://github.com/andcarde/lanbench#readme",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "express-mysql-session": "^3.0.3",
+    "express-session": "^1.19.0",
+    "fast-xml-parser": "^5.6.0",
+    "http-errors": "^2.0.1",
+    "morgan": "^1.10.1",
+    "mysql": "^2.18.1",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prisma": "^6.19.3"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "mocha": "^11.3.0",
+    "prettier": "^3.8.1",
+    "ts-mockito": "^2.6.1"
+  }
+}

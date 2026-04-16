@@ -1,0 +1,79 @@
+
+# Lanbench: An application to create benchmark for Natural Language Generation systems.
+# Trabajo de Fin de Master (TFM)
+
+## Modelo Entidad-Relación
+
+En el presente documento se define el modelo de la base de datos de la aplicación, orientado al almacenamiento de datasets, sus secciones internas y los permisos de acceso de los usuarios sobre dichos datasets.
+
+# Lista de entidades
+
+Se identifican las siguientes entidades principales dentro del sistema:
+
+- **Section**: representa una sección o bloque concreto perteneciente a un dataset.
+- **Dataset**: representa un conjunto de datos almacenado en el sistema.
+- **User**: representa a un usuario registrado en la aplicación.
+- **Permits**: representa la relación de permisos entre usuarios y datasets.
+
+# Modelo de la base de datos
+
+# Section
+Section {
+    idSection : INT [NOT NULL] [PRIMARY KEY]
+    idDataset : INT [NOT NULL] [FOREIGN KEY -> Dataset.idDataset]
+    block : INT [NOT NULL]
+}
+
+**Descripción**:  
+La entidad `Section` almacena las distintas secciones en las que puede dividirse un dataset. Cada sección pertenece obligatoriamente a un único dataset y queda identificada por su `idSection`. El atributo `block` permite representar el bloque o fragmento asociado dentro del dataset.
+
+# Dataset
+Dataset {
+    idDataset : INT [NOT NULL] [PRIMARY KEY]
+    entries : INT [NOT NULL]
+    content : BLOB [NOT NULL]
+}
+
+**Descripción**:  
+La entidad `Dataset` representa un conjunto de datos almacenado en la aplicación. Incluye un identificador único (`idDataset`), el número de entradas asociadas (`entries`) y el contenido bruto del dataset (`content`), almacenado como datos binarios.
+
+# User
+User {
+    idUser : INT [NOT NULL] [PRIMARY KEY]
+    email : VARCHAR(255) [NOT NULL]
+    password : VARCHAR(255) [NOT NULL]
+}
+
+**Descripción**:  
+La entidad `User` representa a los usuarios del sistema. Cada usuario dispone de un identificador único (`idUser`), un correo electrónico (`email`) y una contraseña (`password`) para su autenticación.
+
+# Permits
+Permits {
+    idDataset : INT [NOT NULL] [FOREIGN KEY -> Dataset.idDataset]
+    idUser : INT [NOT NULL] [FOREIGN KEY -> User.idUser]
+    isOwned : BOOLEAN [NOT NULL]
+    [PRIMARY KEY (idDataset, idUser)]
+}
+
+**Descripción**:  
+La entidad `Permits` modela la relación entre usuarios y datasets, permitiendo definir qué usuarios tienen acceso a qué datasets. Además, el atributo `isOwned` indica si el usuario es propietario del dataset o simplemente dispone de permisos sobre él.
+
+# Relaciones entre entidades
+
+- Un **Dataset** puede tener múltiples **Section**.
+- Una **Section** pertenece a un único **Dataset**.
+- Un **User** puede tener permisos sobre múltiples **Dataset**.
+- Un **Dataset** puede estar asociado a múltiples **User** mediante la tabla intermedia **Permits**.
+- La entidad **Permits** resuelve la relación muchos-a-muchos entre **User** y **Dataset**.
+
+## Restricciones del modelo
+
+- `Section.idDataset` debe existir previamente en `Dataset.idDataset`.
+- `Permits.idDataset` debe existir previamente en `Dataset.idDataset`.
+- `Permits.idUser` debe existir previamente en `User.idUser`.
+- La clave primaria compuesta de `Permits` garantiza que no pueda repetirse la misma relación usuario-dataset.
+- Cada `Section` debe estar asociada obligatoriamente a un `Dataset`.
+
+## Resumen del modelo
+
+El modelo propuesto permite gestionar datasets de forma estructurada, dividiéndolos en secciones y controlando el acceso de los usuarios mediante permisos explícitos. De este modo, la base de datos soporta tanto el almacenamiento del contenido como la organización interna de los datos y la gestión de la propiedad y acceso sobre ellos.
