@@ -1,19 +1,42 @@
 const exampleData = {
-    triple: {
-        predicate: 'uses',
-        subject: 'summary',
-        object: 'pencil'
-    },
     sentences: [
         'Yo resumo pero dame un lápiz.',
-        'Yo ago el resumen pero necesito una lápiz',
-        'Con un lápiz puedo hacer el resumen'
+        'Yo hago el resumen pero necesito un lápiz.',
+        'Con un lápiz puedo hacer el resumen.'
     ]
 };
 
-$(document).ready(() => {
+function extractApiErrorMessage(errorLike, fallbackMessage) {
+    const payload = errorLike && typeof errorLike === 'object'
+        && errorLike.responseJSON && typeof errorLike.responseJSON === 'object'
+        ? errorLike.responseJSON
+        : null;
+
+    if (payload && typeof payload.message === 'string' && payload.message.trim().length > 0)
+        return payload.message;
+
+    if (errorLike && typeof errorLike.message === 'string' && errorLike.message.trim().length > 0)
+        return errorLike.message;
+
+    if (errorLike && typeof errorLike.responseText === 'string' && errorLike.responseText.trim().length > 0)
+        return errorLike.responseText;
+
+    return fallbackMessage;
+}
+
+if (typeof module !== 'undefined' && module.exports)
+    module.exports = { extractApiErrorMessage };
+
+if (typeof window !== 'undefined' && typeof $ === 'function') {
+    $(document).ready(() => {
     const state = {
         rdfId: 1,
+        datasetId: null,
+        datasetName: '',
+        totalSections: 0,
+        currentSectionNumber: 1,
+        sectionEntries: [],
+        currentEntryIndex: 0,
         lastSentences: ['', '', ''],
         lastResults: [],
         rejectionReasons: ['', '', '']
@@ -26,12 +49,60 @@ $(document).ready(() => {
         toast.show();
     }
 
-    function getRDFTripleById(id) {
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+    function escapeAttribute(text) {
+        return String(text).replace(/"/g, '&quot;');
+    }
+
+    function toPositiveInteger(value) {
+        const parsed = Number(value);
+        if (!Number.isInteger(parsed) || parsed <= 0)
+            return null;
+        return parsed;
+    }
+
+    function getPageParams() {
+        const params = new URLSearchParams(window.location.search);
+        const sectionIndex = toPositiveInteger(params.get('sectionIndex'));
         return {
-            id,
-            predicate: 'uses',
-            subject: 'summary',
-            object: 'pencil'
+            datasetId: toPositiveInteger(params.get('datasetId')),
+            sectionNumber: sectionIndex || toPositiveInteger(params.get('section')) || 1,
+            entryId: toPositiveInteger(params.get('entryId'))
+        };
+    }
+
+    function getCurrentEntry() {
+        return state.sectionEntries[state.currentEntryIndex] || null;
+    }
+
+    function getEntryTriples(entry) {
+        if (!entry || typeof entry !== 'object')
+            return [];
+
+        if (Array.isArray(entry.triples) && entry.triples.length)
+            return entry.triples;
+
+        if (Array.isArray(entry.originalTriples) && entry.originalTriples.length)
+            return entry.originalTriples;
+
+        if (Array.isArray(entry.modifiedTriples) && entry.modifiedTriples.length)
+            return entry.modifiedTriples;
+
+        return [];
+    }
+
+    function getPrimaryTriple(entry) {
+        const triples = getEntryTriples(entry);
+        if (triples.length)
+            return triples[0];
+
+        return {
+            predicate: '<predicate>',
+            subject: '<subject>',
+            object: '<object>'
         };
     }
 
@@ -41,12 +112,109 @@ $(document).ready(() => {
         $('#tripleObject').text(data.object);
     }
 
+    function renderTriplesList(entry) {
+        const triples = getEntryTriples(entry);
+
+        if (!triples.length) {
+            $('#triplesListWrapper').addClass('d-none');
+            $('#triplesList').empty();
+            return;
+        }
+
+        $('#triplesListWrapper').removeClass('d-none');
+        $('#triplesList').html(`
+            <div class="triples-header">
+                <span>Predicate</span>
+                <span>Subject</span>
+                <span>Object</span>
+            </div>
+            ${triples.map(triple => `
+                <div class="triple-line">
+                    <div>${escapeHtml(triple.predicate)}</div>
+                    <div>${escapeHtml(triple.subject)}</div>
+                    <div>${escapeHtml(triple.object)}</div>
+                </div>
+            `).join('')}
+        `);
+    }
+
+    function getRequiredSentenceCount(entry = getCurrentEntry()) {
+        const englishSentences = entry && Array.isArray(entry.englishSentences)
+            ? entry.englishSentences.filter(sentence => typeof sentence === 'string' && sentence.trim().length > 0)
+            : (entry && Array.isArray(entry.sourceSentences)
+                ? entry.sourceSentences.filter(sentence => typeof sentence === 'string' && sentence.trim().length > 0)
+                : []);
+
+        return Math.max(englishSentences.length, 3);
+    }
+
+    function getCurrentSentenceCount() {
+        return $('.sentence-input').length || 3;
+    }
+
+    function renderSentencePairs(entry) {
+        const englishSentences = entry && Array.isArray(entry.englishSentences)
+            ? entry.englishSentences
+            : (entry && Array.isArray(entry.sourceSentences) ? entry.sourceSentences : []);
+        const sentenceCount = getRequiredSentenceCount(entry);
+
+        $('#sentencePairsContainer').html(
+            Array.from({ length: sentenceCount }, (_, index) => {
+                const englishSentence = typeof englishSentences[index] === 'string'
+                    ? englishSentences[index].trim()
+                    : '';
+
+                return `
+                    <div class="sentence-pair" data-pair-index="${index}">
+                        ${englishSentence
+                            ? `
+                                <div class="sentence-reference">
+                                    <span class="sentence-reference-label">Oración en inglés ${index + 1}</span>
+                                    <div class="sentence-reference-text">${escapeHtml(englishSentence)}</div>
+                                </div>
+                            `
+                            : '<div class="sentence-reference-empty"></div>'}
+                        <div class="sentence-block" data-index="${index}">
+                            <label class="form-label" for="sentence${index + 1}">Oración ${index + 1}</label>
+                            <input
+                                type="text"
+                                class="form-control sentence-input"
+                                id="sentence${index + 1}"
+                                maxlength="160"
+                                autocomplete="off"
+                            />
+                            <div class="sentence-status small mt-2"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('')
+        );
+    }
+
     function getSentenceValues() {
-        return [$('#sentence1').val(), $('#sentence2').val(), $('#sentence3').val()];
+        return $('.sentence-input').map(function () {
+            return $(this).val();
+        }).get();
+    }
+
+    function buildCheckEntryContext(entry) {
+        if (!entry || typeof entry !== 'object')
+            return null;
+
+        return {
+            entryId: Number(entry.entryId ?? entry.eid),
+            category: entry.category || '',
+            englishSentences: Array.isArray(entry.englishSentences)
+                ? entry.englishSentences
+                : (Array.isArray(entry.sourceSentences) ? entry.sourceSentences : []),
+            sectionIndex: Number(entry.sectionIndex ?? state.currentSectionNumber ?? 1),
+            triples: getEntryTriples(entry)
+        };
     }
 
     function clearValidationUI() {
         $('.sentence-block').removeClass('valid invalid warning');
+        $('.sentence-pair').removeClass('pair-valid pair-invalid pair-warning');
         $('.sentence-status').text('');
         $('#validationSummary').html('<li class="list-group-item bg-transparent px-0 text-muted">No validation executed yet.</li>');
         $('#issuesCard').addClass('d-none');
@@ -57,37 +225,137 @@ $(document).ready(() => {
         $('#btnSend').addClass('d-none');
     }
 
-    function resetState() {
-        state.lastSentences = ['', '', ''];
+    function resetValidationState(sentenceCount = getCurrentSentenceCount()) {
+        state.lastSentences = Array.from({ length: sentenceCount }, () => '');
         state.lastResults = [];
-        state.rejectionReasons = ['', '', ''];
+        state.rejectionReasons = Array.from({ length: sentenceCount }, () => '');
+    }
+
+    function updateTaskCopy(message) {
+        $('#taskTitle').text('Task · RDF to Spanish');
+        $('#taskSubtitle').text(message);
+    }
+
+    function updateHeaderInfo() {
+        const currentEntryPosition = state.currentEntryIndex + 1;
+        const totalEntriesInSection = state.sectionEntries.length;
+
+        $('#datasetName').text(state.datasetName || 'Sin dataset seleccionado');
+        $('#sectionIndicator').text(
+            state.datasetId
+                ? `${state.currentSectionNumber} / ${state.totalSections || 1}`
+                : '-'
+        );
+        $('#entryIndicator').text(
+            state.datasetId
+                ? `${currentEntryPosition} / ${totalEntriesInSection || 0}`
+                : '-'
+        );
+        $('#sectionSizeIndicator').text(
+            state.datasetId
+                ? `${totalEntriesInSection} entries`
+                : '-'
+        );
+    }
+
+    function setFormEnabled(isEnabled) {
+        $('.sentence-input').prop('disabled', !isEnabled);
+        $('#sentencesForm button[type="submit"]').prop('disabled', !isEnabled);
+        $('#btnSend').prop('disabled', !isEnabled);
+        $('#btnReset').prop('disabled', !isEnabled);
+        $('#btnLoadExample').prop('disabled', !isEnabled);
     }
 
     function loadExample() {
-        const triple = getRDFTripleById(state.rdfId);
-        populateTriple(triple);
-        $('#sentence1').val(exampleData.sentences[0]);
-        $('#sentence2').val(exampleData.sentences[1]);
-        $('#sentence3').val(exampleData.sentences[2]);
-        resetState();
+        $('.sentence-input').each(function (index) {
+            $(this).val(exampleData.sentences[index] || '');
+        });
+        resetValidationState();
         clearValidationUI();
-        showToast('Example loaded.');
+        showToast('Ejemplo cargado en los campos de texto.');
     }
 
-    function resetForm() {
-        $('#sentencesForm')[0].reset();
-        populateTriple({ predicate: '<predicate>', subject: '<subject>', object: '<object>' });
-        resetState();
+    function resetForm(showMessage = true) {
+        const formElement = $('#sentencesForm')[0];
+        if (formElement)
+            formElement.reset();
+
+        resetValidationState();
         clearValidationUI();
-        showToast('Form reset.');
+
+        if (showMessage)
+            showToast('Formulario reiniciado.');
     }
 
-    function escapeHtml(text) {
-        return $('<div>').text(text).html();
+    function loadEntry(entryIndex, options = {}) {
+        const entry = state.sectionEntries[entryIndex];
+
+        if (!entry) {
+            renderSentencePairs(null);
+            setFormEnabled(false);
+            populateTriple({ predicate: '<predicate>', subject: '<subject>', object: '<object>' });
+            renderTriplesList(null);
+            resetValidationState();
+            clearValidationUI();
+            updateHeaderInfo();
+            return;
+        }
+
+        state.currentEntryIndex = entryIndex;
+        state.rdfId = Number(entry.entryId ?? entry.eid);
+
+        populateTriple(getPrimaryTriple(entry));
+        renderTriplesList(entry);
+        renderSentencePairs(entry);
+        updateHeaderInfo();
+        resetForm(false);
+        setFormEnabled(true);
+
+        updateTaskCopy(
+            `Dataset ${state.datasetName} · sección ${state.currentSectionNumber} · entry ${state.currentEntryIndex + 1} de ${state.sectionEntries.length}.`
+        );
+        replaceNavigationState();
+
+        if (options.showToast)
+            showToast(`Entry ${state.currentEntryIndex + 1} de la sección ${state.currentSectionNumber} cargada.`);
     }
 
-    function escapeAttribute(text) {
-        return String(text).replace(/"/g, '&quot;');
+    function replaceNavigationState() {
+        const currentEntry = getCurrentEntry();
+        const params = new URLSearchParams();
+
+        if (state.datasetId)
+            params.set('datasetId', String(state.datasetId));
+        if (state.currentSectionNumber)
+            params.set('sectionIndex', String(state.currentSectionNumber));
+        if (currentEntry && Number.isInteger(Number(currentEntry.entryId ?? currentEntry.eid)))
+            params.set('entryId', String(Number(currentEntry.entryId ?? currentEntry.eid)));
+
+        if (window.history && typeof window.history.replaceState === 'function')
+            window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    }
+
+    function completeSection() {
+        setFormEnabled(false);
+        clearValidationUI();
+        updateTaskCopy(
+            `Sección ${state.currentSectionNumber} completada en ${state.datasetName}. Ya se han procesado sus ${state.sectionEntries.length} entries.`
+        );
+        $('#validationSummary').html(
+            '<li class="list-group-item bg-transparent px-0 text-success">Sección completada correctamente.</li>'
+        );
+        showToast(`Sección ${state.currentSectionNumber} completada.`);
+    }
+
+    function loadNextEntry() {
+        const nextIndex = state.currentEntryIndex + 1;
+
+        if (nextIndex >= state.sectionEntries.length) {
+            completeSection();
+            return;
+        }
+
+        loadEntry(nextIndex, { showToast: true });
     }
 
     function mapValidationsToResults(sentences, validations) {
@@ -100,51 +368,73 @@ $(document).ready(() => {
                 state.rejectionReasons[index] = '';
                 return {
                     state: 'empty',
-                    label: 'Pending',
-                    summary: 'Empty sentence.',
+                    label: 'Pendiente',
+                    summary: 'Oración vacía.',
                     issues: []
                 };
             }
 
-            if (validation && validation.valid) {
+            if (validation && (validation.isValid || validation.valid)) {
                 state.rejectionReasons[index] = '';
                 return {
                     state: 'valid',
-                    label: 'Valid',
-                    summary: 'No issues detected.',
+                    label: 'Válida',
+                    summary: 'No se han detectado problemas.',
                     issues: []
                 };
             }
 
+            const validationAlerts = validation && Array.isArray(validation.alerts)
+                ? validation.alerts
+                : [];
+            const primaryAlert = validationAlerts[0] || null;
             const suggestion =
-                validation && typeof validation.suggestion === 'string' && validation.suggestion.trim().length > 0
-                    ? validation.suggestion
-                    : trimmed;
+                primaryAlert && typeof primaryAlert.suggestion === 'string' && primaryAlert.suggestion.trim().length > 0
+                    ? primaryAlert.suggestion
+                    : (validation && typeof validation.suggestion === 'string' && validation.suggestion.trim().length > 0
+                        ? validation.suggestion
+                        : trimmed);
             const reason =
-                validation && typeof validation.reason === 'string' && validation.reason.trim().length > 0
-                    ? validation.reason
-                    : 'The sentence needs review.';
+                primaryAlert && typeof primaryAlert.message === 'string' && primaryAlert.message.trim().length > 0
+                    ? primaryAlert.message
+                    : (validation && typeof validation.reason === 'string' && validation.reason.trim().length > 0
+                        ? validation.reason
+                        : 'The sentence needs review.');
+            const isWarning = Boolean(
+                (primaryAlert && primaryAlert.severity === 'warning')
+                || (validation && !validation.isValid && validation.warning)
+            );
+
+            if (validation && !(validation.isValid || validation.valid) && isWarning) {
+                state.rejectionReasons[index] = '';
+                return {
+                    state: 'warning',
+                    label: 'Aviso',
+                    summary: reason,
+                    issues: []
+                };
+            }
 
             if (rejectionReason) {
                 return {
                     state: 'warning',
-                    label: 'Rejected with reason',
-                    summary: `Suggestion rejected: ${rejectionReason}`,
+                    label: 'Rechazada con motivo',
+                    summary: `Sugerencia rechazada: ${rejectionReason}`,
                     issues: []
                 };
             }
 
             return {
                 state: 'invalid',
-                label: 'Needs review',
+                label: 'Requiere revisión',
                 summary: reason,
                 issues: [
                     {
                         type: 'invalid',
-                        title: 'Grammar',
+                        title: 'Revisión',
                         message: reason,
                         suggestion,
-                        reasonPlaceholder: 'Write here the reason for rejection'
+                        reasonPlaceholder: 'Explica por qué rechazas la sugerencia'
                     }
                 ]
             };
@@ -154,18 +444,23 @@ $(document).ready(() => {
     function updateSentenceStyles(results) {
         $('.sentence-block').each(function (idx) {
             $(this).removeClass('valid invalid warning');
+            $(this).closest('.sentence-pair').removeClass('pair-valid pair-invalid pair-warning');
             const result = results[idx];
             if (!result)
                 return;
 
-            if (result.state === 'valid')
+            if (result.state === 'valid') {
                 $(this).addClass('valid');
-            else if (result.state === 'invalid')
+                $(this).closest('.sentence-pair').addClass('pair-valid');
+            } else if (result.state === 'invalid') {
                 $(this).addClass('invalid');
-            else if (result.state === 'warning')
+                $(this).closest('.sentence-pair').addClass('pair-invalid');
+            } else if (result.state === 'warning') {
                 $(this).addClass('warning');
+                $(this).closest('.sentence-pair').addClass('pair-warning');
+            }
 
-            $(this).find('.sentence-status').text(result.label === 'Pending' ? '' : result.label);
+            $(this).find('.sentence-status').text(result.label === 'Pendiente' ? '' : result.label);
         });
     }
 
@@ -224,17 +519,17 @@ $(document).ready(() => {
                     <p class="mb-2">${escapeHtml(issue.message)}</p>
                     <div class="suggestion-preview">${escapeHtml(issue.suggestion)}</div>
                     <div class="mb-3">
-                        <label class="form-label small">Suggestion preview</label>
+                        <label class="form-label small">Sugerencia</label>
                         <input type="text" class="form-control form-control-sm suggestion-input" value="${escapeAttribute(issue.suggestion)}">
                     </div>
                     <div class="mb-3 d-none reject-wrapper">
-                        <label class="form-label small">Reason for rejection</label>
-                        <textarea class="form-control form-control-sm reject-reason" rows="2" placeholder="${issue.reasonPlaceholder}"></textarea>
+                        <label class="form-label small">Motivo del rechazo</label>
+                        <textarea class="form-control form-control-sm reject-reason" rows="2" placeholder="Explica por qué rechazas la sugerencia"></textarea>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-sm btn-outline-primary btn-accept">Accept suggestion</button>
-                        <button class="btn btn-sm btn-outline-secondary btn-reject-toggle">Reject</button>
-                        <button class="btn btn-sm btn-secondary d-none btn-save-reject">Save rejection</button>
+                        <button class="btn btn-sm btn-outline-primary btn-accept">Aceptar sugerencia</button>
+                        <button class="btn btn-sm btn-outline-secondary btn-reject-toggle">Rechazar</button>
+                        <button class="btn btn-sm btn-secondary d-none btn-save-reject">Guardar rechazo</button>
                     </div>
                     </div>
                 </div>`).join('')}
@@ -269,24 +564,22 @@ $(document).ready(() => {
     }
 
     function runValidation(showToastMessage) {
+        const entry = getCurrentEntry();
+        if (!entry) {
+            showToast('No hay ninguna entry cargada.');
+            return $.Deferred().reject().promise();
+        }
+
         const sentences = getSentenceValues();
 
-        return $.ajax({
-            url: '/annotations/check',
-            type: 'POST',
-            contentType: 'application/json',
-            dataType: 'json',
-            data: JSON.stringify({ sentences })
-        })
+        return checkAnnotations(sentences, buildCheckEntryContext(entry))
             .done(function (validations) {
                 renderValidation(validations, sentences);
                 if (showToastMessage)
-                    showToast('Validation executed.');
+                    showToast('Validación ejecutada.');
             })
             .fail(function (xhr) {
-                const message =
-                    (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.text))
-                    || 'Validation failed.';
+                const message = extractApiErrorMessage(xhr, 'Validation failed.');
                 showToast(message);
             });
     }
@@ -297,6 +590,12 @@ $(document).ready(() => {
     }
 
     function sendAnnotations() {
+        const entry = getCurrentEntry();
+        if (!entry) {
+            showToast('No hay ninguna entry activa.');
+            return;
+        }
+
         const sentences = getSentenceValues();
 
         if (!areSentencesSynced(sentences)) {
@@ -314,27 +613,73 @@ $(document).ready(() => {
             return;
         }
 
-        $.ajax({
-            url: '/annotations/send',
-            type: 'POST',
-            contentType: 'application/json',
-            dataType: 'json',
-            data: JSON.stringify({
-                rdfId: state.rdfId,
-                sentences,
-                rejectionReason: state.rejectionReasons.map(reason => reason || '')
-            })
-        })
+        postAnnotations(state.datasetId, state.rdfId, sentences, state.rejectionReasons)
             .done(function (response) {
                 const message =
-                    (response && response.message)
-                    || 'Sentences sent successfully.';
+                    response && response.savedAt
+                        ? 'Anotaciones guardadas correctamente.'
+                        : ((response && response.message)
+                            || 'Sentences sent successfully.');
                 showToast(message);
+                loadNextEntry();
             })
             .fail(function (xhr) {
-                const message =
-                    (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.text))
-                    || 'The sentences could not be sent.';
+                const message = extractApiErrorMessage(xhr, 'The sentences could not be sent.');
+                showToast(message);
+            });
+    }
+
+    function loadDatasetSection() {
+        const pageParams = getPageParams();
+        const debugDefaults = getDebugParams();
+        const params = {
+            datasetId: pageParams.datasetId || (debugDefaults && debugDefaults.datasetId),
+            sectionNumber: pageParams.sectionNumber || (debugDefaults && debugDefaults.sectionNumber) || 1,
+            entryId: pageParams.entryId || null
+        };
+
+        if (!params.datasetId) {
+            setFormEnabled(false);
+            updateTaskCopy('Selecciona un dataset desde la vista de datasets para comenzar una sección.');
+            updateHeaderInfo();
+            return;
+        }
+
+        state.datasetId = params.datasetId;
+        state.currentSectionNumber = params.sectionNumber;
+        updateTaskCopy('Cargando sección del dataset seleccionado...');
+        setFormEnabled(false);
+
+        fetchDatasetSection(params.datasetId, params.sectionNumber)
+            .done(function (payload) {
+                state.datasetName = payload
+                    ? (payload.datasetName || (payload.dataset ? payload.dataset.name : '') || '')
+                    : '';
+                state.totalSections = payload
+                    ? Number(payload.totalSections || (payload.dataset ? payload.dataset.totalSections : 0) || 1)
+                    : 1;
+                state.sectionEntries = payload && Array.isArray(payload.entries) ? payload.entries : [];
+                state.currentEntryIndex = 0;
+
+                if (!state.sectionEntries.length) {
+                    updateHeaderInfo();
+                    updateTaskCopy('La sección seleccionada no contiene entries.');
+                    return;
+                }
+
+                const entryIndex = params.entryId
+                    ? state.sectionEntries.findIndex(entry => Number(entry.entryId ?? entry.eid) === params.entryId)
+                    : 0;
+                loadEntry(entryIndex >= 0 ? entryIndex : 0, { showToast: false });
+            })
+            .fail(function (xhr) {
+                const message = extractApiErrorMessage(xhr, 'No se pudo cargar la sección del dataset.');
+                state.datasetId = null;
+                state.datasetName = '';
+                state.totalSections = 0;
+                state.sectionEntries = [];
+                updateHeaderInfo();
+                updateTaskCopy(message);
                 showToast(message);
             });
     }
@@ -385,7 +730,7 @@ $(document).ready(() => {
         showToast(`Suggestion rejected for sentence ${sentenceIndex + 1}.`);
     });
 
-    $('.sentence-input').on('input', function () {
+    $('#sentencesForm').on('input', '.sentence-input', function () {
         const inputId = $(this).attr('id');
         const sentenceIndex = Number(inputId.replace('sentence', '')) - 1;
         if (sentenceIndex >= 0 && sentenceIndex < state.rejectionReasons.length)
@@ -395,9 +740,16 @@ $(document).ready(() => {
     });
 
     $('#btnLoadExample').on('click', loadExample);
-    $('#btnReset').on('click', resetForm);
+    $('#btnReset').on('click', function () {
+        resetForm(true);
+    });
     $('#btnSend').on('click', sendAnnotations);
 
+    renderSentencePairs(null);
     populateTriple({ predicate: '<predicate>', subject: '<subject>', object: '<object>' });
     clearValidationUI();
-});
+    setFormEnabled(false);
+    updateHeaderInfo();
+    loadDatasetSection();
+    });
+}

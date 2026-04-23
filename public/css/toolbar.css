@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap');
+
+:root {
+  --toolbar-height: 72px;
+  --toolbar-blue: linear-gradient(90deg, #0f4c97 0%, #1d63b8 100%);
+  --toolbar-shadow: 0 8px 24px rgba(8, 42, 86, 0.18);
+}
+
+body.has-app-toolbar {
+  padding-top: var(--toolbar-height);
+}
+
+.app-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  height: var(--toolbar-height);
+  background: var(--toolbar-blue);
+  box-shadow: var(--toolbar-shadow);
+}
+
+.app-toolbar-inner {
+  height: 100%;
+  width: min(100%, 1320px);
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-toolbar-brand {
+  color: #ffffff;
+  text-decoration: none;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 3.8vw, 2.7rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: none;
+}
+
+.app-toolbar-brand:hover,
+.app-toolbar-brand:focus {
+  color: #ffffff;
+}
+
+.app-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-toolbar-logout {
+  min-width: 148px;
+  box-shadow: 0 8px 18px rgba(108, 17, 17, 0.2);
+}
+
+@media (max-width: 576px) {
+  :root {
+    --toolbar-height: 84px;
+  }
+
+  .app-toolbar-inner {
+    padding: 0 0.9rem;
+  }
+
+  .app-toolbar-logout {
+    min-width: auto;
+  }
+}

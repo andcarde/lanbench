@@ -1,0 +1,21 @@
+
+2026.04.22.18.59.34.000 POST /create-session {
+    email: 'login_session_1776877173817_8470@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.18.59.34.213 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776877174209_7306@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.22.18.59.34.430 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+

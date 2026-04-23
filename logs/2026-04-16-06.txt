@@ -1,0 +1,14 @@
+
+2026.04.16.06.00.52.189 POST /register {
+    surname: 'Tim',
+    lastName: 'Nikon',
+    email: 'tim@gmail.com',
+    password: '123456789',
+    repeatPassword: '123456789'
+}
+
+2026.04.16.06.01.22.117 POST /crear-sesion {
+    email: 'tim@gmail.com',
+    password: '123456789'
+}
+

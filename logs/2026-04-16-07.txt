@@ -1,0 +1,14 @@
+
+2026.04.16.07.20.36.736 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776316836665_1743@example.com',
+    password: 'integrationPass99',
+    repeatPassword: 'integrationPass99'
+}
+
+2026.04.16.07.20.36.758 POST /crear-sesion {
+    email: 'integration_1776316836665_1743@example.com',
+    password: 'integrationPass99'
+}
+

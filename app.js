@@ -1,155 +1,111 @@
-
-// app.js
 'use strict';
 
-// Establecimiento del servidor
 const express = require('express');
-const app = express();
-
-// Útiles para las rutas
 const path = require('path');
-
-// Definición del motor EJS y del directorio donde están los documentos dinámicos
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-//Ficheros estáticos
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Registro de peticiones
-const pinoHttp = require('pino-http');
-const pinoHttpMiddleware = pinoHttp({ autoLogging: false });
-app.use(pinoHttpMiddleware);
-
-// Útiles para que funcionen las peticiones POST
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-const { requestLogMiddleware } = require('./middlewares/request-log-middleware');
-app.use(requestLogMiddleware);
-
-// Devolución automática de recursos públicos y estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Usar de cookies
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
-// Uso de sesiones
-const middlewareSession = require('./routes/session');
-app.use(middlewareSession);
-
-// Enrutador de páginas públicas
-const publicRouter = require('./routes/public');
-app.use('/', publicRouter);
-
-const Usuario = require('./entities/usuario');
-
-// <DEBUG> Enable a trap login
-app.get('/fake-login', function(request, response) {
-    const usuario = new Usuario({
-        id: 1,
-        correo: 'tom@email.com',
-        contrasena: '1234',
-        nombre: 'Tom',
-        apellido1: 'Cruise',
-        apellido2: null,
-        activo: true
-    });
-    request.session.usuario = usuario;
-    response.status(200).redirect('/');
-});
-// </DEBUG>
-
-// Control de sesión activa
-const checkSession = function (request, response, next) {
-    const isPublicAuthRoute = request.method === 'POST'
-        && (request.path === '/register' || request.path === '/crear-sesion');
-
-    if (isPublicAuthRoute) {
-        next();
-        return;
-    }
-
-    if (typeof request.session.usuario === 'undefined') {
-        response.cookie('message',
-            { title: 'Acceso denegado', message: 'Es necesario que se identifique para acceder a dicha dirección' },
-            { maxAge: 5000 }
-        );
-        response.redirect('/login');
-    } else {
-        next();
-    }
-}
-app.use(checkSession);
-
-// Uso de enrutadores
-const usuariosRouter = require('./routes/usuarios');
-app.use('/', usuariosRouter);
-
-// Cierre de sesion
-app.get('/cerrar-sesion', function(request, response) {
-    // Alternativa: delete request.session.user;
-    request.session.destroy(function(error) {
-        if (error) {
-            // Establece una cookie con el mensaje de error
-            response.cookie('message',
-                { title: 'Cierre de sesión fallido', message: 'Se ha producido un error inesperadoal cerrar la sesión.' },
-                { maxAge: 5000 }
-            );
-        } else {
-            // Redireccionar al usuario a la página de inicio de sesión
-            response.clearCookie('connect.sid', { path: '/' });
-            // Establece una cookie con el mensaje de éxito
-            response.cookie('message',
-                { title: 'Sesión cerrada', message: 'La sesión se ha cerrado con éxito.' },
-                { maxAge: 5000 }
-            );
-        }
-        // Redirige a la página de login
-        response.status(200).redirect('/login');
-    });
-});
-
 const createError = require('http-errors');
+const pinoHttp = require('pino-http');
 
-// Middleware que lanza un error 404
-const error404launcher = (req, res, next) => {
-    next(createError(404));
-};
-app.use(error404launcher);
-
-// Manejador del error 404
-const error404handler = (err, req, res, next) => {
-    if (err.status && err.status !== 404) {
-        next(err);
-    } else {
-        res.status(404).sendFile(__dirname + '/public/no-encontrada.html');
-    }
-}
-app.use(error404handler);
-
-// Manejador del error 400
-const error400handler = (err, req, res, next) => {
-    if (err.status && err.status !== 400) {
-        next(err);
-    } else {
-        res.status(400).sendFile(__dirname + '/public/bad-request.html');
-    }
-}
-app.use(error400handler);
-
-// Manejador de un error genérico
-const error500handler = (err, req, res, next) => {
-    res.locals.serverErrorReason = err && err.message ? err.message : 'Error interno del servidor genérico';
-    res.status(err.status || 500);
-    res.sendFile(__dirname + '/public/problema.html');
-}
-app.use(error500handler);
-
-// Puerto del servidor
 const config = require('./config');
+const middlewareSession = require('./routes/session');
+const publicRouter = require('./routes/public');
+const datasetsRouter = require('./routes/datasets');
+const administratorRouter = require('./routes/administrator');
+const annotationsRouter = require('./routes/annotations');
+const { requestLogMiddleware } = require('./middlewares/request-log-middleware');
+const { createUsersRouter } = require('./routes/users');
+const { createDatasetsApiRouter } = require('./routes/datasets-api');
+const { createAnnotationsRouter } = require('./routes/annotations-api');
+const { createSessionApiRouter } = require('./routes/session-api');
+const { createReviewerRouter } = require('./routes/reviewer');
+const { createAnnotationsController } = require('./business/annotations-controller');
+const { createDatasetsController } = require('./business/datasets-controller');
+const { createUsersController } = require('./business/users-controller');
+
+function createControllers(overrides = {}) {
+    return {
+        annotationsController: overrides.annotationsController || createAnnotationsController(),
+        datasetsController: overrides.datasetsController || createDatasetsController(),
+        usersController: overrides.usersController || createUsersController()
+    };
+}
+
+function createApp({ controllers: controllerOverrides, sessionMiddleware } = {}) {
+    const app = express();
+    const controllers = createControllers(controllerOverrides);
+    const publicDirectory = path.join(__dirname, 'public');
+
+    if (config.session.cookie.secure)
+        app.set('trust proxy', 1);
+
+    app.set('view engine', 'ejs');
+    app.set('views', path.join(__dirname, 'views'));
+
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+    const pinoHttpMiddleware = pinoHttp({ autoLogging: false });
+    app.use(pinoHttpMiddleware);
+
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(requestLogMiddleware);
+    app.use(express.static(publicDirectory));
+    app.use(sessionMiddleware || middlewareSession);
+
+    app.use('/', publicRouter);
+    app.get('/forbidden', (_request, response) => {
+        response.status(403).sendFile(path.join(publicDirectory, 'forbidden.html'));
+    });
+    app.use('/datasets', datasetsRouter);
+    app.use('/api/datasets', createDatasetsApiRouter({ datasetsController: controllers.datasetsController }));
+    app.use('/api/administrator', administratorRouter);
+    app.use('/annotations', annotationsRouter);
+    app.use('/api/annotations', createAnnotationsRouter({ annotationsController: controllers.annotationsController }));
+    app.use('/api/session', createSessionApiRouter());
+    app.use('/reviewer', createReviewerRouter());
+    app.use('/', createUsersRouter({ usersController: controllers.usersController }));
+
+    app.use((req, res, next) => {
+        next(createError(404));
+    });
+
+    app.use(createErrorHandler({ publicDirectory }));
+
+    return app;
+}
+
+function createErrorHandler({ publicDirectory } = {}) {
+    const resolvedPublicDirectory = publicDirectory || path.join(__dirname, 'public');
+
+    return function errorHandler(err, req, res, next) {
+        if (res.headersSent)
+            return next(err);
+
+        const status = normalizeErrorStatus(err);
+
+        if (status === 404)
+            return res.status(404).sendFile(path.join(resolvedPublicDirectory, 'no-encontrada.html'));
+
+        if (status === 400)
+            return res.status(400).sendFile(path.join(resolvedPublicDirectory, 'bad-request.html'));
+
+        res.locals.serverErrorReason = err && err.message
+            ? err.message
+            : 'Error interno del servidor genérico';
+
+        return res
+            .status(status >= 500 ? status : 500)
+            .sendFile(path.join(resolvedPublicDirectory, 'problema.html'));
+    };
+}
+
+function normalizeErrorStatus(error) {
+    if (!error || !Number.isInteger(error.status))
+        return 500;
+
+    return error.status;
+}
+
+const app = createApp();
 
 function startServer(port = config.port) {
     return app.listen(port, function (error) {
@@ -169,5 +125,7 @@ if (require.main === module)
 
 module.exports = {
     app,
+    createApp,
+    createErrorHandler,
     startServer
 };

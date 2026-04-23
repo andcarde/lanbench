@@ -1,0 +1,68 @@
+
+2026.04.21.03.06.22.991 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.21.03.06.23.163 POST /crear-sesion {
+    email: 'router_list_1776733583005_9037@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.06.23.207 POST /crear-sesion {
+    email: 'router_section_1776733583194_6805@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.06.23.232 POST /crear-sesion {
+    email: 'router_view_1776733583226_1430@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.06.23.247 POST /crear-sesion {
+    email: 'router_text_1776733583243_9218@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.27.313 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.21.03.55.27.848 POST /crear-sesion {
+    email: 'router_list_1776736527839_7433@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.27.884 POST /crear-sesion {
+    email: 'router_section_1776736527874_8636@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.27.940 POST /crear-sesion {
+    email: 'router_view_1776736527934_7350@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.27.962 POST /crear-sesion {
+    email: 'router_text_1776736527956_7734@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.28.092 POST /crear-sesion {
+    email: 'login_session_1776736527995_3869@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.03.55.28.131 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776736528127_9888@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+

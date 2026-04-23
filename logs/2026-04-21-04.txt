@@ -1,0 +1,81 @@
+
+2026.04.21.04.00.26.159 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.21.04.00.26.661 POST /crear-sesion {
+    email: 'router_list_1776736826653_5731@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.26.693 POST /crear-sesion {
+    email: 'router_section_1776736826686_2494@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.26.722 POST /crear-sesion {
+    email: 'router_view_1776736826716_3778@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.26.739 POST /crear-sesion {
+    email: 'router_text_1776736826735_7515@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.26.852 POST /crear-sesion {
+    email: 'login_session_1776736826767_4832@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.26.876 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776736826871_3478@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.054 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.21.04.00.46.542 POST /crear-sesion {
+    email: 'router_list_1776736846534_4072@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.571 POST /crear-sesion {
+    email: 'router_section_1776736846565_2948@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.604 POST /crear-sesion {
+    email: 'router_view_1776736846599_3495@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.620 POST /crear-sesion {
+    email: 'router_text_1776736846616_1852@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.732 POST /crear-sesion {
+    email: 'login_session_1776736846645_7424@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.21.04.00.46.759 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776736846755_5995@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+

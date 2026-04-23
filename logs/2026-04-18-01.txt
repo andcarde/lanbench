@@ -1,0 +1,32 @@
+
+2026.04.18.01.32.47.279 POST /crear-sesion {
+    email: 'tim@gmail.com',
+    password: '123456789'
+}
+
+2026.04.18.01.44.49.239 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'datasets_router_1776469489174_4101@example.com',
+    password: 'datasetPass99',
+    repeatPassword: 'datasetPass99'
+}
+
+2026.04.18.01.44.49.380 POST /crear-sesion {
+    email: 'datasets_router_1776469489174_4101@example.com',
+    password: 'datasetPass99'
+}
+
+2026.04.18.01.44.49.404 POST /register {
+    surname: 'Ru',
+    lastName: 'Dev',
+    email: 'ru_dev_1776469489402_718@example.com',
+    password: 'ruDevPass99',
+    repeatPassword: 'ruDevPass99'
+}
+
+2026.04.18.01.44.49.414 POST /crear-sesion {
+    email: 'ru_dev_1776469489402_718@example.com',
+    password: 'ruDevPass99'
+}
+

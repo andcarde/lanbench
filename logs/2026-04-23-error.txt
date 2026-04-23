@@ -1,0 +1,61 @@
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /register {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /register {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /register {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /register {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /register {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /create-session {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+

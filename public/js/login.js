@@ -17,7 +17,7 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: '/crear-sesion',
+            url: '/create-session',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(payload)

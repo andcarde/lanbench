@@ -1,0 +1,221 @@
+body.dataset-view-page {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      90deg,
+      #111111 0%,
+      #2a2a2a 13%,
+      #efefef 13%,
+      #f7f7f7 87%,
+      #2a2a2a 87%,
+      #111111 100%
+    );
+  color: #111111;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.dataset-view-shell {
+  min-height: calc(100vh - var(--toolbar-height));
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.dataset-view-frame {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+.dataset-view-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 1rem;
+}
+
+.dataset-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.dataset-view-header-main {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.dataset-back-button {
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #e34747 0%, #c11d1d 100%);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1.9rem;
+  box-shadow: 0 12px 28px rgba(138, 18, 18, 0.28);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+}
+
+.dataset-back-button:hover,
+.dataset-back-button:focus {
+  color: #ffffff;
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+  box-shadow: 0 16px 32px rgba(138, 18, 18, 0.32);
+}
+
+.dataset-heading {
+  min-width: 0;
+}
+
+.dataset-heading h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: #0e0e0e;
+}
+
+.dataset-heading p:last-child {
+  margin: 0.55rem 0 0;
+  color: #5a5a5a;
+  font-size: 1rem;
+}
+
+.dataset-overline {
+  margin: 0 0 0.35rem;
+  color: #5c5c5c;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.dataset-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.88);
+  color: #f3f3f3;
+  font-size: 0.92rem;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
+}
+
+.dataset-mode-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #75d05c;
+  box-shadow: 0 0 0 5px rgba(117, 208, 92, 0.18);
+}
+
+.dataset-mode-pill.is-live .dataset-mode-dot {
+  background: #f0be31;
+  box-shadow: 0 0 0 5px rgba(240, 190, 49, 0.18);
+}
+
+.dataset-view-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, #ececec 100%);
+  border: 1px solid rgba(35, 35, 35, 0.18);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.16);
+}
+
+.dataset-view-card-header {
+  padding: 1.15rem 1.4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: linear-gradient(90deg, #f4f4f4 0%, #e8e8e8 100%);
+  font-weight: 700;
+}
+
+.dataset-readonly-badge {
+  padding: 0.38rem 0.8rem;
+  border-radius: 999px;
+  background: #1e1e1e;
+  color: #f4f4f4;
+  font-size: 0.84rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.dataset-xml-viewer {
+  width: 100%;
+  min-height: 68vh;
+  border: 0;
+  resize: none;
+  padding: 1.5rem;
+  background:
+    linear-gradient(90deg, rgba(16, 16, 16, 0.04) 0, rgba(16, 16, 16, 0.04) 4px, transparent 4px),
+    #fbfbfb;
+  color: #111111;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  white-space: pre;
+}
+
+.dataset-xml-viewer:focus {
+  outline: none;
+}
+
+.dataset-xml-viewer.is-loading {
+  color: #6b6b6b;
+}
+
+.dataset-xml-viewer.is-error {
+  color: #a11e1e;
+}
+
+@media (max-width: 768px) {
+  body.dataset-view-page {
+    background: #efefef;
+  }
+
+  .dataset-view-shell {
+    padding: 1.5rem 0.9rem 2rem;
+  }
+
+  .dataset-view-header {
+    align-items: stretch;
+  }
+
+  .dataset-view-header-main {
+    align-items: flex-start;
+  }
+
+  .dataset-back-button {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    font-size: 1.7rem;
+  }
+
+  .dataset-view-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dataset-mode-pill {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dataset-xml-viewer {
+    min-height: 60vh;
+    padding: 1rem;
+    font-size: 0.92rem;
+  }
+}

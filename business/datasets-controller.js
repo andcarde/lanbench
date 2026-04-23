@@ -1,157 +1,165 @@
 'use strict';
 
-const datasetColors = ['dataset-purple', 'dataset-violet', 'dataset-green-progress'];
+const { unlink } = require('node:fs');
+const { User } = require('../entities/user');
+const { createDatasetsService } = require('../services/datasets-service');
+const { listCandidateTempFilePaths } = require('../utils/temp-storage');
+const { toPositiveInteger } = require('../utils/validators');
+const { buildApiErrorPayloadFromError } = require('../utils/api-error-payload');
+const {
+    mapDatasetListDTO,
+    mapDatasetListDTOs,
+    mapDatasetSectionDTO
+} = require('../contracts/dto-mappers');
 
-let nextDatasetId = 4;
-const datasets = [
-    {
-        idDataset: 1,
-        id: 'dataset-1',
-        name: 'DATASET 1',
-        description: 'Conjunto de ejemplo para tareas de generación y revisión en español.',
-        source: 'Lanbench Curated',
-        languagePair: 'RDF -> ES',
-        records: 3000,
-        status: 'ready',
-        updatedAt: '2026-03-10',
-        sentenceLabel: 'Oración 1:',
-        triplesRDF: 3000,
-        languages: ['Spanish', 'English'],
-        completedPercent: 100,
-        withoutReviewPercent: 0,
-        remainPercent: 0,
-        colorClass: 'dataset-purple'
-    },
-    {
-        idDataset: 2,
-        id: 'dataset-2',
-        name: 'DATASET 2',
-        description: 'Partición de validación para control de calidad de anotaciones.',
-        source: 'Lanbench Curated',
-        languagePair: 'RDF -> ES',
-        records: 3000,
-        status: 'ready',
-        updatedAt: '2026-03-21',
-        sentenceLabel: 'Oración 2:',
-        triplesRDF: 3000,
-        languages: ['Spanish', 'English'],
-        completedPercent: 100,
-        withoutReviewPercent: 0,
-        remainPercent: 0,
-        colorClass: 'dataset-violet'
-    },
-    {
-        idDataset: 3,
-        id: 'dataset-3',
-        name: 'DATASET 3',
-        description: 'Dataset en progreso con muestras para revisión asistida.',
-        source: 'Lanbench Curated',
-        languagePair: 'RDF -> ES',
-        records: 3000,
-        status: 'in_progress',
-        updatedAt: '2026-03-30',
-        sentenceLabel: 'Oración 3:',
-        triplesRDF: 3000,
-        languages: ['Spanish', 'English'],
-        completedPercent: 33,
-        withoutReviewPercent: 42,
-        remainPercent: 25,
-        colorClass: 'dataset-green-progress'
+function createDatasetsController({ datasetsService } = {}) {
+    const service = datasetsService || createDatasetsService();
+
+    async function listDatasets(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
+
+        try {
+            const datasets = await service.listAccessibleDatasets(idUser);
+            return response.status(200).json(mapDatasetListDTOs(datasets));
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        }
     }
-];
 
-function listDatasets(request, response) {
-    return response.status(200).json(datasets);
-}
+    async function listAllDatasets(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
 
-function getDatasetById(request, response) {
-    const idDataset = toInteger(request.params.id);
-    if (idDataset === null)
-        return response.status(400).json({ message: 'El id del dataset es inválido.' });
+        try {
+            const datasetList = await service.listAccessibleDatasetItems(idUser);
+            return response.status(200).json(mapDatasetListDTOs(datasetList));
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        }
+    }
 
-    const dataset = findDatasetById(idDataset);
-    if (!dataset)
-        return response.status(404).json({ message: 'Dataset no encontrado.' });
+    async function getDatasetById(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
 
-    return response.status(200).json(dataset);
-}
+        const idDataset = toPositiveInteger(request.params.id);
+        if (idDataset === null)
+            return response.status(400).json(legacyMessageError('El id del dataset es inválido.'));
 
-function createDataset(request, response) {
-    const payload = {
-        name: request.body.name,
-        entries: request.body.entries
+        try {
+            const dataset = await service.getAccessibleDatasetItem(idUser, idDataset);
+            return response.status(200).json(mapDatasetListDTO(dataset, idDataset));
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        }
+    }
+
+    async function getDatasetSection(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
+
+        const idDataset = toPositiveInteger(request.params.id);
+        if (idDataset === null)
+            return response.status(400).json(legacyMessageError('El id del dataset es inválido.'));
+
+        const sectionNumber = toPositiveInteger(request.params.section);
+        if (sectionNumber === null || sectionNumber <= 0)
+            return response.status(400).json(legacyMessageError('La sección solicitada es inválida.'));
+
+        try {
+            const payload = await service.getAccessibleDatasetSection(idUser, idDataset, sectionNumber);
+            return response.status(200).json(mapDatasetSectionDTO(payload));
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        }
+    }
+
+    async function getDatasetText(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
+
+        const idDataset = toPositiveInteger(request.params.id);
+        if (idDataset === null)
+            return response.status(400).json(legacyMessageError('El id del dataset es inválido.'));
+
+        try {
+            const text = await service.getAccessibleDatasetText(idUser, idDataset);
+            return response
+                .status(200)
+                .type('text/plain; charset=utf-8')
+                .send(text);
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        }
+    }
+
+    async function createDataset(request, response) {
+        const idUser = resolveSessionUserId(request);
+        if (idUser === null)
+            return response.status(403).json(legacyMessageError('Sesión no válida.'));
+
+        if (!request.file)
+            return response.status(400).json(legacyMessageError('No se ha proporcionado un fichero XML.'));
+
+        try {
+            const payload = await service.createDataset(idUser, request.file);
+            return response.status(201).json({
+                ...payload,
+                dataset: payload && payload.dataset
+                    ? mapDatasetListDTO(payload.dataset, payload.idDataset)
+                    : payload.dataset
+            });
+        } catch (error) {
+            return respondWithJsonError(response, error);
+        } finally {
+            deleteTempFile(request.file.filename);
+        }
+    }
+
+    return {
+        listAllDatasets,
+        listDatasets,
+        getDatasetById,
+        getDatasetSection,
+        getDatasetText,
+        createDataset
     };
-
-    const validationError = validateCreateDatasetPayload(payload);
-    if (validationError)
-        return response.status(400).json({ message: validationError });
-
-    const normalizedName = payload.name.trim();
-    const index = datasets.length + 1;
-    const dataset = {
-        idDataset: nextDatasetId++,
-        id: buildSlug(normalizedName, index),
-        name: normalizedName,
-        description: 'Dataset creado desde la interfaz web.',
-        source: 'Lanbench User',
-        languagePair: 'RDF -> ES',
-        records: payload.entries,
-        status: 'ready',
-        updatedAt: new Date().toISOString().slice(0, 10),
-        sentenceLabel: `Oración ${index}:`,
-        triplesRDF: payload.entries,
-        languages: ['Spanish', 'English'],
-        completedPercent: 0,
-        withoutReviewPercent: 0,
-        remainPercent: 100,
-        colorClass: datasetColors[(index - 1) % datasetColors.length]
-    };
-
-    datasets.push(dataset);
-    return response.status(201).json({
-        ok: true,
-        idDataset: dataset.idDataset,
-        dataset
-    });
 }
 
-function validateCreateDatasetPayload(payload) {
-    if (typeof payload.name !== 'string')
-        return 'El nombre del dataset es obligatorio.';
-
-    const normalizedName = payload.name.trim();
-    if (normalizedName.length === 0 || normalizedName.length > 128)
-        return 'El nombre del dataset debe tener entre 1 y 128 caracteres.';
-
-    if (!Number.isInteger(payload.entries) || payload.entries < 0)
-        return 'El campo entries debe ser un entero positivo o cero.';
-
-    return null;
+function resolveSessionUserId(request) {
+    const sessionUser = User.fromSession(request && request.session ? request.session.user : null);
+    return sessionUser ? sessionUser.idUser : null;
 }
 
-function buildSlug(name, index) {
-    const baseSlug = name
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '-');
+function respondWithJsonError(response, error, fallbackMessage = 'Error interno del servidor.') {
+    if (error && Number.isInteger(error.status) && error.status >= 400 && error.status < 500)
+        return response.status(error.status).json(buildApiErrorPayloadFromError(error));
 
-    return baseSlug.length > 0 ? baseSlug : `dataset-${index}`;
+    response.locals.serverErrorReason = error && error.message
+        ? error.message
+        : fallbackMessage;
+
+    return response.status(500).json(buildApiErrorPayloadFromError(error, fallbackMessage));
 }
 
-function findDatasetById(idDataset) {
-    return datasets.find(dataset => dataset.idDataset === idDataset) || null;
+function deleteTempFile(filename) {
+    if (!filename)
+        return;
+
+    for (const filePath of listCandidateTempFilePaths(filename))
+        unlink(filePath, () => {});
 }
 
-function toInteger(value) {
-    const parsed = Number(value);
-    if (!Number.isInteger(parsed))
-        return null;
-    return parsed;
+function legacyMessageError(message) {
+    return { message };
 }
 
 module.exports = {
-    listDatasets,
-    getDatasetById,
-    createDataset
+    createDatasetsController
 };

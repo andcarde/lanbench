@@ -37,8 +37,26 @@ const getTimestamp = (date) => {
     return `${parts.year}.${parts.month}.${parts.day}.${parts.hour}.${parts.minute}.${parts.second}.${parts.millisecond}`;
 };
 
+const sanitizePayload = (payload) => {
+    if (!payload || typeof payload !== 'object')
+        return payload;
+
+    const sensitive = ['password', 'passwd', 'pwd', 'token', 'authorization'];
+    const copy = Array.isArray(payload) ? [...payload] : { ...payload };
+
+    if (typeof copy === 'object') {
+        for (const key of Object.keys(copy)) {
+            if (sensitive.some(s => key.toLowerCase().includes(s)))
+                copy[key] = '[REDACTED]';
+        }
+    }
+
+    return copy;
+};
+
 const formatPayload = (payload) => {
-    const formattedPayload = inspect(payload, {
+    const sanitized = sanitizePayload(payload);
+    const formattedPayload = inspect(sanitized, {
         depth: null,
         colors: false,
         compact: false,
@@ -111,6 +129,7 @@ const appendIncomingRequestLog = (request) => {
 const appendServerErrorLog = (request, response) => {
     const now = new Date();
     const route = request.originalUrl || request.url;
+    // Contrato: controllers deben setear response.locals.serverErrorReason en catch; si no, se usa statusMessage
     const reason = normalizeReason(response.locals.serverErrorReason || response.statusMessage);
     const payload = formatPayload({
         code: 500,

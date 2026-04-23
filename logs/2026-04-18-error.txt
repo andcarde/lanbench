@@ -1,0 +1,16 @@
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+

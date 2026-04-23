@@ -7,14 +7,10 @@ const path = require('path');
 const router = express.Router();
 
 router.get('/', (request, response) => {
-    if (request.session && request.session.usuario)
+    if (request.session && request.session.user)
         return response.redirect('/tasks');
 
     return response.redirect('/login');
-});
-
-router.get('/registro', (request, response) => {
-    response.sendFile(path.join(__dirname, '..', 'public', 'register.html'));
 });
 
 router.get('/register', (request, response) => {

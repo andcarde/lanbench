@@ -1,0 +1,120 @@
+
+2026.04.22.21.13.52.168 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.22.21.13.52.400 POST /create-session {
+    email: 'login_session_1776885232245_7067@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.13.52.669 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776885232663_5454@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.22.21.13.52.771 POST /create-session {
+    email: 'integration_1776885232663_5454@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.26.01.130 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.22.21.26.01.404 POST /create-session {
+    email: 'login_session_1776885961237_4968@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.26.01.660 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776885961654_7626@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.22.21.26.01.755 POST /create-session {
+    email: 'integration_1776885961654_7626@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.30.58.910 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.22.21.30.59.116 POST /create-session {
+    email: 'login_session_1776886258969_2540@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.30.59.375 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776886259368_7480@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.22.21.30.59.476 POST /create-session {
+    email: 'integration_1776886259368_7480@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.42.33.729 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.22.21.42.33.933 POST /create-session {
+    email: 'login_session_1776886953787_9468@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.42.34.187 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776886954184_8188@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.04.22.21.42.34.287 POST /create-session {
+    email: 'integration_1776886954184_8188@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.44.54.062 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.04.22.21.44.54.262 POST /create-session {
+    email: 'login_session_1776887094111_2640@example.com',
+    password: '[REDACTED]'
+}
+
+2026.04.22.21.49.56.513 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+

@@ -1,0 +1,50 @@
+ANDRÉS
+Claude, genera un plan para implementar la tarea T0.1.
+
+CLAUDE
+### T0.1 — Externalizar DEBUG a variable de entorno
+
+**Problema que resuelve:** `public/js/annotations.js:9` y `public/js/dataset-view.js:4` tienen `DEBUG = true` como constante fija. Eso hace que en cualquier despliegue el front use datos mock, ignorando el backend real.
+
+## Plan propuesto
+1. Leer `process.env.DEBUG_MODE` en `config.js` y exportarla.
+2. Pasar ese valor al front desde el servidor (variable de template o endpoint `/api/config`).
+3. En `public/js/annotations.js`, sustituir la constante `DEBUG` por el valor recibido del servidor.
+4. En `public/js/dataset-view.js`, mismo cambio.
+5. Añadir `DEBUG_MODE=false` al fichero `.env` de produccion (o al ejemplo `.env.example`).
+6. Mantener un modo demo funcional: si `DEBUG_MODE=true`, los mocks siguen disponibles, pero el modo real debe funcionar cuando `DEBUG_MODE=false`.
+
+¿Validas este enfoque?
+
+ANDRÉS
+No. He analizado este problema y atisbado una solución. Meter MSW requiere reconfigurar la arquitectura, no me gusta. Meter json-server es perder cohesión porque es otro servidor. EJS no me gusta nada porque mi paradigma es "Only One Page", basado en HTML y CSS para constantes y toda la lógica a los JS, además de que dificulta las pruebas manuales, es decir, darle doble click al HTML y ver si funciona sin montar el server. Petición al servidor me parece la más nasty porque se queda en producción. Variable hardcodeada es feo pero eficaz, pero hay algo mejor: ubdividir la lógica de public/js en los ficheros JS normales y los de '/public/js/actions' donde estarán todas las peticiones. En el servidor pongo una carpeta front-mocks donde meto todos los ficheros mocks que simulan la lógica de las funciones con peticiones AYAX. Con un comando que programe "npm front-debug" se crea la carpeta '/ajax', todos lo ficheros de '/public/js/actions' pasan a '/ajax', los ficheros de '/front-mocks' a '/public/js/ajax' y se borra '/front-mocks'. Al ejecutar otra vez el comando, a la inversa: se crea '/front-mocks', los ficheros de '/public/js/actions' pasan a '/front-mocks', los ficheros de '/ajax' pasan a '/public/js/actions' y se borra '/ajax'. Planifica como llevar a cabo mi enfoque elegido. 
+
+CLAUDE
+Es un enfoque elegante. El concepto es claro: separación de responsabilidades en el front más un script de intercambio de carpetas como mecanismo de toggle. 
+
+## Plan de T0.1 — Enfoque de intercambio de carpetas
+
+#	Subtarea	Descripción
+ST0.1.1	Extraer las 3 llamadas AJAX de annotations.js a public/js/actions/annotations-actions.js con una interfaz de funciones limpia; actualizar annotations.html para incluir el nuevo script	annotations.js, annotations.html, nuevo actions/annotations-actions.js
+ST0.1.2	Extraer la llamada AJAX de dataset-view.js a public/js/actions/dataset-view-actions.js; actualizar dataset-view.html	dataset-view.js, dataset-view.html, nuevo actions/dataset-view-actions.js
+ST0.1.3	Crear front-mocks/annotations-actions.js y front-mocks/dataset-view-actions.js con los datos mock actuales (MOCK_SECTION, DEBUG_DATASET_TEXT) replicando la misma interfaz de funciones	nuevos ficheros en front-mocks/
+ST0.1.4	Eliminar de annotations.js y dataset-view.js las constantes DEBUG, MOCK_SECTION, DEBUG_DATASET_TEXT y todos los bloques if (DEBUG) ya extraídos	annotations.js, dataset-view.js
+ST0.1.5	Crear scripts/front-debug.js (Node.js) con la lógica de toggle e integrarlo en package.json como npm run front-debug	package.json, nuevo scripts/front-debug.js
+
+¿Validas este plan?
+
+ANDRÉS
+Sí. Empieza por ST0.1.1.
+
+CLAUDE
+ST0.1.1 completada.
+
+ANDRÉS
+Estoy llegando al límite de uso de sesión. Guarda en TASK-PLAN.md: 
+1. La referencia a la primera tarea T0.1 (EPIC-PLAN.md) de la historia épica E0. 
+2. Mi enfoque para resolverla.
+3. Tu planificación. 
+4. El hecho de que ST0.1.1 ya está hecha y de que la siguiente es ST0.1.2.
+
+CLAUDE
+[..] Límite de uso de sesión alcanzado.

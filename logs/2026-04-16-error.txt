@@ -1,0 +1,122 @@
+
+POST /datasets {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+POST /datasets {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:126:53\n' +
+      '\n' +
+      '  123 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  124 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  125 \n' +
+      '→ 126 const createdDataset = await tx.dataset.create(\n' +
+      'The column `name` does not exist in the current database.'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:126:53\n' +
+      '\n' +
+      '  123 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  124 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  125 \n' +
+      '→ 126 const createdDataset = await tx.dataset.create(\n' +
+      'The column `name` does not exist in the current database.'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:126:53\n' +
+      '\n' +
+      '  123 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  124 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  125 \n' +
+      '→ 126 const createdDataset = await tx.dataset.create(\n' +
+      'The column `name` does not exist in the current database.'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:190:53\n' +
+      '\n' +
+      '  187 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  188 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  189 \n' +
+      '→ 190 const createdDataset = await tx.dataset.create(\n' +
+      'The column `name` does not exist in the current database.'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:190:53\n' +
+      '\n' +
+      '  187 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  188 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  189 \n' +
+      '→ 190 const createdDataset = await tx.dataset.create(\n' +
+      'read ECONNRESET'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:190:53\n' +
+      '\n' +
+      '  187 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  188 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  189 \n' +
+      '→ 190 const createdDataset = await tx.dataset.create(\n' +
+      'read ECONNRESET'
+}
+
+POST /datasets/create {
+    code: 500,
+    reason: '\n' +
+      'Invalid `tx.dataset.create()` invocation in\n' +
+      'C:\\Users\\Andres\\OneDrive - Universidad Complutense de Madrid (UCM)\\Escritorio\\Github Repositories\\lanbench\\business\\datasets-controller.js:190:53\n' +
+      '\n' +
+      '  187 const colorClass = DATASET_COLORS[(nextId - 1) % DATASET_COLORS.length];\n' +
+      "  188 const languages = JSON.stringify(['Spanish', 'English']);\n" +
+      '  189 \n' +
+      '→ 190 const createdDataset = await tx.dataset.create(\n' +
+      'read ECONNRESET'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/1/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+
+GET /datasets/2/sections/1 {
+    code: 500,
+    reason: 'Internal Server Error'
+}
+

@@ -14,6 +14,10 @@ US-03: Como anotador, quiero ver un conjunto de triples RDF de forma natural par
 
 US-04: Como anotador, quiero seleccionar los triples agrupados por complejidad para orientar el foco de la sesión.
 
+\begin{itemize}
+\item US-04-R-01: El dataset se divide en \textbf{secciones de 10 entries} cada una. Cada sección es la unidad mínima de trabajo asignada a un anotador. Este mecanismo garantiza acceso exclusivo a un subconjunto del dataset, evitando solapamientos en entornos multiusuario donde varios anotadores trabajan en paralelo sobre el mismo dataset.
+\end{itemize}
+
 \subsection*{Generación de texto}
 US-05: Como anotador, quiero escribir sentencias en español a partir de los triples para generar datos de entrenamiento.
 

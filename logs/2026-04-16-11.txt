@@ -1,0 +1,58 @@
+
+2026.04.16.11.13.37.268 POST /crear-sesion {
+    email: 'tim@gmail.com',
+    password: '123456789'
+}
+
+2026.04.16.11.15.04.242 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'datasets_router_1776330904076_6682@example.com',
+    password: 'datasetPass99',
+    repeatPassword: 'datasetPass99'
+}
+
+2026.04.16.11.15.04.497 POST /crear-sesion {
+    email: 'datasets_router_1776330904076_6682@example.com',
+    password: 'datasetPass99'
+}
+
+2026.04.16.11.15.04.568 POST /register {
+    surname: 'Ru',
+    lastName: 'Dev',
+    email: 'ru_dev_1776330904565_6169@example.com',
+    password: 'ruDevPass99',
+    repeatPassword: 'ruDevPass99'
+}
+
+2026.04.16.11.15.04.591 POST /crear-sesion {
+    email: 'ru_dev_1776330904565_6169@example.com',
+    password: 'ruDevPass99'
+}
+
+2026.04.16.11.15.05.727 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'login_session_1776330905703_1640@example.com',
+    password: 'integrationPass99',
+    repeatPassword: 'integrationPass99'
+}
+
+2026.04.16.11.15.05.785 POST /crear-sesion {
+    email: 'login_session_1776330905703_1640@example.com',
+    password: 'integrationPass99'
+}
+
+2026.04.16.11.15.05.950 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1776330905940_3834@example.com',
+    password: 'integrationPass99',
+    repeatPassword: 'integrationPass99'
+}
+
+2026.04.16.11.15.05.981 POST /crear-sesion {
+    email: 'integration_1776330905940_3834@example.com',
+    password: 'integrationPass99'
+}
+

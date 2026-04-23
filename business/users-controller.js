@@ -1,97 +1,71 @@
 'use strict';
 
-const defaultGetConnection = require('../pool');
+const { createUsersService } = require('../services/users-service');
 
-const dependencies = {
-    getConnection: defaultGetConnection
-};
+function createUsersController({ usersService } = {}) {
+    const service = usersService || createUsersService();
 
-async function register(request, response) {
-    const payload = {
-        surname: request.body.surname,
-        lastName: request.body.lastName,
-        email: request.body.email,
-        password: request.body.password,
-        repeatPassword: request.body.repeatPassword
-    };
-
-    const validationError = validateRegisterPayload(payload);
-    if (validationError)
-        return response.status(400).json({ message: validationError });
-
-    const email = toTrimmedString(payload.email).toLowerCase();
-    let connection;
-    try {
-        connection = await acquireConnection();
-
-        const existingUsers = await runQuery(
-            connection,
-            'SELECT `idUser` FROM `User` WHERE `email` = ? LIMIT 1',
-            [email]
-        );
-        if (existingUsers.length > 0)
-            return response.status(409).json({ message: 'Email already registered.' });
-
-        const nextIdRows = await runQuery(
-            connection,
-            'SELECT COALESCE(MAX(`idUser`), 0) + 1 AS `nextId` FROM `User`',
-            []
-        );
-        const nextId = toPositiveInteger(nextIdRows[0] && nextIdRows[0].nextId, 1);
-
-        await runQuery(
-            connection,
-            'INSERT INTO `User` (`idUser`, `email`, `password`) VALUES (?, ?, ?)',
-            [nextId, email, payload.password]
-        );
-
-        return response.status(201).json({
-            title: 'Register completed',
-            message: 'User validated correctly.'
-        });
-    } catch (error) {
-        return response.status(500).json({ message: 'Internal server error.' });
-    } finally {
-        releaseConnection(connection);
-    }
-}
-
-async function login(request, response) {
-    const email = toTrimmedString(request.body.email).toLowerCase();
-    const password = toTrimmedString(request.body.password);
-
-    if (!isValidEmail(email) || !isValidPassword(password))
-        return response.status(400).json({ message: 'Invalid login payload.' });
-
-    let connection;
-    try {
-        connection = await acquireConnection();
-
-        const users = await runQuery(
-            connection,
-            'SELECT `idUser`, `email`, `password` FROM `User` WHERE `email` = ? LIMIT 1',
-            [email]
-        );
-
-        const user = users[0];
-        if (!user || user.password !== password)
-            return response.status(401).json({
-                title: 'Login incorrecto',
-                message: 'La contraseña no se corresponde con el usuario proporcionado.'
-            });
-
-        request.session.usuario = {
-            id: user.idUser,
-            email: user.email,
-            active: true
+    async function register(request, response) {
+        const payload = {
+            surname: request.body.surname,
+            lastName: request.body.lastName,
+            email: request.body.email,
+            password: request.body.password,
+            repeatPassword: request.body.repeatPassword
         };
 
-        return response.status(200).json({ redirectUrl: '/tasks' });
-    } catch (error) {
-        return response.status(500).json({ message: 'Internal server error.' });
-    } finally {
-        releaseConnection(connection);
+        const validationError = validateRegisterPayload(payload);
+        if (validationError)
+            return response.status(400).json(legacyMessageError(validationError));
+
+        const email = toTrimmedString(payload.email).toLowerCase();
+        try {
+            await service.registerUser({
+                email,
+                password: payload.password
+            });
+
+            return response.status(201).json({
+                title: 'Register completed',
+                message: 'User validated correctly.'
+            });
+        } catch (error) {
+            if (error && error.status === 409)
+                return response.status(409).json(legacyMessageError(error.message));
+
+            return response.status(500).json(legacyMessageError('Internal server error.'));
+        }
     }
+
+    async function login(request, response) {
+        const email = toTrimmedString(request.body.email).toLowerCase();
+        const password = toTrimmedString(request.body.password);
+
+        if (!isValidEmail(email) || !isValidPassword(password))
+            return response.status(400).json(legacyMessageError('Invalid login payload.'));
+
+        try {
+            request.session.user = await service.authenticateUser({ email, password });
+            await new Promise((resolve, reject) => {
+                request.session.save(error => {
+                    if (error) reject(error);
+                    else resolve();
+                });
+            });
+            return response.status(200).json({ redirectUrl: '/tasks' });
+        } catch (error) {
+            if (error && error.status === 401) {
+                return response.status(401).json({
+                    title: 'Login incorrecto',
+                    ...legacyMessageError(error.message)
+                });
+            }
+
+            return response.status(500).json(legacyMessageError('Internal server error.'));
+        }
+    }
+
+    return { register, login };
 }
 
 function validateRegisterPayload(payload) {
@@ -142,53 +116,10 @@ function toTrimmedString(value) {
     return value.trim();
 }
 
-function toPositiveInteger(value, fallback) {
-    const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed <= 0)
-        return fallback;
-    return parsed;
-}
-
-function acquireConnection() {
-    return new Promise((resolve, reject) => {
-        dependencies.getConnection((error, connection) => {
-            if (error)
-                return reject(error);
-            return resolve(connection);
-        });
-    });
-}
-
-function runQuery(connection, sql, params) {
-    return new Promise((resolve, reject) => {
-        connection.query(sql, params, (error, rows) => {
-            if (error)
-                return reject(error);
-            return resolve(rows || []);
-        });
-    });
-}
-
-function releaseConnection(connection) {
-    if (connection && typeof connection.release === 'function')
-        connection.release();
-}
-
-function setDependenciesForTests(customDependencies) {
-    if (!customDependencies || typeof customDependencies !== 'object')
-        return;
-
-    if (typeof customDependencies.getConnection === 'function')
-        dependencies.getConnection = customDependencies.getConnection;
-}
-
-function resetDependenciesForTests() {
-    dependencies.getConnection = defaultGetConnection;
+function legacyMessageError(message) {
+    return { message };
 }
 
 module.exports = {
-    register,
-    login,
-    __setDependenciesForTests: setDependenciesForTests,
-    __resetDependenciesForTests: resetDependenciesForTests
+    createUsersController
 };

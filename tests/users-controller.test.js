@@ -2,94 +2,25 @@
 
 const assert = require('node:assert/strict');
 const testApi = require('node:test');
-const { mock, instance, when, verify, capture, anything } = require('ts-mockito');
 
-const usersController = require('../business/users-controller');
+const { createUsersController } = require('../business/users-controller');
 
 const describe = global.describe || testApi.describe;
 const it = global.it || testApi.it;
-const afterEach = global.afterEach || testApi.afterEach;
 
-class ConnectionDouble {
-    query(sql, params, callback) {}
-
-    release() {}
-}
-
-class PoolDouble {
-    getConnection(callback) {}
-}
-
-class ResponseDouble {
-    status(code) {
-        return this;
-    }
-
-    json(payload) {
-        return this;
-    }
-}
-
-afterEach(() => {
-    usersController.__resetDependenciesForTests();
-});
-
-function createResponse() {
-    const responseMock = mock(ResponseDouble);
-    const response = instance(responseMock);
-    when(responseMock.status(anything())).thenReturn(response);
-    when(responseMock.json(anything())).thenReturn(response);
-    return { responseMock, response };
-}
-
-function wireMockedPool(connection) {
-    const poolMock = mock(PoolDouble);
-    when(poolMock.getConnection(anything())).thenCall(callback => callback(null, connection));
-    const pool = instance(poolMock);
-
-    usersController.__setDependenciesForTests({
-        getConnection: pool.getConnection.bind(pool)
-    });
-
-    return poolMock;
-}
-
-describe('users-controller MySQL + Mockito tests', () => {
-    it('register inserts a new user in MySQL when email is available', async () => {
-        const connectionMock = mock(ConnectionDouble);
-        when(connectionMock.release()).thenReturn();
-
-        const sqlQueue = [
-            {
-                sql: 'SELECT `idUser` FROM `User` WHERE `email` = ? LIMIT 1',
-                params: ['test@example.com'],
-                rows: []
-            },
-            {
-                sql: 'SELECT COALESCE(MAX(`idUser`), 0) + 1 AS `nextId` FROM `User`',
-                params: [],
-                rows: [{ nextId: 1 }]
-            },
-            {
-                sql: 'INSERT INTO `User` (`idUser`, `email`, `password`) VALUES (?, ?, ?)',
-                params: [1, 'test@example.com', 'supersecret99'],
-                rows: { affectedRows: 1 }
+describe('users-controller', () => {
+    it('register normaliza el email y delega en usersService', async () => {
+        const capturedCalls = [];
+        const usersController = createUsersController({
+            usersService: {
+                async registerUser(payload) {
+                    capturedCalls.push(payload);
+                }
             }
-        ];
-
-        when(connectionMock.query(anything(), anything(), anything())).thenCall((sql, params, callback) => {
-            const expected = sqlQueue.shift();
-            assert.ok(expected, 'Unexpected SQL query call.');
-            assert.equal(sql, expected.sql);
-            assert.deepEqual(params, expected.params);
-            callback(null, expected.rows);
         });
 
-        const connection = instance(connectionMock);
-        const poolMock = wireMockedPool(connection);
-
-        const { responseMock, response } = createResponse();
-        const request = {
+        const { response, recorder } = createResponseRecorder();
+        await usersController.register({
             body: {
                 surname: 'Garcia',
                 lastName: 'Lopez',
@@ -98,37 +29,34 @@ describe('users-controller MySQL + Mockito tests', () => {
                 repeatPassword: 'supersecret99'
             },
             session: {}
-        };
+        }, response);
 
-        await usersController.register(request, response);
-
-        assert.equal(sqlQueue.length, 0);
-        verify(poolMock.getConnection(anything())).once();
-        verify(connectionMock.release()).once();
-        verify(responseMock.status(201)).once();
-
-        const payload = capture(responseMock.json).last()[0];
-        assert.deepEqual(payload, {
+        assert.deepEqual(capturedCalls, [
+            {
+                email: 'test@example.com',
+                password: 'supersecret99'
+            }
+        ]);
+        assert.equal(recorder.statusCode, 201);
+        assert.deepEqual(recorder.payload, {
             title: 'Register completed',
             message: 'User validated correctly.'
         });
     });
 
-    it('register returns conflict when email already exists in MySQL', async () => {
-        const connectionMock = mock(ConnectionDouble);
-        when(connectionMock.release()).thenReturn();
-
-        when(connectionMock.query(anything(), anything(), anything())).thenCall((sql, params, callback) => {
-            assert.equal(sql, 'SELECT `idUser` FROM `User` WHERE `email` = ? LIMIT 1');
-            assert.deepEqual(params, ['taken@example.com']);
-            callback(null, [{ idUser: 9 }]);
+    it('register devuelve 409 cuando el servicio detecta email duplicado', async () => {
+        const usersController = createUsersController({
+            usersService: {
+                async registerUser() {
+                    const error = new Error('Email already registered.');
+                    error.status = 409;
+                    throw error;
+                }
+            }
         });
 
-        const connection = instance(connectionMock);
-        wireMockedPool(connection);
-
-        const { responseMock, response } = createResponse();
-        const request = {
+        const { response, recorder } = createResponseRecorder();
+        await usersController.register({
             body: {
                 surname: 'Maria',
                 lastName: 'Perez',
@@ -137,68 +65,62 @@ describe('users-controller MySQL + Mockito tests', () => {
                 repeatPassword: 'supersecret99'
             },
             session: {}
-        };
+        }, response);
 
-        await usersController.register(request, response);
-
-        verify(connectionMock.query(anything(), anything(), anything())).once();
-        verify(connectionMock.release()).once();
-        verify(responseMock.status(409)).once();
-
-        const payload = capture(responseMock.json).last()[0];
-        assert.deepEqual(payload, { message: 'Email already registered.' });
+        assert.equal(recorder.statusCode, 409);
+        assert.deepEqual(recorder.payload, { message: 'Email already registered.' });
     });
 
-    it('login validates credentials against MySQL and creates session', async () => {
-        const connectionMock = mock(ConnectionDouble);
-        when(connectionMock.release()).thenReturn();
+    it('login guarda el usuario de sesión canónico devuelto por usersService', async () => {
+        const usersController = createUsersController({
+            usersService: {
+                async authenticateUser(credentials) {
+                    assert.deepEqual(credentials, {
+                        email: 'test@example.com',
+                        password: 'supersecret99'
+                    });
 
-        when(connectionMock.query(anything(), anything(), anything())).thenCall((sql, params, callback) => {
-            assert.equal(sql, 'SELECT `idUser`, `email`, `password` FROM `User` WHERE `email` = ? LIMIT 1');
-            assert.deepEqual(params, ['test@example.com']);
-            callback(null, [{ idUser: 7, email: 'test@example.com', password: 'supersecret99' }]);
+                    return {
+                        idUser: 7,
+                        email: 'test@example.com',
+                        role: 'annotator'
+                    };
+                }
+            }
         });
 
-        const connection = instance(connectionMock);
-        wireMockedPool(connection);
-
-        const { responseMock, response } = createResponse();
+        const { response, recorder } = createResponseRecorder();
         const request = {
             body: {
                 email: 'test@example.com',
                 password: 'supersecret99'
             },
-            session: {}
+            session: { save(cb) { cb(null); } }
         };
 
         await usersController.login(request, response);
 
-        verify(connectionMock.release()).once();
-        verify(responseMock.status(200)).once();
-        assert.deepEqual(request.session.usuario, {
-            id: 7,
+        assert.equal(recorder.statusCode, 200);
+        assert.deepEqual(request.session.user, {
+            idUser: 7,
             email: 'test@example.com',
-            active: true
+            role: 'annotator'
         });
-
-        const payload = capture(responseMock.json).last()[0];
-        assert.deepEqual(payload, { redirectUrl: '/tasks' });
+        assert.deepEqual(recorder.payload, { redirectUrl: '/tasks' });
     });
 
-    it('login returns unauthorized when credentials are invalid', async () => {
-        const connectionMock = mock(ConnectionDouble);
-        when(connectionMock.release()).thenReturn();
-
-        when(connectionMock.query(anything(), anything(), anything())).thenCall((sql, params, callback) => {
-            assert.equal(sql, 'SELECT `idUser`, `email`, `password` FROM `User` WHERE `email` = ? LIMIT 1');
-            assert.deepEqual(params, ['missing@example.com']);
-            callback(null, []);
+    it('login devuelve 401 cuando el servicio rechaza las credenciales', async () => {
+        const usersController = createUsersController({
+            usersService: {
+                async authenticateUser() {
+                    const error = new Error('La contraseña no se corresponde con el usuario proporcionado.');
+                    error.status = 401;
+                    throw error;
+                }
+            }
         });
 
-        const connection = instance(connectionMock);
-        wireMockedPool(connection);
-
-        const { responseMock, response } = createResponse();
+        const { response, recorder } = createResponseRecorder();
         const request = {
             body: {
                 email: 'missing@example.com',
@@ -209,14 +131,34 @@ describe('users-controller MySQL + Mockito tests', () => {
 
         await usersController.login(request, response);
 
-        verify(connectionMock.release()).once();
-        verify(responseMock.status(401)).once();
-        assert.equal(request.session.usuario, undefined);
-
-        const payload = capture(responseMock.json).last()[0];
-        assert.deepEqual(payload, {
+        assert.equal(recorder.statusCode, 401);
+        assert.equal(request.session.user, undefined);
+        assert.deepEqual(recorder.payload, {
             title: 'Login incorrecto',
             message: 'La contraseña no se corresponde con el usuario proporcionado.'
         });
     });
 });
+
+function createResponseRecorder() {
+    const recorder = {
+        statusCode: null,
+        payload: null
+    };
+
+    const response = {
+        status(code) {
+            recorder.statusCode = code;
+            return this;
+        },
+        json(payload) {
+            recorder.payload = payload;
+            return this;
+        }
+    };
+
+    return {
+        response,
+        recorder
+    };
+}

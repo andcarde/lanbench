@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lanbench Canonical DTO Contracts",
+  "description": "Contratos canonicos compartidos entre frontend y backend para las entidades nucleares del flujo de datasets y anotaciones.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "DatasetList",
+    "DatasetSection",
+    "EntryContext",
+    "SentenceValidation",
+    "SavedAnnotation"
+  ],
+  "properties": {
+    "DatasetList": {
+      "$ref": "#/$defs/DatasetList"
+    },
+    "DatasetSection": {
+      "$ref": "#/$defs/DatasetSection"
+    },
+    "EntryContext": {
+      "$ref": "#/$defs/EntryContext"
+    },
+    "SentenceValidation": {
+      "$ref": "#/$defs/SentenceValidation"
+    },
+    "SavedAnnotation": {
+      "$ref": "#/$defs/SavedAnnotation"
+    }
+  },
+  "$defs": {
+    "Triple": {
+      "title": "Triple",
+      "description": "Triple RDF normalizado para consumo del frontend.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "predicate",
+        "object"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Sujeto del triple."
+        },
+        "predicate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Predicado del triple."
+        },
+        "object": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Objeto del triple."
+        }
+      }
+    },
+    "ValidationAlert": {
+      "title": "ValidationAlert",
+      "description": "Incidencia devuelta por la validacion de una oracion.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Codigo estable de la alerta."
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "description": "Obligatorio. Severidad de la alerta."
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Mensaje legible para el usuario."
+        },
+        "suggestion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opcional. Texto sugerido para corregir la oracion."
+        }
+      }
+    },
+    "DatasetList": {
+      "title": "DatasetList",
+      "description": "Resumen canonico de un dataset para listados y tooltips.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "totalEntries",
+        "completedPercent",
+        "remainPercent"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Obligatorio. Identificador del dataset."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio. Nombre visible del dataset."
+        },
+        "totalEntries": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Obligatorio. Numero total de entries anotables."
+        },
+        "completedPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Obligatorio. Porcentaje completado."
+        },
+        "remainPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Obligatorio. Porcentaje restante."
+        },
+        "withoutReviewPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Opcional. Porcentaje pendiente de revision."
+        },
+        "languages": {
+          "type": "array",
+          "description": "Opcional. Idiomas declarados para el dataset.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "colorClass": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opcional. Clase CSS para representacion visual."
+        }
+      }
+    },
+    "EntryContext": {
+      "title": "EntryContext",
+      "description": "Contexto canonico de una entry para anotacion y validacion.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "triples",
+        "englishSentences",
+        "sectionIndex"
+      ],
+      "properties": {
+        "entryId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Obligatorio. Identificador estable de la entry dentro del dataset."
+        },
+        "triples": {
+          "type": "array",
+          "description": "Obligatorio. Triples RDF asociados a la entry.",
+          "items": {
+            "$ref": "#/$defs/Triple"
+          }
+        },
+        "englishSentences": {
+          "type": "array",
+          "description": "Obligatorio. Oraciones de referencia en ingles.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sectionIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Obligatorio. Seccion del dataset donde aparece la entry."
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opcional. Categoria semantica de la entry."
+        }
+      }
+    },
+    "DatasetSection": {
+      "title": "DatasetSection",
+      "description": "Bloque canonico de trabajo que agrupa las entries de una seccion.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sectionIndex",
+        "totalEntries",
+        "entries"
+      ],
+      "properties": {
+        "sectionIndex": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Obligatorio. Indice de la seccion solicitada."
+        },
+        "totalEntries": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Obligatorio. Numero de entries devueltas en la seccion."
+        },
+        "entries": {
+          "type": "array",
+          "description": "Obligatorio. Entries listas para consumir en anotacion.",
+          "items": {
+            "$ref": "#/$defs/EntryContext"
+          }
+        },
+        "datasetId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Identificador del dataset al que pertenece la seccion."
+        },
+        "datasetName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opcional. Nombre del dataset."
+        },
+        "totalSections": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Numero total de secciones disponibles."
+        },
+        "sectionSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Tamano objetivo de la seccion."
+        },
+        "startEntry": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Posicion inicial de la primera entry en el dataset."
+        },
+        "endEntry": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Posicion final de la ultima entry en el dataset."
+        },
+        "isLastSection": {
+          "type": "boolean",
+          "description": "Opcional. Indica si la seccion es la ultima."
+        }
+      }
+    },
+    "SentenceValidation": {
+      "title": "SentenceValidation",
+      "description": "Resultado canonico de la validacion de una oracion propuesta por el usuario.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sentence",
+        "isValid",
+        "alerts",
+        "rejectionReasons"
+      ],
+      "properties": {
+        "sentence": {
+          "type": "string",
+          "description": "Obligatorio. Oracion validada."
+        },
+        "isValid": {
+          "type": "boolean",
+          "description": "Obligatorio. Indica si la oracion es aceptable sin cambios."
+        },
+        "alerts": {
+          "type": "array",
+          "description": "Obligatorio. Lista de alertas detectadas durante la validacion.",
+          "items": {
+            "$ref": "#/$defs/ValidationAlert"
+          }
+        },
+        "rejectionReasons": {
+          "type": "array",
+          "description": "Obligatorio. Motivos explicitos de rechazo aceptados por el flujo.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "SavedAnnotation": {
+      "title": "SavedAnnotation",
+      "description": "Respuesta canonica tras persistir una anotacion.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "sentences",
+        "savedAt"
+      ],
+      "properties": {
+        "entryId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Obligatorio. Entry sobre la que se ha guardado la anotacion."
+        },
+        "sentences": {
+          "type": "array",
+          "description": "Obligatorio. Oraciones persistidas.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "savedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Obligatorio. Marca temporal ISO-8601 del guardado."
+        },
+        "datasetId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Opcional. Dataset al que pertenece la entry guardada."
+        }
+      }
+    }
+  }
+}

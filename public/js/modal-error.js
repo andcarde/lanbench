@@ -56,3 +56,4 @@ function showAlertModal(title, message) {
 }
 
 // exports showAlertModal function
+window.showAlertModal = showAlertModal;
