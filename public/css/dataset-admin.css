@@ -1,0 +1,78 @@
+body {
+  background: #f4f6f8;
+  min-height: 100vh;
+}
+
+.admin-panel,
+.permissions-table-wrap,
+.statistics-panel {
+  background: #fff;
+  border: 1px solid #d7dde5;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.permission-search {
+  display: grid;
+  grid-template-columns: auto minmax(240px, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.permissions-table {
+  table-layout: fixed;
+}
+
+.permissions-table th:first-child,
+.permissions-table td:first-child {
+  width: 52%;
+}
+
+.permissions-table th:not(:first-child),
+.permissions-table td:not(:first-child) {
+  width: 16%;
+}
+
+.permission-user {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.permission-role-check {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+.permission-row-saving {
+  opacity: 0.55;
+}
+
+.stats-table {
+  min-width: 720px;
+}
+
+.stats-table th {
+  color: #53667f;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.stats-empty {
+  padding: 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+@media (max-width: 720px) {
+  .permission-search {
+    grid-template-columns: 1fr;
+  }
+
+  .permissions-table {
+    min-width: 620px;
+  }
+}

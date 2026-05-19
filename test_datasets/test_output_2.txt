@@ -1,0 +1,162 @@
+[
+  {
+    "eid": 1,
+    "outputs_es": [
+      "Punjab, Pakistán, está liderado por la Asamblea Provincial del Punjab.",
+      "Punjab, Pakistán está liderado por la Asamblea Provincial del Punjab.",
+      "Punjab, Pakistán está dirigido Asamblea Provincial del Punjab."
+    ]
+  },
+  {
+    "eid": 2,
+    "outputs_es": [
+      "San Sebastián de los Reyes forma parte de la Comunidad de Madrid.",
+      "San Sebastián de los Reyes es parte de la Comunidad de Madrid.",
+      "San Sebastián de los Reyes pertenece a la Comunidad de Madrid."
+    ]
+  },
+  {
+    "eid": 3,
+    "outputs_es": [
+      "El Partido Popular es el partido líder de San Sebastián de los Reyes, España.",
+      "San Sebastián de los Reyes tiene como partido líder al Partido Popular.",
+      "El partido líder de San Sebastián de los Reyes es el Partido Popular."
+    ]
+  },
+  {
+    "eid": 4,
+    "outputs_es": [
+      "Saranac Lake, Nueva York, se encuentra en Estados Unidos.",
+      "Saranac Lake, Nueva York, está ubicada en Estados Unidos.",
+      "Saranac Lake, Nueva York, está situada en Estados Unidos."
+    ]
+  },
+  {
+    "eid": 5,
+    "outputs_es": [
+      "Saranac Lake, Nueva York, forma parte del condado de Essex, Nueva York.",
+      "Saranac Lake, Nueva York, es parte del condado de Essex, Nueva York.",
+      "Saranac Lake, Nueva York, pertenece al condado de Essex, Nueva York."
+    ]
+  },
+  {
+    "eid": 6,
+    "outputs_es": [
+      "Saranac Lake, Nueva York, forma parte de Harrietstown, Nueva York.",
+      "Saranac Lake, Nueva York, es parte de Harrietstown, Nueva York.",
+      "Saranac Lake, Nueva York, pertenece a Harrietstown, Nueva York."
+    ]
+  },
+  {
+    "eid": 7,
+    "outputs_es": [
+      "El líder de la South Jersey Transportation Authority se llama Stephen Dilts.",
+      "Stephen Dilts es el jefe de la South Jersey Transportation Authority.",
+      "Stephen Dilts es el líder de la South Jersey Transportation Authority."
+    ]
+  },
+  {
+    "eid": 8,
+    "outputs_es": [
+      "São José dos Pinhais forma parte de Paraná.",
+      "São José dos Pinhais es parte del estado de Paraná.",
+      "São José dos Pinhais pertenece a Paraná."
+    ]
+  },
+  {
+    "eid": 9,
+    "outputs_es": [
+      "São José dos Pinhais forma parte de la Región Sur de Brasil.",
+      "São José dos Pinhais es parte de la Región Sur, Brasil.",
+      "São José dos Pinhais pertenece a la Región Sur de Brasil."
+    ]
+  },
+  {
+    "eid": 10,
+    "outputs_es": [
+      "Austin es la capital de Texas.",
+      "La capital de Texas es Austin.",
+      "Texas tiene como capital a Austin."
+    ]
+  },
+  {
+    "eid": 11,
+    "outputs_es": [
+      "Texas está en Estados Unidos.",
+      "Texas se encuentra en Estados Unidos.",
+      "Texas está ubicado en Estados Unidos."
+    ]
+  },
+  {
+    "eid": 12,
+    "outputs_es": [
+      "El gentilicio de Texas es tejano.",
+      "Los habitantes de Texas tienen el gentilicio tejano.",
+      "Tejano es un gentilicio usado en Texas."
+    ]
+  },
+  {
+    "eid": 13,
+    "outputs_es": [
+      "La gente de Texas es conocida como texana.",
+      "Los habitantes de Texas tienen el gentilicio texano.",
+      "A la gente de Texas se la llama texana."
+    ]
+  },
+  {
+    "eid": 14,
+    "outputs_es": [
+      "El inglés se habla en Texas.",
+      "El inglés es la lengua de Texas.",
+      "La lengua hablada en Texas es el inglés."
+    ]
+  },
+  {
+    "eid": 15,
+    "outputs_es": [
+      "El español se habla en Texas.",
+      "El español es una lengua hablada en Texas.",
+      "En Texas se habla español."
+    ]
+  },
+  {
+    "eid": 16,
+    "outputs_es": [
+      "Tirstrup se encuentra en Dinamarca.",
+      "Tirstrup está en Dinamarca.",
+      "Tirstrup está situado en Dinamarca."
+    ]
+  },
+  {
+    "eid": 17,
+    "outputs_es": [
+      "Tirstrup forma parte de la Región de Dinamarca Central.",
+      "Tirstrup es parte de la Región de Dinamarca Central.",
+      "Tirstrup pertenece a la Región de Dinamarca Central."
+    ]
+  },
+  {
+    "eid": 18,
+    "outputs_es": [
+      "Tirstrup forma parte de Dinamarca.",
+      "Tirstrup es parte de Dinamarca.",
+      "Tirstrup pertenece a Dinamarca."
+    ]
+  },
+  {
+    "eid": 19,
+    "outputs_es": [
+      "La sede de Turkmenistan Airlines se encuentra en Asjabad.",
+      "La sede de Turkmenistan Airlines está en Asjabad.",
+      "Turkmenistan Airlines tiene su sede en Asjabad."
+    ]
+  },
+  {
+    "eid": 20,
+    "outputs_es": [
+      "La sede de Turkmenistan Airlines se encuentra en Turkmenistán.",
+      "La sede de Turkmenistan Airlines está en Turkmenistán.",
+      "Turkmenistan Airlines tiene su sede en Turkmenistán."
+    ]
+  }
+]

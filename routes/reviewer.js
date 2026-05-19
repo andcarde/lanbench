@@ -1,16 +1,25 @@
 'use strict';
 
-const express = require('express');
-const { requirePageRole } = require('../middlewares/auth');
-const { ROLE_REVIEWER, ROLE_ADMIN } = require('../constants/roles');
+/**
+ * @file Router publico `/reviewer` — sirve la pagina HTML del revisor.
+ */
 
+const express = require('express');
+const path = require('node:path');
+const { requirePageAuth } = require('../middlewares/auth');
+
+/**
+ * Construye el router `/reviewer` (una sola pagina, protegida).
+ *
+ * @returns {import('express').Router}
+ */
 function createReviewerRouter() {
     const router = express.Router();
 
-    router.use(requirePageRole(ROLE_REVIEWER, ROLE_ADMIN));
+    router.use(requirePageAuth);
 
     router.get('/', (_request, response) => {
-        return response.status(204).end();
+        response.sendFile(path.join(__dirname, '..', 'public', 'reviewer.html'));
     });
 
     return router;

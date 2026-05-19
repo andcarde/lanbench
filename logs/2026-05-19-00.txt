@@ -1,0 +1,160 @@
+
+2026.05.19.00.12.02.512 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.19.00.28.17.756 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.19.00.29.02.041 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.19.00.29.22.556 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.19.00.33.07.978 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.19.00.40.46.097 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.19.00.40.46.109 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.19.00.40.50.466 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.19.00.40.50.472 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.19.00.40.50.476 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.19.00.40.50.480 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.19.00.40.50.488 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.19.00.40.50.491 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.19.00.40.50.498 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.19.00.40.50.501 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.19.00.40.50.504 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.19.00.40.50.506 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+
+2026.05.19.00.42.58.914 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.19.00.42.58.917 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.19.00.43.03.078 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.19.00.43.03.083 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.19.00.43.03.086 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.19.00.43.03.089 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.19.00.43.03.097 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.19.00.43.03.105 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.19.00.43.03.112 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.19.00.43.03.114 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.19.00.43.03.116 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.19.00.43.03.119 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+

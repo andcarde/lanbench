@@ -1,0 +1,14 @@
+
+2026.05.17.15.06.05.393 POST /register {
+    surname: 'Surname',
+    lastName: 'Lastname',
+    email: 'email1@email.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.17.15.06.18.936 POST /create-session {
+    email: 'email1@email.com',
+    password: '[REDACTED]'
+}
+

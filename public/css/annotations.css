@@ -111,6 +111,11 @@ body {
   border-color: #dbc27d;
 }
 
+.sentence-pair.pair-duplicate {
+  background: #f5f0ff;
+  border-color: #b39ddb;
+}
+
 .sentence-reference {
   margin-bottom: 0.85rem;
   padding: 0.85rem 1rem;
@@ -158,6 +163,11 @@ body {
   background: #f7ebc6;
 }
 
+.sentence-block.duplicate .form-control {
+  border-color: #b39ddb;
+  background: #ede7f6;
+}
+
 .sentence-status {
   min-height: 1.15rem;
 }
@@ -188,6 +198,10 @@ body {
 
 .issue-header.warning {
   background: #f3dd8f;
+}
+
+.issue-header.duplicate {
+  background: #d1c4e9;
 }
 
 .issue-body {

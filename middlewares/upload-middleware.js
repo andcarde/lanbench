@@ -1,27 +1,64 @@
 'use strict';
 
 /**
- * Middleware Multer que almacena el fichero subido en un directorio temporal
- * namespaced de la aplicación dentro del tmp del sistema.
+ * @file Multer-based upload middleware.
+ *
+ * Construye un middleware Multer que almacena el fichero subido en un
+ * directorio temporal `namespaced` de la aplicacion (resuelto en cada
+ * invocacion para no acoplar `require()` a un disco concreto), aceptando
+ * solo XML por mime o extension.
  */
 
 const multer = require('multer');
 const { randomBytes } = require('node:crypto');
 const { ensureTempStorageDir } = require('../utils/temp-storage');
 
-const destinationDirectory = ensureTempStorageDir();
+/** @type {number} Tamano maximo aceptado por defecto (50 MiB). */
+const DEFAULT_FILE_SIZE_LIMIT = 50 * 1024 * 1024;
 
-const storage = multer.diskStorage({
-  destination: destinationDirectory,
+/**
+ * Opciones aceptadas por {@link createUploadMiddleware}.
+ *
+ * @typedef {Object} UploadMiddlewareOptions
+ * @property {string} [destinationDirectory] - Directorio de destino. Si se
+ *   omite, se usa `utils/temp-storage#ensureTempStorageDir`.
+ * @property {number} [fileSizeLimit]        - Tamano maximo (bytes). Defecto: 50 MiB.
+ */
 
-    filename(req, file, cb) {
-        const prefix = randomBytes(8).toString('hex');
-        const filename = `${prefix}_${file.originalname}`;
-        cb(null, filename);
-    }
-});
+/**
+ * Construye un middleware Multer configurado para recibir XML.
+ *
+ * @param {UploadMiddlewareOptions} [options]
+ * @returns {import('multer').Multer}
+ */
+function createUploadMiddleware({ destinationDirectory, fileSizeLimit = DEFAULT_FILE_SIZE_LIMIT } = {}) {
+    const resolvedDestination = destinationDirectory || ensureTempStorageDir();
 
-function xmlFilter(req, file, cb) {
+    const storage = multer.diskStorage({
+        destination: resolvedDestination,
+        filename(_req, file, cb) {
+            const prefix = randomBytes(8).toString('hex');
+            cb(null, `${prefix}_${file.originalname}`);
+        }
+    });
+
+    return multer({
+        storage,
+        fileFilter: xmlFilter,
+        limits: { fileSize: fileSizeLimit }
+    });
+}
+
+/**
+ * Filtro Multer: solo admite ficheros XML detectados por mime o por
+ * extension `.xml`.
+ *
+ * @param {import('express').Request} _req
+ * @param {Express.Multer.File} file
+ * @param {multer.FileFilterCallback} cb
+ * @returns {void}
+ */
+function xmlFilter(_req, file, cb) {
     const isXmlMime = file.mimetype === 'text/xml'
         || file.mimetype === 'application/xml';
     const isXmlExt = file.originalname.toLowerCase().endsWith('.xml');
@@ -33,10 +70,6 @@ function xmlFilter(req, file, cb) {
     }
 }
 
-const upload = multer({
-    storage,
-    fileFilter: xmlFilter,
-    limits: { fileSize: 50 * 1024 * 1024 }
-});
-
-module.exports = upload;
+module.exports = {
+    createUploadMiddleware
+};

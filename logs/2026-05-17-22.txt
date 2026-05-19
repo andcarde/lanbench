@@ -1,0 +1,94 @@
+
+2026.05.17.22.25.33.563 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.25.34.190 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.17.22.25.34.194 POST /api/reviews/undefined/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.17.22.25.34.201 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.17.22.27.15.094 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.33.08.494 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.33.15.103 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.33.19.861 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.34.05.396 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.34.11.688 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.38.18.123 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.39.33.963 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.40.59.152 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.17.22.59.11.843 POST /register {
+    surname: 'Surname',
+    lastName: 'Lastname',
+    email: 'user@domain.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+

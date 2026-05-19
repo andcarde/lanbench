@@ -1,0 +1,130 @@
+.reviewer-context ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1rem;
+}
+
+.reviewer-context li {
+    padding: 0.25rem 0;
+    border-bottom: 1px dashed rgba(0,0,0,0.05);
+    font-size: 0.9rem;
+}
+
+.reviewer-criterion {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background-color: #fdfdfd;
+}
+
+.reviewer-criterion legend {
+    font-size: 1rem;
+    font-weight: 600;
+    width: auto;
+    padding: 0 0.25rem;
+}
+
+.reviewer-criterion.criterion-locked {
+    opacity: 0.55;
+}
+
+.reviewer-criterion.criterion-decided {
+    border-color: #198754;
+    background-color: #f4faf6;
+}
+
+.criterion-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.criterion-buttons button {
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #6c757d;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.criterion-buttons button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.criterion-comment {
+    width: 100%;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 0.25rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+.criterion-current {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: #198754;
+}
+
+.reviewer-sentences-review {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.reviewer-sentence-card {
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 0.5rem;
+    padding: 0.85rem;
+    background-color: #fff;
+}
+
+.reviewer-sentence-card.sentence-reviewed {
+    border-color: rgba(25,135,84,0.45);
+}
+
+.sentence-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+}
+
+.sentence-number {
+    font-weight: 700;
+}
+
+.sentence-origin {
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 999px;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.75rem;
+    color: #495057;
+}
+
+.sentence-text {
+    margin-bottom: 0.75rem;
+    line-height: 1.45;
+}
+
+.sentence-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.sentence-alternative {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+@media (max-width: 576px) {
+    .sentence-actions {
+        flex-direction: column;
+    }
+}

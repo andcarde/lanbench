@@ -1,3 +1,11 @@
+// @ts-nocheck
+/**
+ * @file Frontend de `public/dataset-view.html` — vista detalle de un dataset.
+ *
+ * Muestra el resumen del dataset (entries, progreso, idiomas, permisos del
+ * usuario actual) y enlaces a flujos de anotacion/revision/admin segun los
+ * permisos devueltos por el backend.
+ */
 (function () {
   "use strict";
 
@@ -9,14 +17,22 @@
   const $datasetXmlViewer = $("#datasetXmlViewer");
   const $openAnnotationsLink = $("#openAnnotationsLink");
 
+  /**
+   * Obtiene search params desde la fuente correspondiente.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function getSearchParams() {
-    return new URLSearchParams(window.location.search);
+    return new URLSearchParams(globalThis.location.search);
   }
 
+  /**
+   * Obtiene dataset context desde la fuente correspondiente.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function getDatasetContext() {
     const params = getSearchParams();
     const datasetId =
-      Number(params.get("datasetId")) || getDatasetIdFromPath(window.location.pathname);
+      Number(params.get("datasetId")) || getDatasetIdFromPath(globalThis.location.pathname);
     const datasetName = params.get("datasetName");
     const sectionIndex = Number(params.get("sectionIndex") || params.get("section")) || 1;
 
@@ -30,6 +46,11 @@
     };
   }
 
+  /**
+   * Obtiene dataset id from path desde la fuente correspondiente.
+   * @param {string} pathname - Valor de pathname usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function getDatasetIdFromPath(pathname) {
     const match = String(pathname || "").match(/\/datasets\/(\d+)\/view(?:\/)?$/);
     if (!match)
@@ -39,10 +60,20 @@
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
   }
 
+  /**
+   * Obtiene fallback name desde la fuente correspondiente.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function getFallbackName(datasetId) {
     return datasetId ? `DATASET ${datasetId}` : "Dataset sin identificar";
   }
 
+  /**
+   * Actualiza viewer state con los datos indicados.
+   * @param {string} text - Valor de text usado por la funcion.
+   * @param {Array} stateClass - Valor de stateClass usado por la funcion.
+   */
   function setViewerState(text, stateClass) {
     $datasetXmlViewer
       .removeClass("is-loading is-error")
@@ -50,6 +81,10 @@
       .val(text);
   }
 
+  /**
+   * Actualiza header con los datos indicados.
+   * @param {*} context - Valor de context usado por la funcion.
+   */
   function setHeader(context) {
     const datasetName = context.datasetName || getFallbackName(context.datasetId);
     const identifier = context.datasetId
@@ -62,11 +97,18 @@
     $datasetSubtitle.text("Vista conectada al endpoint AJAX del texto del dataset.");
   }
 
+  /**
+   * Actualiza mode badge con los datos indicados.
+   */
   function setModeBadge() {
     $datasetModePill.addClass("is-live");
     $datasetModeLabel.text("Modo servidor preparado");
   }
 
+  /**
+   * Actualiza navigation links con los datos indicados.
+   * @param {*} context - Valor de context usado por la funcion.
+   */
   function setNavigationLinks(context) {
     const searchParams = new URLSearchParams();
 
@@ -81,6 +123,10 @@
     );
   }
 
+  /**
+   * Construye missing id message a partir de los datos recibidos.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function buildMissingIdMessage() {
     return [
       "No se ha indicado un dataset válido en la URL.",
@@ -90,6 +136,11 @@
     ].join("\n");
   }
 
+  /**
+   * Obtiene dataset text desde la fuente correspondiente.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {Promise<*>} Resultado producido por la funcion.
+   */
   function loadDatasetText(datasetId) {
     if (!datasetId) {
       setViewerState(buildMissingIdMessage(), "is-error");
@@ -106,7 +157,7 @@
       })
       .fail(function (xhr) {
         const errorMessage =
-          xhr && xhr.responseText
+          xhr?.responseText
             ? xhr.responseText
             : [
                 "No se pudo cargar el texto del dataset desde el servidor.",

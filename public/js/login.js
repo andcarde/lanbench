@@ -1,3 +1,11 @@
+// @ts-nocheck
+/**
+ * @file Frontend de `public/login.html`.
+ *
+ * Adjunta un handler al formulario de login que envia `email`/`password`
+ * al endpoint `/api/session` y, si responde con `redirectUrl`, redirige al
+ * usuario. Errores se muestran en un toast Bootstrap.
+ */
 $(document).ready(function () {
     const loginForm = $('#loginForm');
     const loginToast = $('#loginToast');
@@ -17,13 +25,16 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: '/create-session',
+            url: '/api/session',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(payload)
         })
             .done(function (response) {
                 showToast('Login successful!', 'success');
+                /**
+                 * Actualiza timeout con los datos indicados.
+                 */
                 setTimeout(function () {
                     window.location.href = (response && response.redirectUrl) || '/tasks';
                 }, 400);
@@ -42,6 +53,11 @@ $(document).ready(function () {
         window.location.href = '/register';
     });
 
+    /**
+     * Actualiza toast con los datos indicados.
+     * @param {string} message - Valor de message usado por la funcion.
+     * @param {string} type - Valor de type usado por la funcion.
+     */
     function showToast(message, type) {
         toastMessage.text(message);
         loginToast

@@ -1,0 +1,13 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "entry": ["app.js", "scripts/*.js", "tests/*.js", "tests/agentic/*.js"],
+    "project": [
+        "tests/*.js",
+        "*.js",
+        "prisma/*.js",
+        "config.js",
+        "eslint.config.js",
+        "prettier.config.js"
+    ],
+    "ignore": []
+}

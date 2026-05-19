@@ -1,0 +1,16 @@
+
+POST /api/annotations/send {
+    code: 500,
+    reason: 'Seccion no asignada al usuario.'
+}
+
+POST /api/annotations/send {
+    code: 500,
+    reason: 'Seccion no asignada al usuario.'
+}
+
+POST /api/annotations/send {
+    code: 500,
+    reason: 'Seccion no asignada al usuario.'
+}
+

@@ -1,0 +1,177 @@
+{
+  "generatedAt": "2026-04-28T07:16:41.876Z",
+  "mode": "annotations-service.checkSentences",
+  "model": "llama3.2:3b",
+  "caseCount": 2,
+  "results": [
+    {
+      "id": "punjab-leader-title-mixed-quality",
+      "title": "Punjab leaderTitle con fragmento, ingles y traduccion parcial",
+      "expectedReview": [
+        "La primera frase es un fragmento incompleto y omite la relacion de liderazgo.",
+        "La segunda frase esta en ingles y no debe aceptarse como anotacion espanola.",
+        "La tercera frase cubre la idea general, pero deberia preferir Asamblea Provincial del Punjab y una formulacion mas fiel."
+      ],
+      "request": {
+        "sentences": [
+          "La provincia de Pakistan",
+          "Punjab, Pakistan is led by the Provincial Assembly of the Punjab.",
+          "La asamblea de Punjab gobierna Punjab, Pakistan."
+        ],
+        "entryContext": {
+          "entryId": 1,
+          "category": "Place",
+          "englishSentences": [
+            "The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.",
+            "Punjab, Pakistan is led by the Provincial Assembly of the Punjab."
+          ],
+          "sectionIndex": 1,
+          "triples": [
+            {
+              "subject": "Punjab,_Pakistan",
+              "predicate": "leaderTitle",
+              "object": "Provincial_Assembly_of_the_Punjab"
+            }
+          ]
+        }
+      },
+      "output": [
+        {
+          "sentence": "La provincia de Pakistan",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "incomplete_sentence",
+              "severity": "error",
+              "message": "La oracion es un fragmento y no verbaliza la relacion RDF."
+            },
+            {
+              "code": "missing_triple",
+              "severity": "error",
+              "message": "Falta informacion del triple Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab."
+            },
+            {
+              "code": "semantic_mismatch",
+              "severity": "error",
+              "message": "La asamblea de Punjab gobierna un lugar, no una provincia.",
+              "suggestion": "La Asamblea Provincial del Punjab gobierna Punjab, Pakistán."
+            },
+            {
+              "code": "punctuation_missing",
+              "severity": "warning",
+              "message": "Falta un signo de puntuación final.",
+              "suggestion": "La provincia de Pakistan."
+            }
+          ],
+          "rejectionReasons": []
+        },
+        {
+          "sentence": "Punjab, Pakistan is led by the Provincial Assembly of the Punjab.",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "language_not_spanish",
+              "severity": "error",
+              "message": "La oración debe estar escrita en español, no en inglés ni mezclando idiomas."
+            }
+          ],
+          "rejectionReasons": []
+        },
+        {
+          "sentence": "La asamblea de Punjab gobierna Punjab, Pakistan.",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "imprecise_entity_name",
+              "severity": "warning",
+              "message": "La relacion principal esta cubierta, pero la denominacion de la asamblea puede ser mas precisa.",
+              "suggestion": "Punjab, Pakistan, esta liderado por la Asamblea Provincial del Punjab."
+            }
+          ],
+          "rejectionReasons": []
+        }
+      ],
+      "error": null,
+      "durationMs": 10782
+    },
+    {
+      "id": "punjab-leader-title-all-valid",
+      "title": "Punjab leaderTitle: tres reformulaciones validas",
+      "expectedReview": [
+        "La primera frase debe aceptarse: cubre sujeto, relacion y objeto del triple.",
+        "La segunda frase debe aceptarse: misma relacion verbalizada de forma equivalente.",
+        "La tercera frase debe aceptarse: voz activa equivalente; como mucho admite un warning leve si se prefiere \"Asamblea Provincial del Punjab\", pero no marcar missing_triple ni semantic_mismatch."
+      ],
+      "request": {
+        "sentences": [
+          "El Punjab, Pakistán, está dirigido por la Asamblea Provincial de Punjab.",
+          "Punjab en Pakistán, está dirigido por la Asamblea Provincial de Punjab.",
+          "La Asamblea Provincial de Punjab gobierna Punjab, Pakistán."
+        ],
+        "entryContext": {
+          "entryId": 1,
+          "category": "Place",
+          "englishSentences": [
+            "The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.",
+            "Punjab, Pakistan is led by the Provincial Assembly of the Punjab."
+          ],
+          "sectionIndex": 1,
+          "triples": [
+            {
+              "subject": "Punjab,_Pakistan",
+              "predicate": "leaderTitle",
+              "object": "Provincial_Assembly_of_the_Punjab"
+            }
+          ]
+        }
+      },
+      "output": [
+        {
+          "sentence": "El Punjab, Pakistán, está dirigido por la Asamblea Provincial de Punjab.",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "relation_missing",
+              "severity": "error",
+              "message": "Falta informacion del triple Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab."
+            }
+          ],
+          "rejectionReasons": []
+        },
+        {
+          "sentence": "Punjab en Pakistán, está dirigido por la Asamblea Provincial de Punjab.",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "relation_missing",
+              "severity": "error",
+              "message": "Falta informacion del triple Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab."
+            },
+            {
+              "code": "llm_missing_validation",
+              "severity": "warning",
+              "message": "Ollama no devolvio una validacion para esta oracion.",
+              "suggestion": "Punjab en Pakistán, está dirigido por la Asamblea Provincial de Punjab."
+            }
+          ],
+          "rejectionReasons": []
+        },
+        {
+          "sentence": "La Asamblea Provincial de Punjab gobierna Punjab, Pakistán.",
+          "isValid": false,
+          "alerts": [
+            {
+              "code": "imprecise_entity_name",
+              "severity": "warning",
+              "message": "La relacion principal esta cubierta, pero la denominacion de la asamblea puede ser mas precisa.",
+              "suggestion": "Punjab, Pakistan, esta liderado por la Asamblea Provincial del Punjab."
+            }
+          ],
+          "rejectionReasons": []
+        }
+      ],
+      "error": null,
+      "durationMs": 11032
+    }
+  ]
+}

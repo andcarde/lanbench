@@ -1,0 +1,16 @@
+### Caso 1
+
+**Triple RDF:** Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab
+
+* *La Asamblea Provincial del Punjab lidera Punjab, Pakistán.*
+* *La Asamblea Provincial del Punjab dirige Punjab, Pakistán.*
+* *La Asamblea Provincial del Punjab encabeza Punjab, Pakistán.*
+
+---
+
+### Caso 2
+
+**Triple RDF:** Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab
+
+* *El inglés se habla en Singapur.*
+* *El idioma inglés se habla en Singapur.*

@@ -1,6 +1,20 @@
+// @ts-nocheck
+/**
+ * @file Frontend de `public/datasets.html` — listado de datasets.
+ *
+ * Carga la lista de datasets accesibles al usuario, los renderiza con
+ * progreso e idiomas, y gestiona el alta via upload XML (solo
+ * moderadores).
+ */
 (function () {
   "use strict";
 
+  /**
+   * Ejecuta la logica de extract api error message.
+   * @param {*} errorLike - Valor de errorLike usado por la funcion.
+   * @param {string} fallbackMessage - Valor de fallbackMessage usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function extractApiErrorMessage(errorLike, fallbackMessage) {
     const payload = errorLike && typeof errorLike === "object"
       && errorLike.responseJSON && typeof errorLike.responseJSON === "object"
@@ -22,8 +36,72 @@
     return fallbackMessage;
   }
 
+  /**
+   * Normaliza role para que tenga un formato consistente.
+   * @param {string} role - Valor de role usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function normaliseRole(role) {
+    return role === "admin" ? "admin" : "annotator";
+  }
+
+  /**
+   * Construye dataset export url a partir de los datos recibidos.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @param {string} format - Valor de format usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function buildDatasetExportUrl(datasetId, format) {
+    const normalisedId = Number(datasetId);
+    const normalisedFormat = format === "xml" ? "xml" : "json";
+
+    if (!Number.isInteger(normalisedId) || normalisedId <= 0) {
+      return null;
+    }
+
+    return `/api/admin/datasets/${encodeURIComponent(normalisedId)}/export?format=${normalisedFormat}`;
+  }
+
+  /**
+   * Construye dataset delete url a partir de los datos recibidos.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function buildDatasetDeleteUrl(datasetId) {
+    const normalisedId = Number(datasetId);
+
+    if (!Number.isInteger(normalisedId) || normalisedId <= 0) {
+      return null;
+    }
+
+    return `/api/datasets/${encodeURIComponent(normalisedId)}`;
+  }
+
+  /**
+   * Normaliza criterion para que tenga un formato consistente.
+   * @param {*} rawCriterion - Valor de rawCriterion usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function normaliseCriterion(rawCriterion) {
+    const source = rawCriterion && typeof rawCriterion === "object" ? rawCriterion : {};
+    return {
+      id: Number(source.id || 0),
+      key: source.key || "",
+      label: source.label || "",
+      sortOrder: Number(source.sortOrder || 0),
+      active: source.active !== false,
+      version: Number(source.version || 1)
+    };
+  }
+
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { extractApiErrorMessage };
+    module.exports = {
+      extractApiErrorMessage,
+      normaliseRole,
+      buildDatasetExportUrl,
+      buildDatasetDeleteUrl,
+      normaliseCriterion
+    };
   }
 
   if (typeof window === "undefined" || typeof $ !== "function") {
@@ -39,13 +117,30 @@
   const $tooltipTriples = $("#tooltipTriples");
   const $tooltipLanguages = $("#tooltipLanguages");
   const $btnNuevoDataset = $("#btnNuevoDataset");
+  const $newDatasetModal = $("#newDatasetModal");
+  const $newDatasetForm = $("#newDatasetForm");
+  const $newDatasetFile = $("#newDatasetFile");
+  const $newDatasetLlmMode = $("#newDatasetLlmMode");
+  const $newDatasetReviewEnabled = $("#newDatasetReviewEnabled");
+  const $newDatasetAdditionalReviews = $("#newDatasetAdditionalReviews");
+  const $btnCreateDatasetSubmit = $("#btnCreateDatasetSubmit");
   const $datasetSuccessModal = $("#datasetSuccessModal");
   const $datasetSuccessMessage = $("#datasetSuccessMessage");
+  const $continueDatasetModal = $("#continueDatasetModal");
+  const $continueDatasetModalLabel = $("#continueDatasetModalLabel");
+  const $continueDatasetMessage = $("#continueDatasetMessage");
   const state = {
     datasets: []
   };
+  let newDatasetModalInstance = null;
   let datasetSuccessModalInstance = null;
+  let continueDatasetModalInstance = null;
 
+  /**
+   * Convierte escape html al formato esperado.
+   * @param {string} text - Valor de text usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function escapeHtml(text) {
     return String(text)
       .replaceAll("&", "&amp;")
@@ -55,6 +150,46 @@
       .replaceAll("'", "&#039;");
   }
 
+  /**
+   * Normaliza estado de revision para pintar el boton del dataset.
+   * @param {*} rawReview - Estado recibido del API.
+   * @returns {*} Estado normalizado.
+   */
+  function normaliseDatasetReviewState(rawReview) {
+    const review = rawReview && typeof rawReview === "object" ? rawReview : {};
+
+    return {
+      canReview: Boolean(review.canReview),
+      showReviewButton: Boolean(review.showReviewButton),
+      reviewAvailable: Boolean(review.reviewAvailable),
+      reviewableCount: Number(review.reviewableCount || 0)
+    };
+  }
+
+  /**
+   * Normaliza opciones del dataset.
+   * @param {*} rawOptions - Opciones recibidas del API.
+   * @returns {*} Opciones normalizadas.
+   */
+  function normaliseDatasetOptions(rawOptions) {
+    const source = rawOptions && typeof rawOptions === "object" ? rawOptions : {};
+    const llmMode = typeof source.llmMode === "string" && source.llmMode.trim()
+      ? source.llmMode.trim().toLowerCase()
+      : "correction";
+
+    return {
+      llmMode: ["generation", "correction", "none"].includes(llmMode) ? llmMode : "correction",
+      isReviewEnabled: Boolean(source.isReviewEnabled),
+      hasAdditionalReviews: Boolean(source.hasAdditionalReviews)
+    };
+  }
+
+  /**
+   * Normaliza dataset para que tenga un formato consistente.
+   * @param {*} rawDataset - Valor de rawDataset usado por la funcion.
+   * @param {number} index - Valor de index usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function normaliseDataset(rawDataset, index) {
     const safeDataset =
       rawDataset && typeof rawDataset === "object" ? rawDataset : {};
@@ -71,10 +206,10 @@
       : {};
 
     return {
-      idDataset: Number(safeDataset.id ?? safeDataset.idDataset ?? 0),
+      id: Number(safeDataset.id || 0),
       name: safeDataset.name ?? `DATASET ${index + 1}`,
       triplesRDF: Number(
-        safeDataset.totalEntries ?? metrics.rdfTriples ?? safeDataset.triplesRDF ?? safeDataset.entries ?? 0
+        safeDataset.totalEntries ?? metrics.rdfTriples ?? safeDataset.triplesRDF ?? 0
       ),
       languages: Array.isArray(metrics.languages)
         ? metrics.languages
@@ -88,10 +223,22 @@
         progress.withoutReview ?? safeDataset.withoutReviewPercent ?? 0
       ),
       remainPercent: Number(progress.remaining ?? safeDataset.remainPercent ?? 0),
+      canAdmin: Boolean(
+        safeDataset.canAdmin
+        || safeDataset.canAdminDataset
+        || (safeDataset.permissions && (safeDataset.permissions.canAdmin || safeDataset.permissions.admin))
+      ),
+      review: normaliseDatasetReviewState(safeDataset.review),
+      options: normaliseDatasetOptions(safeDataset.options),
       colorClass: ui.colorClass ?? safeDataset.colorClass ?? "dataset-purple"
     };
   }
 
+  /**
+   * Normaliza dataset list para que tenga un formato consistente.
+   * @param {*} datasets - Valor de datasets usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function normaliseDatasetList(datasets) {
     if (!Array.isArray(datasets)) {
       return [];
@@ -100,22 +247,37 @@
     return datasets.map(normaliseDataset);
   }
 
+  /**
+   * Renderiza loading en la interfaz.
+   */
   function renderLoading() {
     $container.html('<div class="loading-state">Cargando datasets...</div>');
   }
 
+  /**
+   * Renderiza error en la interfaz.
+   * @param {string} message - Valor de message usado por la funcion.
+   */
   function renderError(message = "No se pudieron cargar los datasets.") {
     $container.html(
       `<div class="error-state">${escapeHtml(message)}</div>`
     );
   }
 
+  /**
+   * Renderiza empty en la interfaz.
+   */
   function renderEmpty() {
     $container.html(
       '<div class="empty-state">No hay datasets disponibles.</div>'
     );
   }
 
+  /**
+   * Construye dataset card a partir de los datos recibidos.
+   * @param {*} dataset - Valor de dataset usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function buildDatasetCard(dataset) {
     return `
       <div class="dataset-card">
@@ -124,7 +286,7 @@
             <button
               type="button"
               class="dataset-button ${escapeHtml(dataset.colorClass)}"
-              data-id="${dataset.idDataset}"
+              data-id="${dataset.id}"
               data-name="${escapeHtml(dataset.name)}"
             >
               ${escapeHtml(dataset.name)}
@@ -136,7 +298,7 @@
               type="button"
               class="btn btn-action btn-view"
               data-action="view"
-              data-id="${dataset.idDataset}"
+              data-id="${dataset.id}"
             >
               Ver
             </button>
@@ -145,10 +307,47 @@
               type="button"
               class="btn btn-action btn-continue"
               data-action="continue"
-              data-id="${dataset.idDataset}"
+              data-id="${dataset.id}"
             >
               Continuar
             </button>
+
+            ${dataset.review && dataset.review.showReviewButton
+              ? `
+                <button
+                  type="button"
+                  class="btn btn-action btn-review"
+                  data-action="review"
+                  data-id="${dataset.id}"
+                  title="${dataset.review.reviewAvailable ? "Abrir revisión" : "No hay secciones pendientes de revisión"}"
+                  ${dataset.review.reviewAvailable ? "" : "disabled"}
+                >
+                  Revisión
+                </button>`
+              : ""}
+
+            ${dataset.canAdmin
+              ? `
+                <button
+                  type="button"
+                  class="btn btn-action btn-admin"
+                  data-action="admin"
+                  data-id="${dataset.id}"
+                >
+                  Administración
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-action btn-delete"
+                  data-action="delete"
+                  data-id="${dataset.id}"
+                  title="Borrar dataset"
+                  aria-label="Borrar dataset ${escapeHtml(dataset.name)}"
+                >
+                  &#128465;
+                </button>`
+              : ""}
           </div>
         </div>
 
@@ -159,11 +358,12 @@
               style="width: ${dataset.completedPercent}%;"
               title="${dataset.completedPercent}% completed"
             ></div>
+            ${dataset.options && dataset.options.isReviewEnabled ? `
             <div
               class="segment without-review"
               style="width: ${dataset.withoutReviewPercent}%;"
               title="${dataset.withoutReviewPercent}% need revision"
-            ></div>
+            ></div>` : ""}
             <div
               class="segment remain"
               style="width: ${dataset.remainPercent}%;"
@@ -175,9 +375,10 @@
             <span class="legend-completed">
               ${dataset.completedPercent}% completed
             </span>
+            ${dataset.options && dataset.options.isReviewEnabled ? `
             <span class="legend-review">
               ${dataset.withoutReviewPercent}% need revision
-            </span>
+            </span>` : ""}
             <span class="legend-remain">
               ${dataset.remainPercent}% remain
             </span>
@@ -187,6 +388,10 @@
     `;
   }
 
+  /**
+   * Renderiza datasets en la interfaz.
+   * @param {*} datasets - Valor de datasets usado por la funcion.
+   */
   function renderDatasets(datasets) {
     const normalised = normaliseDatasetList(datasets);
 
@@ -199,6 +404,11 @@
     $container.html(html);
   }
 
+  /**
+   * Actualiza tooltip con los datos indicados.
+   * @param {*} dataset - Valor de dataset usado por la funcion.
+   * @param {*} buttonElement - Valor de buttonElement usado por la funcion.
+   */
   function showTooltip(dataset, buttonElement) {
     const languagesText =
       Array.isArray(dataset.languages) && dataset.languages.length
@@ -242,31 +452,39 @@
     });
   }
 
+  /**
+   * Actualiza tooltip con los datos indicados.
+   */
   function hideTooltip() {
     $tooltip.addClass("d-none");
   }
 
+  /**
+   * Actualiza create success modal con los datos indicados.
+   * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+   * @param {string} uploadedFilename - Valor de uploadedFilename usado por la funcion.
+   */
   function showCreateSuccessModal(response, uploadedFilename) {
     const dataset = response && typeof response === "object" ? response.dataset : null;
-    const idDataset = response && typeof response === "object" ? response.idDataset : null;
+    const datasetId = response && typeof response === "object" ? response.id : null;
     const datasetName =
       dataset && typeof dataset.name === "string" && dataset.name.trim().length > 0
         ? dataset.name.trim()
         : (uploadedFilename || "NUEVO DATASET").replace(/\.xml$/i, "");
-    const message = idDataset
-      ? `Dataset "${datasetName}" creado correctamente (ID ${idDataset}).`
+    const message = datasetId
+      ? `Dataset "${datasetName}" creado correctamente (ID ${datasetId}).`
       : `Dataset "${datasetName}" creado correctamente.`;
 
     if (
       $datasetSuccessModal.length &&
-      typeof window.bootstrap !== "undefined" &&
-      window.bootstrap &&
-      typeof window.bootstrap.Modal === "function"
+      globalThis.bootstrap !== undefined &&
+      globalThis.bootstrap &&
+      typeof globalThis.bootstrap.Modal === "function"
     ) {
       $datasetSuccessMessage.text(message);
       datasetSuccessModalInstance =
         datasetSuccessModalInstance ||
-        window.bootstrap.Modal.getOrCreateInstance($datasetSuccessModal[0]);
+        globalThis.bootstrap.Modal.getOrCreateInstance($datasetSuccessModal[0]);
       datasetSuccessModalInstance.show();
       return;
     }
@@ -274,6 +492,10 @@
     alert(message);
   }
 
+  /**
+   * Ejecuta la logica de ajax get datasets.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function ajaxGetDatasets() {
     return $.ajax({
       url: DATASETS_ALL_URL,
@@ -282,6 +504,11 @@
     });
   }
 
+  /**
+   * Ejecuta la logica de ajax get dataset by id.
+   * @param {number} id - Valor de id usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function ajaxGetDatasetById(id) {
     const normalisedId = Number(id);
 
@@ -292,7 +519,7 @@
     }).done(function (dataset) {
       const normalised = normaliseDataset(dataset, 0);
       const index = state.datasets.findIndex(function (item) {
-        return Number(item.idDataset) === Number(normalised.idDataset);
+        return Number(item.id) === Number(normalised.id);
       });
 
       if (index >= 0) {
@@ -303,9 +530,17 @@
     });
   }
 
-  function openAnnotations(datasetId, sectionIndex) {
+  /**
+   * Ejecuta la logica de open annotations.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @param {number} sectionIndex - Valor de sectionIndex usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function openAnnotations(datasetId, options) {
     const normalisedDatasetId = Number(datasetId);
-    const normalisedSectionIndex = Number(sectionIndex) || 1;
+    const datasetOptions = options && typeof options === "object"
+      ? normaliseDatasetOptions(options)
+      : null;
 
     if (!Number.isInteger(normalisedDatasetId) || normalisedDatasetId <= 0) {
       alert("No se pudo abrir el dataset seleccionado.");
@@ -313,13 +548,37 @@
     }
 
     const targetUrl =
-      `/annotations?datasetId=${encodeURIComponent(normalisedDatasetId)}&sectionIndex=${encodeURIComponent(normalisedSectionIndex)}`;
-    window.location.assign(targetUrl);
+      `/annotations?datasetId=${encodeURIComponent(normalisedDatasetId)}`
+      + (datasetOptions ? `&llmMode=${encodeURIComponent(datasetOptions.llmMode)}` : "");
+    globalThis.location.assign(targetUrl);
   }
 
-  function ajaxUploadDataset(file) {
+  /**
+   * Ejecuta la logica de ajax upload dataset.
+   * @param {*} file - Valor de file usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function readNewDatasetOptions() {
+    return normaliseDatasetOptions({
+      llmMode: $newDatasetLlmMode.val(),
+      isReviewEnabled: $newDatasetReviewEnabled.val() === "true",
+      hasAdditionalReviews: $newDatasetAdditionalReviews.val() === "true"
+    });
+  }
+
+  /**
+   * Ejecuta la logica de ajax upload dataset.
+   * @param {*} file - Valor de file usado por la funcion.
+   * @param {*} options - Opciones de creacion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function ajaxUploadDataset(file, options = {}) {
+    const datasetOptions = normaliseDatasetOptions(options);
     const formData = new FormData();
     formData.append("xmlFile", file);
+    formData.append("llmMode", datasetOptions.llmMode);
+    formData.append("isReviewEnabled", String(datasetOptions.isReviewEnabled));
+    formData.append("hasAdditionalReviews", String(datasetOptions.hasAdditionalReviews));
 
     return $.ajax({
       url: CREATE_DATASET_URL,
@@ -331,6 +590,46 @@
     });
   }
 
+  /**
+   * Ejecuta la logica de ajax delete dataset.
+   * @param {number} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function ajaxDeleteDataset(datasetId) {
+    const url = buildDatasetDeleteUrl(datasetId);
+    if (!url) {
+      return $.Deferred().reject(new Error("El id del dataset es inválido.")).promise();
+    }
+
+    return $.ajax({
+      url,
+      method: "DELETE",
+      dataType: "json"
+    });
+  }
+
+  /**
+   * Solicita al backend la continuacion del dataset.
+   * @param {number} datasetId - Dataset seleccionado.
+   * @returns {*} Promesa AJAX.
+   */
+  function ajaxContinueDataset(datasetId) {
+    const normalisedId = Number(datasetId);
+    if (!Number.isInteger(normalisedId) || normalisedId <= 0) {
+      return $.Deferred().reject(new Error("El id del dataset es inválido.")).promise();
+    }
+
+    return $.ajax({
+      url: `/api/annotations/${encodeURIComponent(normalisedId)}/continue`,
+      method: "POST",
+      dataType: "json"
+    });
+  }
+
+  /**
+   * Obtiene datasets desde la fuente correspondiente.
+   * @returns {Promise<*>} Resultado producido por la funcion.
+   */
   function loadDatasets() {
     renderLoading();
 
@@ -345,12 +644,22 @@
       });
   }
 
+  /**
+   * Obtiene dataset by id desde la fuente correspondiente.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function findDatasetById(datasetId) {
     return state.datasets.find(function (dataset) {
-      return Number(dataset.idDataset) === Number(datasetId);
+      return Number(dataset.id) === Number(datasetId);
     }) || null;
   }
 
+  /**
+   * Ejecuta handle view y coordina sus efectos asociados.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function handleView(datasetId) {
     const normalisedDatasetId = Number(datasetId);
     const selectedDataset = findDatasetById(normalisedDatasetId);
@@ -364,39 +673,198 @@
       return;
     }
 
-    window.location.assign(
+    globalThis.location.assign(
       `${DATASET_VIEWS_URL}/${encodeURIComponent(normalisedDatasetId)}/view?datasetId=${encodeURIComponent(normalisedDatasetId)}&datasetName=${encodeURIComponent(datasetName)}&sectionIndex=1`
     );
   }
 
+  /**
+   * Ejecuta handle continue y coordina sus efectos asociados.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * @returns {*} Resultado producido por la funcion.
+   */
   function handleContinue(datasetId) {
-    openAnnotations(datasetId, 1);
+    ajaxContinueDataset(datasetId)
+      .done(function (payload) {
+        const result = payload && typeof payload === "object" ? payload : {};
+        const caseNumber = Number(result.caseNumber);
+
+        if (caseNumber === 1) {
+          showContinueNotice("Dataset completado", "Este dataset ya está 100% anotado y revisado.");
+          return;
+        }
+
+        if (caseNumber === 2) {
+          showContinueNotice("Dataset pendiente de revisión", "Este dataset ya está 100% anotado, pero todavía no está completamente revisado.");
+          return;
+        }
+
+        if (caseNumber === 3) {
+          showContinueNotice("Sin secciones disponibles", "Todas las secciones pendientes están asignadas a otros usuarios.");
+          return;
+        }
+
+        if (caseNumber === 4 || caseNumber === 5) {
+          const selectedDataset = findDatasetById(datasetId);
+          openAnnotations(
+            datasetId,
+            selectedDataset ? selectedDataset.options : null
+          );
+          return;
+        }
+
+        showContinueNotice("No se pudo continuar", "El servidor no devolvió una sección válida para anotar.");
+      })
+      .fail(function (xhr) {
+        showContinueNotice("No se pudo continuar", extractApiErrorMessage(xhr, "No se pudo continuar el dataset."));
+      });
   }
 
-  function handleCreateDataset() {
-    const $input = $('<input type="file" accept=".xml">').css("display", "none");
-    $("body").append($input);
+  /**
+   * Muestra un aviso de continuacion usando modal si esta disponible.
+   * @param {string} title - Titulo del aviso.
+   * @param {string} message - Mensaje del aviso.
+   */
+  function showContinueNotice(title, message) {
+    if (
+      $continueDatasetModal.length &&
+      globalThis.bootstrap !== undefined &&
+      globalThis.bootstrap &&
+      typeof globalThis.bootstrap.Modal === "function"
+    ) {
+      $continueDatasetModalLabel.text(title);
+      $continueDatasetMessage.text(message);
+      continueDatasetModalInstance =
+        continueDatasetModalInstance ||
+        globalThis.bootstrap.Modal.getOrCreateInstance($continueDatasetModal[0]);
+      continueDatasetModalInstance.show();
+      return;
+    }
 
-    $input.on("change", function () {
-      const file = this.files[0];
-      $input.remove();
+    alert(message);
+  }
 
-      if (!file) return;
+  /**
+   * Abre la administracion de permisos del dataset.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   */
+  function handleAdmin(datasetId) {
+    const normalisedDatasetId = Number(datasetId);
+    if (!Number.isInteger(normalisedDatasetId) || normalisedDatasetId <= 0) {
+      alert("No se pudo abrir la administración del dataset seleccionado.");
+      return;
+    }
 
-      ajaxUploadDataset(file)
-        .done(function (response) {
-          loadDatasets();
-          showCreateSuccessModal(response, file.name);
-        })
-        .fail(function (xhr) {
-          const msg = extractApiErrorMessage(xhr, "No se pudo crear el dataset.");
-          alert(msg);
+    globalThis.location.assign(`/datasets/${encodeURIComponent(normalisedDatasetId)}/admin`);
+  }
+
+  /**
+   * Borra un dataset tras confirmacion explicita.
+   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   */
+  function handleDeleteDataset(datasetId) {
+    const normalisedDatasetId = Number(datasetId);
+    const selectedDataset = findDatasetById(normalisedDatasetId);
+    const datasetName = selectedDataset && typeof selectedDataset.name === "string"
+      ? selectedDataset.name
+      : `DATASET ${normalisedDatasetId}`;
+
+    if (!Number.isInteger(normalisedDatasetId) || normalisedDatasetId <= 0) {
+      alert("No se pudo borrar el dataset seleccionado.");
+      return;
+    }
+
+    const confirmed = globalThis.confirm(
+      `Vas a borrar completamente el dataset "${datasetName}" y todos sus permisos, entradas, anotaciones y revisiones. Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    ajaxDeleteDataset(normalisedDatasetId)
+      .done(function () {
+        state.datasets = state.datasets.filter(function (dataset) {
+          return Number(dataset.id) !== normalisedDatasetId;
         });
-    });
-
-    $input.trigger("click");
+        renderDatasets(state.datasets);
+      })
+      .fail(function (xhr) {
+        alert(extractApiErrorMessage(xhr, "No se pudo borrar el dataset."));
+      });
   }
 
+  /**
+   * Abre la pantalla de revision filtrada por dataset.
+   * @param {*} datasetId - Dataset seleccionado.
+   */
+  function handleReview(datasetId) {
+    const normalisedDatasetId = Number(datasetId);
+    if (!Number.isInteger(normalisedDatasetId) || normalisedDatasetId <= 0) {
+      alert("No se pudo abrir la revisión del dataset seleccionado.");
+      return;
+    }
+
+    globalThis.location.assign(`/reviewer?datasetId=${encodeURIComponent(normalisedDatasetId)}`);
+  }
+
+  /**
+   * Ejecuta handle create dataset y coordina sus efectos asociados.
+   * @returns {*} Resultado producido por la funcion.
+   */
+  function handleCreateDataset() {
+    if (
+      $newDatasetModal.length
+      && globalThis.bootstrap !== undefined
+      && globalThis.bootstrap
+      && typeof globalThis.bootstrap.Modal === "function"
+    ) {
+      $newDatasetForm[0].reset();
+      newDatasetModalInstance =
+        newDatasetModalInstance ||
+        globalThis.bootstrap.Modal.getOrCreateInstance($newDatasetModal[0]);
+      newDatasetModalInstance.show();
+      return;
+    }
+
+    alert("No se pudo abrir el formulario de nuevo dataset.");
+  }
+
+  /**
+   * Envia el formulario de creacion de dataset.
+   */
+  function submitNewDataset() {
+    const file = $newDatasetFile[0] && $newDatasetFile[0].files
+      ? $newDatasetFile[0].files[0]
+      : null;
+
+    if (!file) {
+      $newDatasetFile.trigger("focus");
+      return;
+    }
+
+    const options = readNewDatasetOptions();
+    $btnCreateDatasetSubmit.prop("disabled", true);
+
+    ajaxUploadDataset(file, options)
+      .done(function (response) {
+        if (newDatasetModalInstance)
+          newDatasetModalInstance.hide();
+        loadDatasets();
+        showCreateSuccessModal(response, file.name);
+      })
+      .fail(function (xhr) {
+        const msg = extractApiErrorMessage(xhr, "No se pudo crear el dataset.");
+        alert(msg);
+      })
+      .always(function () {
+        $btnCreateDatasetSubmit.prop("disabled", false);
+      });
+  }
+
+  /**
+   * Ejecuta bind events y coordina sus efectos asociados.
+   */
   function bindEvents() {
     $container.on("mouseenter", ".dataset-button", function () {
       const datasetId = $(this).data("id");
@@ -425,16 +893,36 @@
       handleContinue(datasetId);
     });
 
+    $container.on("click", '[data-action="admin"]', function () {
+      const datasetId = $(this).data("id");
+      handleAdmin(datasetId);
+    });
+
+    $container.on("click", '[data-action="delete"]', function () {
+      const datasetId = $(this).data("id");
+      handleDeleteDataset(datasetId);
+    });
+
+    $container.on("click", '[data-action="review"]', function () {
+      const datasetId = $(this).data("id");
+      handleReview(datasetId);
+    });
+
     $container.on("click", ".dataset-button", function () {
       const datasetId = $(this).data("id");
-      openAnnotations(datasetId, 1);
+      handleContinue(datasetId);
     });
 
     $btnNuevoDataset.on("click", function () {
       handleCreateDataset();
     });
 
-    $(window).on("scroll resize", function () {
+    $newDatasetForm.on("submit", function (event) {
+      event.preventDefault();
+      submitNewDataset();
+    });
+
+    $(globalThis).on("scroll resize", function () {
       hideTooltip();
     });
   }

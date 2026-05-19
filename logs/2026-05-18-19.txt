@@ -1,0 +1,204 @@
+
+2026.05.18.19.40.37.614 POST /register/moderator {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'mod_1779126037357_2077@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: 'rquS77QGIy4gocUN'
+}
+
+2026.05.18.19.40.37.713 POST /register/moderator {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'mod2_1779126037710_6442@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: 'rquS77QGIy4gocUN'
+}
+
+2026.05.18.19.40.43.687 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.19.41.15.433 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.19.47.28.329 POST /register/moderator {
+    surname: 'X',
+    lastName: 'Y',
+    email: 'bad@x.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: 'AAAA'
+}
+
+2026.05.18.19.48.27.542 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.19.48.27.545 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.19.48.27.695 POST /create-session {
+    email: 'annot_1779126507632_1672@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.19.48.28.107 POST /api/annotations/send {
+    datasetId: 7,
+    entryId: 1,
+    sentences: [
+      'Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.19.48.28.145 POST /api/annotations/send {
+    datasetId: 7,
+    entryId: 2,
+    sentences: [
+      'San Sebastián de los Reyes forma parte de la Comunidad de Madrid.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.19.48.31.376 POST /create-session {
+    email: 'lifecycle_1779126511283_3173@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.19.48.33.874 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.19.48.33.878 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.19.48.33.884 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.18.19.48.33.886 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.18.19.48.33.896 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.19.48.33.900 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.18.19.48.33.907 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.19.48.33.912 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.18.19.48.33.915 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.18.19.48.33.918 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+
+2026.05.18.19.48.34.019 POST /create-session {
+    email: 'login_session_1779126513948_2849@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.19.48.34.104 POST /register/moderator {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'mod_1779126514092_7798@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: '7AHpie4IAuYw5Xts'
+}
+
+2026.05.18.19.48.34.176 POST /register/moderator {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'mod2_1779126514175_9922@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: '7AHpie4IAuYw5Xts'
+}
+
+2026.05.18.19.48.34.213 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1779126514204_1552@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.18.19.48.34.309 POST /create-session {
+    email: 'integration_1779126514204_1552@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.19.48.34.489 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.19.50.50.416 POST /register/moderator {
+    surname: 'B',
+    lastName: 'B',
+    email: 'b@b.es',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: '353463434347u434'
+}
+
+2026.05.18.19.51.19.935 POST /register/moderator {
+    surname: 'B',
+    lastName: 'B',
+    email: 'b@b.es',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]',
+    code: 'MXofgpldkK50A8cp'
+}
+
+2026.05.18.19.51.30.151 POST /create-session {
+    email: 'b@b.es',
+    password: '[REDACTED]'
+}
+

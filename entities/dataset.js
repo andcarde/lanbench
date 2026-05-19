@@ -1,106 +1,60 @@
 'use strict';
 
-const { toIntegerNormalized, normalizePercent } = require('../utils/validators');
-
-const DEFAULT_COLOR_CLASS = 'dataset-purple';
+/**
+ * @file `DatasetDTO` — agrupa las entries parseadas de un fichero benchmark
+ * XML (WebNLG) en una estructura serializable.
+ *
+ * Esta clase es deliberadamente delgada: actua como contenedor estructural
+ * (lista de {@link EntryDTO}) y como punto de extension cuando se necesite
+ * añadir metadatos de dataset que viajen con las entries.
+ *
+ * @typedef {import('./entry').EntryDTO} EntryDTO
+ */
 
 /**
- * Formato devuelto por GET /api/datasets:
- * {
- *   id: number,
- *   name: string,
- *   metrics: {
- *     rdfTriples: number,
- *     languages: string[]
- *   },
- *   progress: {
- *     completed: number,
- *     withoutReview: number,
- *     remaining: number
- *   },
- *   ui: {
- *     colorClass: string
- *   }
- * }
+ * Datos crudos aceptados por el constructor.
+ *
+ * @typedef {Object} DatasetDTOInput
+ * @property {EntryDTO[]} [entries]
  */
-class DatasetListItemDTO {
-    constructor({ id, name, metrics, progress, ui }) {
-        this.id = toIntegerNormalized(id);
-        this.name = normalizeName(name, this.id);
-        this.metrics = {
-            rdfTriples: toIntegerNormalized(metrics?.rdfTriples),
-            languages: toStringArray(metrics?.languages)
-        };
-        this.progress = {
-            completed: normalizePercent(progress?.completed),
-            withoutReview: normalizePercent(progress?.withoutReview),
-            remaining: normalizePercent(progress?.remaining)
-        };
-        this.ui = {
-            colorClass: normalizeColorClass(ui?.colorClass)
-        };
+
+/**
+ * Resultado de parsear un fichero benchmark XML WebNLG: una lista plana de
+ * {@link EntryDTO} sin metadatos adicionales.
+ */
+class DatasetDTO {
+    /**
+     * @param {DatasetDTOInput} [options]
+     */
+    constructor({ entries = [] } = {}) {
+        /** @type {EntryDTO[]} Entries del dataset (puede estar vacio). */
+        this.entries = entries;
     }
 
+    /**
+     * Construye un `DatasetDTO` a partir de cualquier fuente con propiedad
+     * `entries`. Si `entries` no es un array, queda vacio.
+     *
+     * @param {{ entries?: EntryDTO[] } | null | undefined} source
+     * @returns {DatasetDTO}
+     */
     static fromSource(source) {
-        return new DatasetListItemDTO({
-            id: source?.idDataset ?? source?.id,
-            name: source?.name,
-            metrics: {
-                rdfTriples: source?.triplesRDF ?? source?.records,
-                languages: source?.languages
-            },
-            progress: {
-                completed: source?.completedPercent,
-                withoutReview: source?.withoutReviewPercent,
-                remaining: source?.remainPercent
-            },
-            ui: {
-                colorClass: source?.colorClass
-            }
+        return new DatasetDTO({
+            entries: Array.isArray(source?.entries) ? source.entries : []
         });
     }
 
+    /**
+     * Serializa la instancia a un objeto JSON-compatible.
+     * @returns {{ entries: EntryDTO[] }}
+     */
     toJSON() {
         return {
-            id: this.id,
-            name: this.name,
-            metrics: this.metrics,
-            progress: this.progress,
-            ui: this.ui
+            entries: this.entries
         };
     }
 }
 
-function normalizeName(name, id) {
-    if (typeof name === 'string' && name.trim().length > 0)
-        return name.trim();
-    return `DATASET ${id || 1}`;
-}
-
-function toStringArray(values) {
-    if (!Array.isArray(values))
-        return [];
-
-    return values.filter(value => typeof value === 'string' && value.trim().length > 0);
-}
-
-function normalizeColorClass(value) {
-    if (typeof value !== 'string' || value.trim().length === 0)
-        return DEFAULT_COLOR_CLASS;
-    return value.trim();
-}
-
-/**
- * Agrupa las entries parseadas de un fichero benchmark.
- */
-class DatasetDTO {
-  /** @param {{ entries: EntryDTO[] }} p */
-  constructor({ entries = [] }) {
-    this.entries = entries;
-  }
-}
-
 module.exports = {
-    DatasetDTO,
-    DatasetListItemDTO
+    DatasetDTO
 };

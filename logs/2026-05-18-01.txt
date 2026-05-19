@@ -1,0 +1,46 @@
+
+2026.05.18.01.41.55.265 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.01.46.40.622 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.01.47.14.562 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.01.47.52.632 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.01.47.52.636 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.01.47.57.389 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.01.47.57.401 POST /api/reviews/undefined/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.01.47.57.408 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+

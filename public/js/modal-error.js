@@ -1,10 +1,22 @@
+// @ts-nocheck
 
-// modal-error.js
+/**
+ * @file Helper para mostrar un modal de error global desde cualquier pagina.
+ *
+ * Inyecta un componente modal Bootstrap reutilizable y expone una API
+ * minima (`showError(message)`) que llaman los scripts especificos cuando
+ * una llamada AJAX falla con un mensaje no campo a campo.
+ */
 'use strict';
 
 let modalInstance = null;
 
 // Show a  error modal with the given title and message
+/**
+ * Actualiza alert modal con los datos indicados.
+ * @param {*} title - Valor de title usado por la funcion.
+ * @param {string} message - Valor de message usado por la funcion.
+ */
 function showAlertModal(title, message) {
     const id = 'errorModal';
 
@@ -56,4 +68,4 @@ function showAlertModal(title, message) {
 }
 
 // exports showAlertModal function
-window.showAlertModal = showAlertModal;
+globalThis.showAlertModal = showAlertModal;

@@ -1,0 +1,91 @@
+# ============================================
+# Dependencies (reinstalled inside the container)
+# ============================================
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# ============================================
+# Environment variables and secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ============================================
+# Git and version control
+# ============================================
+.git
+.gitignore
+.gitattributes
+.github
+
+# ============================================
+# IDEs and editors
+# ============================================
+.vscode
+.idea
+.claude
+.sonarlint
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ============================================
+# Documentation (not needed at runtime)
+# ============================================
+*.md
+documentation
+doc-agents
+doc-planning
+README.md
+CLAUDE.md
+FAILING-TESTS.md
+
+# ============================================
+# Tests and mocks (not deployed to production)
+# ============================================
+tests
+test_datasets
+front-mocks
+coverage
+*.test.js
+*.spec.js
+jest.config.js
+
+# ============================================
+# Build artifacts and logs
+# ============================================
+dist
+build
+out
+logs
+*.log
+
+# ============================================
+# Development tooling configs
+# ============================================
+eslint.config.js
+prettier.config.js
+knip.json
+.eslintrc*
+.prettierrc*
+
+# ============================================
+# Docker itself (avoid recursion)
+# ============================================
+Dockerfile
+docker-compose*.yaml
+docker-compose*.yml
+.dockerignore
+
+# ============================================
+# Operating system
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini

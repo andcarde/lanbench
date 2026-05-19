@@ -1,0 +1,414 @@
+
+2026.05.18.13.04.07.070 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.04.07.073 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.04.07.327 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.04.07.337 POST /api/reviews/undefined/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.04.07.348 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.04.55.996 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.04.55.999 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.04.56.244 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.04.56.252 POST /api/reviews/undefined/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.04.56.261 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.17.47.480 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.17.47.483 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.17.47.737 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.17.47.745 POST /api/reviews/undefined/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.17.47.757 POST /api/reviews/undefined/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.17.47.912 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.13.40.50.000 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.40.50.003 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.40.50.167 POST /create-session {
+    email: 'annot_1779104450094_8873@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.40.50.394 POST /create-session {
+    email: 'lifecycle_1779104450316_43@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.40.50.432 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.40.50.436 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.40.50.440 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.18.13.40.50.445 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.18.13.40.50.454 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.40.50.458 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.18.13.40.50.465 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.40.50.467 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.18.13.40.50.471 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.40.50.474 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.40.50.595 POST /create-session {
+    email: 'login_session_1779104450504_130@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.40.50.618 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1779104450612_6813@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.18.13.40.50.696 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.13.43.57.180 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.43.57.183 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.43.57.332 POST /create-session {
+    email: 'annot_1779104637269_8336@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.43.57.834 POST /api/annotations/send {
+    datasetId: 1,
+    entryId: 1,
+    sentences: [
+      'Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.13.43.57.873 POST /api/annotations/send {
+    datasetId: 1,
+    entryId: 2,
+    sentences: [
+      'San Sebastián de los Reyes forma parte de la Comunidad de Madrid.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.13.44.01.070 POST /create-session {
+    email: 'lifecycle_1779104640994_1414@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.44.03.252 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.44.03.256 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.44.03.259 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.18.13.44.03.261 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.18.13.44.03.268 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.44.03.272 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.18.13.44.03.280 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.44.03.283 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.18.13.44.03.286 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.44.03.288 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.44.03.382 POST /create-session {
+    email: 'login_session_1779104643312_1317@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.44.03.459 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1779104643455_280@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.18.13.44.03.529 POST /create-session {
+    email: 'integration_1779104643455_280@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.44.03.656 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+
+2026.05.18.13.52.52.794 POST /api/admin/evaluation-criteria {
+    key: 'fluency',
+    label: 'Fluidez'
+}
+
+2026.05.18.13.52.52.797 PATCH /api/admin/evaluation-criteria/1 {
+    active: false
+}
+
+2026.05.18.13.52.52.952 POST /create-session {
+    email: 'annot_1779105172888_2476@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.52.53.369 POST /api/annotations/send {
+    datasetId: 3,
+    entryId: 1,
+    sentences: [
+      'Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.13.52.53.415 POST /api/annotations/send {
+    datasetId: 3,
+    entryId: 2,
+    sentences: [
+      'San Sebastián de los Reyes forma parte de la Comunidad de Madrid.'
+    ],
+    rejectionReasons: [
+      ''
+    ],
+    sectionNumber: 1
+}
+
+2026.05.18.13.52.56.633 POST /create-session {
+    email: 'lifecycle_1779105176550_8833@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.52.58.712 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'accepted'
+}
+
+2026.05.18.13.52.58.715 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.52.58.719 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected'
+}
+
+2026.05.18.13.52.58.723 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'falta entidad'
+}
+
+2026.05.18.13.52.58.730 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida'
+}
+
+2026.05.18.13.52.58.735 POST /api/reviews/1/corrections {
+    sentenceIndex: 0,
+    correctedSentence: 'frase corregida',
+    comment: 'mejorar conexion'
+}
+
+2026.05.18.13.52.58.741 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_grammar',
+    decision: 'accepted'
+}
+
+2026.05.18.13.52.58.744 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_coverage',
+    decision: 'rejected',
+    comment: 'rev'
+}
+
+2026.05.18.13.52.58.747 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_diversity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.52.58.751 POST /api/reviews/1/decisions {
+    criterionCode: 'criterion_semantic_fidelity',
+    decision: 'accepted'
+}
+
+2026.05.18.13.52.58.840 POST /create-session {
+    email: 'login_session_1779105178771_9593@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.52.58.944 POST /register {
+    surname: 'Andres',
+    lastName: 'Garcia',
+    email: 'integration_1779105178938_270@example.com',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.18.13.52.59.040 POST /create-session {
+    email: 'integration_1779105178938_270@example.com',
+    password: '[REDACTED]'
+}
+
+2026.05.18.13.52.59.175 POST /api/annotations/check {
+    sentences: [
+      'hola'
+    ],
+    entryContext: null
+}
+

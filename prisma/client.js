@@ -4,7 +4,8 @@ const { PrismaClient } = require('@prisma/client');
 const { PrismaMariaDb } = require('@prisma/adapter-mariadb');
 const config = require('../config');
 
-if (!global.__lanbenchPrismaClient) {
+const globalRef = /** @type {any} */ (globalThis);
+if (!globalRef.__lanbenchPrismaClient) {
     const adapter = new PrismaMariaDb({
         host: config.mysql.host,
         port: config.mysql.port,
@@ -13,7 +14,7 @@ if (!global.__lanbenchPrismaClient) {
         database: config.mysql.database
     });
 
-    global.__lanbenchPrismaClient = new PrismaClient({ adapter });
+    globalRef.__lanbenchPrismaClient = new PrismaClient({ adapter });
 }
 
-module.exports = global.__lanbenchPrismaClient;
+module.exports = globalRef.__lanbenchPrismaClient;

@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "Bash(node -e *)",
+      "Bash(git grep *)",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(git - C * diff HEAD -- *)",
+      "Bash(npm run *)",
+      "Bash(ps -o pid,state,command)",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(taskkill //F //PID 17644 //PID 8200 //PID 19492 //PID 19704 //PID 29512 //PID 13804 //PID 36352)",
+      "Read(//c/tmp/**)",
+      "Read(//c/Users/Andres/AppData/Local/Temp/claude/**)",
+      "Bash(node_modules/.bin/mocha \"tests/**/*.test.js\" --exclude \"tests/**/*.integration.test.js\" --reporter min)",
+      "Bash(Remove-Item test-output.json, summarize-failures.js, summarize-integration.js -Force)",
+      "Bash(npx --no-install tsc --version)",
+      "Bash(npx --yes -p typescript@6.0.0 tsc -p jsconfig.json)",
+      "Bash(npx --yes -p typescript@6.0.0 tsc -p jsconfig.json --skipLibCheck)",
+      "Bash(npx --yes -p typescript@6.0.0 tsc -p jsconfig.json 2>&1 > *)",
+      "Powershell(Remove-Item *)",
+      "Bash(npm view * version)",
+      "Bash(npm view * versions)",
+      "Bash(tee *)",
+      "Bash(npx jest *)",
+      "Bash(npx mocha *)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(cd \"/c/Users/Andres/OneDrive - Universidad Complutense de Madrid \\(UCM\\)/Escritorio/Github Repositories/lanbench\" && cp /tmp/mocha-unit.json /c/tmp/mocha-unit.json && ls -la /c/tmp/mocha-unit.json)",
+      "Bash(git mv *)",
+      "Bash(npm prune *)",
+      "Bash(powershell -Command \"\\(Get-Content -Raw 'tests\\\\unit\\\\datasets\\\\datasets-controller.test.js'\\) -replace 'userId: 7, email: ''user7@example.com''', 'id: 7, email: ''user7@example.com''' | Set-Content -NoNewline -Path 'tests\\\\unit\\\\datasets\\\\datasets-controller.test.js'\")",
+      "Bash(dir /B \"c:\\\\Users\\\\Andres\\\\OneDrive - Universidad Complutense de Madrid \\(UCM\\)\\\\Escritorio\\\\Github Repositories\\\\lanbench\")"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

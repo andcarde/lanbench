@@ -7,182 +7,343 @@ datasource db {
 }
 
 model Section {
-  idSection Int @id
-  idDataset Int
+  id        Int @id
+  datasetId Int @map("dataset_id")
   block     Int
 
-  dataset Dataset @relation(fields: [idDataset], references: [idDataset], onUpdate: Cascade, onDelete: Restrict)
+  dataset Dataset @relation(fields: [datasetId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 
-  @@index([idDataset], map: "idx_section_dataset")
-  @@map("Section")
+  @@index([datasetId], map: "idx_sections_dataset")
+  @@map("sections")
 }
 
 model Dataset {
-  idDataset            Int      @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
   name                 String   @db.VarChar(128)
-  entries              Int
-  content              Bytes    @db.MediumBlob
+  totalEntries         Int      @map("total_entries")
   languages            String?  @db.Text
-  completedPercent     Int      @default(0) @db.UnsignedTinyInt
-  withoutReviewPercent Int      @default(0) @db.UnsignedTinyInt
-  remainPercent        Int      @default(100) @db.UnsignedTinyInt
-  colorClass           String   @default("dataset-purple") @db.VarChar(64)
-  createdAt            DateTime @default(now()) @db.DateTime(0)
-  updatedAt            DateTime @updatedAt @db.DateTime(0)
+  colorClass           String   @default("dataset-purple") @map("color_class") @db.VarChar(64)
+  llmMode              String   @default("none") @map("llm_mode") @db.VarChar(20)
+  isReviewEnabled      Boolean  @default(false) @map("is_review_enabled")
+  hasAdditionalReviews Boolean  @default(false) @map("has_additional_reviews")
+  sectionsCompleted    Int      @default(0) @map("sections_completed") @db.UnsignedInt
+  sectionsInReview     Int      @default(0) @map("sections_in_review") @db.UnsignedInt
+  sectionsPending      Int      @default(0) @map("sections_pending") @db.UnsignedInt
+  createdAt            DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.DateTime(0)
 
-  entryRecords Entry[]
-  sections     Section[]
-  permits      Permits[]
+  entries            Entry[]
+  sections           Section[]
+  permits            Permit[]
+  sectionAssignments SectionAssignment[]
+  activeSessions     ActiveSession[]
 
-  @@map("Dataset")
+  @@map("datasets")
+}
+
+model ActiveSession {
+  datasetId     Int    @map("dataset_id")
+  userId        Int    @map("user_id")
+  mode          String @db.VarChar(20)
+  sectionNumber Int    @map("section_number")
+  entryNumber   Int    @map("entry_number")
+
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([datasetId, userId, mode])
+  @@index([userId], map: "idx_active_sessions_user")
+  @@map("active_sessions")
+}
+
+model SectionAssignment {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  datasetId        Int      @map("dataset_id")
+  sectionIndex     Int      @map("section_index")
+  assignedAt       DateTime @default(now()) @map("assigned_at") @db.DateTime(0)
+  expiresAt        DateTime @map("expires_at") @db.DateTime(0)
+  status           String   @default("active") @db.VarChar(20)
+  timeSpentSeconds Int      @default(0) @map("time_spent_seconds") @db.UnsignedInt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId], map: "idx_section_assignments_user")
+  @@index([datasetId], map: "idx_section_assignments_dataset")
+  @@index([datasetId, sectionIndex, status], map: "idx_section_assignments_section_status")
+  @@map("section_assignments")
 }
 
 model User {
-  idUser   Int    @id @default(autoincrement())
-  email    String @unique @db.VarChar(255)
-  password String @db.VarChar(255)
-  role     String @default("annotator") @db.VarChar(32)
+  id          Int     @id @default(autoincrement())
+  email       String  @unique @db.VarChar(255)
+  password    String  @db.VarChar(255)
+  isModerator Boolean @default(false) @map("is_moderator")
 
-  annotations Annotation[]
-  permits     Permits[]
+  annotations        Annotation[]
+  alertDecisions     AnnotationAlertDecision[]
+  permits            Permit[]
+  sectionAssignments SectionAssignment[]
+  activeSessions     ActiveSession[]
+  reviewsAsReviewer  Review[]                  @relation("ReviewerReviews")
+  reviewsAsAnnotator Review[]                  @relation("AnnotatorReviews")
 
-  @@map("User")
+  @@map("users")
 }
 
-model Permits {
-  idDataset Int
-  idUser    Int
-  isOwned   Boolean
+model Permit {
+  datasetId   Int     @map("dataset_id")
+  userId      Int     @map("user_id")
+  isOwned     Boolean @default(false) @map("is_owned")
+  isAnnotator Boolean @default(true)  @map("is_annotator")
+  isReviewer  Boolean @default(false) @map("is_reviewer")
+  isAdmin     Boolean @default(false) @map("is_admin")
 
-  dataset Dataset @relation(fields: [idDataset], references: [idDataset], onUpdate: Cascade, onDelete: Restrict)
-  user    User    @relation(fields: [idUser], references: [idUser], onUpdate: Cascade, onDelete: Restrict)
+  dataset Dataset @relation(fields: [datasetId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  user    User    @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 
-  @@id([idDataset, idUser])
-  @@index([idUser], map: "idx_permits_user")
-  @@map("Permits")
+  @@id([datasetId, userId])
+  @@index([userId], map: "idx_permits_user")
+  @@map("permits")
 }
 
 model Entry {
-  idEntry    Int     @id @default(autoincrement())
-  idDataset  Int
-  eid        Int     @db.UnsignedInt
-  category   String  @db.VarChar(100)
-  shape      String? @db.VarChar(50)
-  shapeType  String? @map("shape_type") @db.VarChar(50)
-  size       Int     @db.UnsignedTinyInt
-  position   Int     @default(0) @db.UnsignedInt
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  datasetId Int     @map("dataset_id")
+  eid       Int     @db.UnsignedInt
+  category  String  @db.VarChar(100)
+  shape     String? @db.VarChar(50)
+  shapeType String? @map("shape_type") @db.VarChar(50)
+  size      Int     @db.UnsignedTinyInt
+  position  Int     @default(0) @db.UnsignedInt
+  status    String  @default("pending") @db.VarChar(20)
 
-  dataset       Dataset      @relation(fields: [idDataset], references: [idDataset], onDelete: Cascade, onUpdate: Cascade)
-  triplesets    Tripleset[]
-  lexes         Lex[]
-  dbpediaLinks  Dbpedialink[]
-  links         Link[]
-  annotations   Annotation[]
+  dataset        Dataset                   @relation(fields: [datasetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  triplesets     Tripleset[]
+  lexes          Lex[]
+  dbpediaLinks   DbpediaLink[]
+  links          Link[]
+  annotations    Annotation[]
+  alertDecisions AnnotationAlertDecision[]
+  reviews        Review[]
 
-  @@unique([idDataset, eid], map: "uq_entry_dataset_eid")
-  @@unique([idDataset, position], map: "uq_entry_dataset_position")
-  @@index([idDataset], map: "idx_entry_dataset")
-  @@map("entry")
+  @@unique([datasetId, eid], map: "uq_entries_dataset_eid")
+  @@unique([datasetId, position], map: "uq_entries_dataset_position")
+  @@index([datasetId], map: "idx_entries_dataset")
+  @@index([datasetId, status], map: "idx_entries_dataset_status")
+  @@map("entries")
 }
 
 model Tripleset {
-  idTripleset Int          @id @default(autoincrement()) @map("id") @db.UnsignedInt
-  idEntry     Int          @db.UnsignedInt
-  type        TriplesetType
-  position    Int          @default(0) @db.UnsignedInt
+  id       Int           @id @default(autoincrement()) @db.UnsignedInt
+  entryId  Int           @map("entry_id") @db.UnsignedInt
+  type     TriplesetType
+  position Int           @default(0) @db.UnsignedInt
 
-  entry   Entry    @relation(fields: [idEntry], references: [idEntry], onDelete: Cascade, onUpdate: NoAction)
+  entry   Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   triples Triple[]
 
-  @@unique([idEntry, type, position], map: "uq_tripleset_entry_type_position")
-  @@index([idEntry], map: "idx_tripleset_entry")
-  @@map("tripleset")
+  @@unique([entryId, type, position], map: "uq_triplesets_entry_type_position")
+  @@index([entryId], map: "idx_triplesets_entry")
+  @@map("triplesets")
 }
 
 model Triple {
-  idTriple    Int    @id @default(autoincrement()) @map("id") @db.UnsignedInt
-  idTripleset Int    @map("tripleset_id") @db.UnsignedInt
+  id          Int    @id @default(autoincrement()) @db.UnsignedInt
+  triplesetId Int    @map("tripleset_id") @db.UnsignedInt
   position    Int    @default(0) @db.UnsignedInt
   subject     String @db.VarChar(500)
   predicate   String @db.VarChar(500)
   object      String @db.VarChar(500)
 
-  tripleset Tripleset @relation(fields: [idTripleset], references: [idTripleset], onDelete: Cascade, onUpdate: NoAction)
+  tripleset Tripleset @relation(fields: [triplesetId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([idTripleset, position], map: "uq_triple_tripleset_position")
-  @@index([idTripleset], map: "idx_triple_tripleset")
-  @@map("triple")
+  @@unique([triplesetId, position], map: "uq_triples_tripleset_position")
+  @@index([triplesetId], map: "idx_triples_tripleset")
+  @@map("triples")
 }
 
 model Lex {
-  idLex    Int     @id @default(autoincrement()) @map("id") @db.UnsignedInt
-  idEntry  Int     @db.UnsignedInt
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  entryId  Int     @map("entry_id") @db.UnsignedInt
   lid      String  @db.VarChar(20)
   lang     String  @db.Char(5)
   comment  String? @db.VarChar(500)
   text     String  @db.Text
   position Int     @default(0) @db.UnsignedInt
 
-  entry Entry @relation(fields: [idEntry], references: [idEntry], onDelete: Cascade, onUpdate: NoAction)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([idEntry, lid, lang], map: "uq_lex")
-  @@index([idEntry], map: "idx_lex_entry")
-  @@index([idEntry, position], map: "idx_lex_entry_position")
-  @@map("lex")
+  @@unique([entryId, lid, lang], map: "uq_lexes_entry_lid_lang")
+  @@index([entryId], map: "idx_lexes_entry")
+  @@index([entryId, position], map: "idx_lexes_entry_position")
+  @@map("lexes")
 }
 
-model Dbpedialink {
-  idDbpedialink Int    @id @default(autoincrement()) @map("id") @db.UnsignedInt
-  idEntry       Int    @db.UnsignedInt
-  direction     String @db.VarChar(20)
-  subject       String @db.VarChar(500)
-  predicate     String @db.VarChar(100)
-  object        String @db.VarChar(500)
-  position      Int    @default(0) @db.UnsignedInt
-
-  entry Entry @relation(fields: [idEntry], references: [idEntry], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([idEntry, position], map: "uq_dbpedialink_entry_position")
-  @@index([idEntry], map: "idx_dbpedialink_entry")
-  @@map("dbpedialink")
-}
-
-model Link {
-  idLink    Int    @id @default(autoincrement()) @map("id") @db.UnsignedInt
-  idEntry   Int    @db.UnsignedInt
+model DbpediaLink {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  entryId   Int    @map("entry_id") @db.UnsignedInt
   direction String @db.VarChar(20)
   subject   String @db.VarChar(500)
   predicate String @db.VarChar(100)
   object    String @db.VarChar(500)
   position  Int    @default(0) @db.UnsignedInt
 
-  entry Entry @relation(fields: [idEntry], references: [idEntry], onDelete: Cascade, onUpdate: NoAction)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([idEntry, position], map: "uq_link_entry_position")
-  @@index([idEntry], map: "idx_link_entry")
-  @@map("link")
+  @@unique([entryId, position], map: "uq_dbpedia_links_entry_position")
+  @@index([entryId], map: "idx_dbpedia_links_entry")
+  @@map("dbpedia_links")
+}
+
+model Link {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  entryId   Int    @map("entry_id") @db.UnsignedInt
+  direction String @db.VarChar(20)
+  subject   String @db.VarChar(500)
+  predicate String @db.VarChar(100)
+  object    String @db.VarChar(500)
+  position  Int    @default(0) @db.UnsignedInt
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([entryId, position], map: "uq_links_entry_position")
+  @@index([entryId], map: "idx_links_entry")
+  @@map("links")
 }
 
 model Annotation {
-  idAnnotation    Int      @id @default(autoincrement())
-  idEntry         Int      @db.UnsignedInt
-  idUser          Int
-  sentenceIndex   Int      @db.UnsignedInt
-  sentence        String   @db.Text
-  rejectionReason String?  @db.Text
-  createdAt       DateTime @default(now()) @db.DateTime(0)
-  updatedAt       DateTime @updatedAt @db.DateTime(0)
+  entryId            Int      @map("entry_id") @db.UnsignedInt
+  datasetId          Int      @map("dataset_id")
+  userId             Int      @map("user_id")
+  sentenceIndex      Int      @default(0) @map("sentence_index") @db.UnsignedInt
+  sentence           String   @db.Text
+  rejectionReason    String?  @map("rejection_reason") @db.Text
+  origin             String   @default("manual") @db.VarChar(20)
+  isAcceptedFirstTry Boolean  @default(true) @map("is_accepted_first_try")
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.DateTime(0)
 
-  entry Entry @relation(fields: [idEntry], references: [idEntry], onDelete: Cascade, onUpdate: NoAction)
-  user  User  @relation(fields: [idUser], references: [idUser], onDelete: Cascade, onUpdate: NoAction)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@unique([idEntry, idUser, sentenceIndex], map: "uq_annotation_entry_user_sentence")
-  @@index([idUser], map: "idx_annotation_user")
-  @@index([idEntry], map: "idx_annotation_entry")
-  @@map("Annotation")
+  @@id([entryId, datasetId, sentenceIndex])
+  @@index([userId], map: "idx_annotations_user")
+  @@index([entryId], map: "idx_annotations_entry")
+  @@index([datasetId], map: "idx_annotations_dataset")
+  @@map("annotations")
+}
+
+model AnnotationAlertDecision {
+  id              Int      @id @default(autoincrement())
+  entryId         Int      @map("entry_id") @db.UnsignedInt
+  userId          Int      @map("user_id")
+  sentenceIndex   Int      @map("sentence_index") @db.UnsignedInt
+  alertCode       String   @map("alert_code") @db.VarChar(100)
+  alertType       String   @map("alert_type") @db.VarChar(50)
+  decision        String   @db.VarChar(20)
+  reason          String?  @db.Text
+  suggestion      String?  @db.Text
+  appliedSentence String?  @map("applied_sentence") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([entryId], map: "idx_annotation_alert_decisions_entry")
+  @@index([userId], map: "idx_annotation_alert_decisions_user")
+  @@map("annotation_alert_decisions")
+}
+
+model EvaluationCriterion {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique @db.VarChar(64)
+  label       String   @db.VarChar(160)
+  description String?  @db.Text
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.DateTime(0)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.DateTime(0)
+
+  @@index([isActive, sortOrder], map: "idx_evaluation_criteria_active_order")
+  @@map("evaluation_criteria")
+}
+
+model Review {
+  id                    Int       @id @default(autoincrement())
+  entryId               Int       @map("entry_id") @db.UnsignedInt
+  reviewerId            Int       @map("reviewer_id")
+  annotatorId           Int       @map("annotator_id")
+  status                String    @default("pending") @db.VarChar(20)
+  currentCriterionIndex Int       @default(0) @map("current_criterion_index")
+  assignedAt            DateTime  @default(now()) @map("assigned_at") @db.DateTime(0)
+  expiresAt             DateTime  @map("expires_at") @db.DateTime(0)
+  timeSpentSeconds      Int       @default(0) @map("time_spent_seconds") @db.UnsignedInt
+  completedAt           DateTime? @map("completed_at") @db.DateTime(0)
+
+  entry     Entry            @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reviewer  User             @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  annotator User             @relation("AnnotatorReviews", fields: [annotatorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  decisions ReviewDecision[]
+  comments  ReviewComment[]
+
+  @@index([entryId], map: "idx_reviews_entry")
+  @@index([reviewerId], map: "idx_reviews_reviewer")
+  @@index([annotatorId], map: "idx_reviews_annotator")
+  @@index([status], map: "idx_reviews_status")
+  @@map("reviews")
+}
+
+model ReviewDecision {
+  id            Int      @id @default(autoincrement())
+  reviewId      Int      @map("review_id")
+  criterionCode String   @map("criterion_code") @db.VarChar(100)
+  decision      String   @db.VarChar(20)
+  comment       String?  @db.Text
+  decidedAt     DateTime @default(now()) @map("decided_at") @db.DateTime(0)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([reviewId, criterionCode], map: "uq_review_decisions_review_criterion")
+  @@index([reviewId], map: "idx_review_decisions_review")
+  @@map("review_decisions")
+}
+
+model ReviewComment {
+  id                 Int      @id @default(autoincrement())
+  reviewId           Int      @map("review_id")
+  sentenceIndex      Int      @map("sentence_index") @db.UnsignedInt
+  originalSentence   String?  @map("original_sentence") @db.Text
+  correctedSentence  String   @map("corrected_sentence") @db.Text
+  comment            String   @db.Text
+  isAcceptedFirstTry Boolean  @default(true) @map("is_accepted_first_try")
+  createdAt          DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([reviewId], map: "idx_review_comments_review")
+  @@map("review_comments")
 }
 
 enum TriplesetType {
   original
   modified
+}
+
+model RegisterCode {
+  code      String   @id @db.VarChar(16)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  @@map("register_codes")
+}
+
+model Session {
+  sid       String   @id @db.VarChar(128)
+  data      String   @db.Text
+  expiresAt DateTime @map("expires_at") @db.DateTime(0)
+
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@map("sessions")
 }

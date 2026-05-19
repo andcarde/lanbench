@@ -1,0 +1,72 @@
+Case 1
+RDF Tree: (X (X))
+Triple RDF: Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab
+Phrase 1: The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.
+Phrase 2: Punjab, Pakistan is led by the Provincial Assembly of the Punjab.
+One more.
+
+Case 2
+RDF Tree: (X (X))
+Triple RDF: Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab
+Phrase 1: The English language is spoken in Singapore.
+Phrase 2: English is spoken in Singapore.
+Zero more.
+
+Case 1
+RDF Tree: (X (X))
+RDFTriple: Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab
+phrase1: The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.
+phrase2: Punjab, Pakistan is led by the Provincial Assembly of the Punjab.
+morePhrases: 1
+
+Case 2 {
+RDFTree: "(X (X))"
+RDFTriple: "Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab"
+phrase1: "The English language is spoken in Singapore."
+phrase2: "English is spoken in Singapore."
+morePhrases: 0
+}
+
+{
+  "rdf_tree": ["X", ["X"]],
+  "rdf_triple": {
+    "subject": "Punjab, Pakistan",
+    "predicate": "leaderTitle",
+    "object": "Provincial Assembly of the Punjab"
+  },
+  "phrases_en": [
+    "The English language is spoken in Singapore.",
+    "English is spoken in Singapore."
+  ],
+  "generate_additional_phrases": 0
+}
+
+{
+  "triples": [
+    {
+      "subject": "William Anders",
+      "predicate": "mission",
+      "object": "Apollo 8"
+    },
+    {
+      "subject": "Apollo 8",
+      "predicate": "backupPilot",
+      "object": "Buzz Aldrin"
+    },
+    {
+      "subject": "Apollo 8",
+      "predicate": "crewMembers",
+      "object": "Frank Borman"
+    },
+    {
+      "subject": "Apollo 8",
+      "predicate": "operator",
+      "object": "NASA"
+    }
+  ],
+  "phrases_en": [
+    "William Anders worked for NASA and became a crew member of Apollo 8 with Buzz Aldrin as his back up pilot.",
+    "William Anders was a crew member of the NASA operated Apollo 8 along with fellow crew member Frank Borman and backup pilot Buzz Aldrin."
+  ],
+  "additional_phrases": 1
+}

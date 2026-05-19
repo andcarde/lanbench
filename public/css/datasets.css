@@ -116,6 +116,48 @@ body {
   background: #e4df74;
 }
 
+.btn-review {
+  background: #f4dfc7;
+  border-color: #b88655;
+  color: #000;
+}
+
+.btn-review:hover:not(:disabled) {
+  background: #edcfaa;
+}
+
+.btn-review:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.btn-admin {
+  min-width: 138px;
+  background: #d9ead3;
+  border-color: #7aa66f;
+  color: #000;
+}
+
+.btn-admin:hover {
+  background: #cfe3c8;
+}
+
+.btn-delete {
+  width: 52px;
+  min-width: 52px;
+  padding: 0;
+  background: #d92d20;
+  border-color: #9f1f18;
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.btn-delete:hover {
+  background: #b42318;
+  color: #fff;
+}
+
 .dataset-progress-row {
   margin-top: 10px;
   padding-left: 0;

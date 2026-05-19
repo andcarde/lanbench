@@ -1,55 +1,59 @@
 {
-  "name": "lanbench",
-  "version": "0.0.0",
-  "description": "The application is a web platform designed to generate, annotate, and evaluate Spanish text from RDF triples based on the WebNLG dataset.",
-  "main": "app.js",
-  "scripts": {
-    "front-debug": "node scripts/front-debug.js",
-    "bootstrap-admin": "node scripts/bootstrap-admin.js",
-    "test": "npm run test:unit",
-    "test:unit": "mocha \"tests/**/*.test.js\" --exclude \"tests/**/*.integration.test.js\"",
-    "test:integration": "mocha \"tests/**/*.integration.test.js\"",
-    "test:all": "mocha \"tests/**/*.test.js\""
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/andcarde/lanbench.git"
-  },
-  "keywords": [
-    "workbench",
-    "nlg",
-    "spanish"
-  ],
-  "author": "andcarde",
-  "license": "UNLICENSED",
-  "bugs": {
-    "url": "https://github.com/andcarde/lanbench/issues"
-  },
-  "homepage": "https://github.com/andcarde/lanbench#readme",
-  "directories": {
-    "test": "tests"
-  },
-  "dependencies": {
-    "@prisma/adapter-mariadb": "^7.7.0",
-    "@prisma/client": "^7.7.0",
-    "express": "^5.2.1",
-    "express-mysql-session": "^3.0.3",
-    "express-session": "^1.19.0",
-    "fast-xml-parser": "^5.6.0",
-    "http-errors": "^2.0.1",
-    "mariadb": "^3.5.2",
-    "multer": "^2.1.1",
-    "mysql": "^2.18.1",
-    "pino": "^10.3.1",
-    "pino-http": "^11.0.0"
-  },
-  "devDependencies": {
-    "chai": "^6.2.2",
-    "mocha": "^11.3.0",
-    "prisma": "^7.7.0",
-    "proxyquire": "^2.1.3",
-    "proxyrequire": "^1.0.21",
-    "testdouble": "^3.20.2",
-    "ts-mockito": "^2.6.1"
-  }
+    "name": "lanbench",
+    "version": "0.0.0",
+    "description": "The application is a web platform designed to generate, annotate, and evaluate Spanish text from RDF triples based on the WebNLG dataset.",
+    "main": "app.js",
+    "scripts": {
+        "front-debug": "node scripts/front-debug.js",
+        "bootstrap-admin": "node scripts/bootstrap-admin.js",
+        "register-code": "node scripts/generate-register-codes.js",
+        "test": "npm run test:unit",
+        "test:unit": "mocha \"tests/unit/**/*.test.js\" --exit",
+        "test:integration": "mocha \"tests/integration/**/*.test.js\" --exit",
+        "test:all": "mocha \"tests/{unit,integration}/**/*.test.js\" --exit",
+        "test:db": "node tests/db/db-schema-check.js",
+        "lint:dead": "knip"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/andcarde/lanbench.git"
+    },
+    "keywords": [
+        "workbench",
+        "nlg",
+        "spanish"
+    ],
+    "author": "andcarde",
+    "license": "UNLICENSED",
+    "bugs": {
+        "url": "https://github.com/andcarde/lanbench/issues"
+    },
+    "homepage": "https://github.com/andcarde/lanbench#readme",
+    "directories": {
+        "test": "tests"
+    },
+    "dependencies": {
+        "@prisma/adapter-mariadb": "^7.7.0",
+        "@prisma/client": "^7.7.0",
+        "express": "^5.2.1",
+        "express-session": "^1.19.0",
+        "fast-xml-parser": "^5.8.0",
+        "http-errors": "^2.0.1",
+        "mariadb": "^3.5.2",
+        "multer": "^2.1.1"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/express-session": "^1.19.0",
+        "@types/mocha": "^10.0.10",
+        "@types/multer": "^2.1.0",
+        "@types/node": "^25.8.0",
+        "chai": "^6.2.2",
+        "knip": "^6.12.2",
+        "mocha": "^11.3.0",
+        "prisma": "^7.7.0",
+        "proxyquire": "^2.1.3",
+        "testdouble": "^3.20.2",
+        "typescript": "^6.0.3"
+    }
 }

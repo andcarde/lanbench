@@ -1,3 +1,15 @@
 {
-    "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "SonarQube",
+        "projectKey": "andcarde_lanbench"
+    }
 }

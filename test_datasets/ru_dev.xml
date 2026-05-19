@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <benchmark>
   <entries>
-    <entry category="Airport" eid="1" shape="(X (X))" shape_type="NA" size="1">
+    <entry category="Place" eid="1" shape="(X (X))" shape_type="NA" size="1">
       <originaltripleset>
         <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
       </originaltripleset>

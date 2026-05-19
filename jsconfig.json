@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "nodenext",
+        "allowJs": true,
+        "checkJs": true,
+        "strict": true,
+        "noEmit": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "maxNodeModuleJsDepth": 0,
+        "types": ["node", "mocha"]
+    },
+    "include": [
+        "**/*.js",
+        "types/**/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "public",
+        "front-mocks",
+        "fix-*.js",
+        "analyze-*.js"
+    ]
+}

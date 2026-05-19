@@ -45,3 +45,8 @@
 .toast {
     border-radius: 10px;
 }
+
+#moderatorCode {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.08em;
+}

@@ -38,9 +38,12 @@ module.exports = [
             'no-redeclare': 'error',
             'no-unreachable': 'error',
             'no-unsafe-finally': 'error',
-            'no-unused-vars': ['warn', {
+            'no-unused-vars': ['error', {
+                vars: 'all',
+                args: 'after-used',
                 argsIgnorePattern: '^_',
-                caughtErrorsIgnorePattern: '^_'
+                caughtErrorsIgnorePattern: '^_',
+                ignoreRestSiblings: true
             }],
             'use-isnan': 'error',
             'valid-typeof': 'error'

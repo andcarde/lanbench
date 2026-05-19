@@ -152,6 +152,32 @@
           "type": "string",
           "minLength": 1,
           "description": "Opcional. Clase CSS para representacion visual."
+        },
+        "permissions": {
+          "type": "object",
+          "description": "Opcional. Permisos del usuario actual sobre el dataset.",
+          "additionalProperties": false,
+          "properties": {
+            "annotator": { "type": "boolean" },
+            "reviewer": { "type": "boolean" },
+            "admin": { "type": "boolean" },
+            "owner": { "type": "boolean" },
+            "canAdmin": { "type": "boolean" }
+          }
+        },
+        "review": {
+          "type": "object",
+          "description": "Opcional. Estado de revision del usuario actual sobre el dataset.",
+          "additionalProperties": false,
+          "properties": {
+            "canReview": { "type": "boolean" },
+            "showReviewButton": { "type": "boolean" },
+            "reviewAvailable": { "type": "boolean" },
+            "reviewableCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
       }
     },
@@ -297,6 +323,11 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "proposal": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opcional. Propuesta corregida generada por el LLM tras una validacion negativa."
         }
       }
     },

@@ -1,0 +1,301 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --error-bg:
+    radial-gradient(circle at top left, rgba(34, 111, 197, 0.22), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(15, 76, 151, 0.16), transparent 36%),
+    linear-gradient(180deg, #eef3f9 0%, #dbe6f2 100%);
+  --error-surface: rgba(255, 255, 255, 0.9);
+  --error-border: rgba(62, 96, 136, 0.18);
+  --error-text: #18324d;
+  --error-muted: #5f7288;
+  --error-shadow: 0 24px 60px rgba(19, 47, 81, 0.14);
+  --error-accent: #1d63b8;
+  --error-accent-soft: rgba(29, 99, 184, 0.12);
+  --error-warn: #b87510;
+  --error-warn-soft: rgba(184, 117, 16, 0.12);
+}
+
+body.error-page {
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Manrope', Arial, Helvetica, sans-serif;
+  color: var(--error-text);
+  background: var(--error-bg);
+}
+
+.error-page .app-toolbar {
+  backdrop-filter: blur(10px);
+}
+
+.error-page .app-toolbar-actions {
+  gap: 0.9rem;
+}
+
+.error-toolbar-link {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.62rem 1.1rem;
+  text-decoration: none;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.error-toolbar-link:hover,
+.error-toolbar-link:focus {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.error-shell {
+  min-height: calc(100vh - var(--toolbar-height));
+  padding: 2rem 1.25rem 2.5rem;
+  display: grid;
+  place-items: center;
+}
+
+.error-card {
+  width: min(100%, 1060px);
+  background: var(--error-surface);
+  border: 1px solid var(--error-border);
+  border-radius: 32px;
+  box-shadow: var(--error-shadow);
+  overflow: hidden;
+}
+
+.error-card-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr);
+  gap: 0;
+}
+
+.error-content,
+.error-side-panel {
+  padding: 3rem;
+}
+
+.error-content {
+  position: relative;
+}
+
+.error-content::after {
+  content: '';
+  position: absolute;
+  inset: 1.5rem auto auto 1.5rem;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(29, 99, 184, 0.07);
+  filter: blur(1px);
+  z-index: 0;
+}
+
+.error-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+.error-kicker {
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--error-muted);
+}
+
+.error-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  min-height: 112px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #1f6dcb 0%, #124f96 100%);
+  color: #fff;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  box-shadow: 0 18px 32px rgba(23, 84, 157, 0.24);
+}
+
+.error-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--error-accent-soft);
+  color: var(--error-accent);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.55rem 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.error-page[data-error-variant='warning'] .error-code {
+  background: linear-gradient(180deg, #d39a34 0%, #a5650d 100%);
+  box-shadow: 0 18px 32px rgba(165, 101, 13, 0.24);
+}
+
+.error-page[data-error-variant='warning'] .error-chip {
+  background: var(--error-warn-soft);
+  color: var(--error-warn);
+}
+
+.error-title {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.error-description {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--error-muted);
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.error-home-link {
+  min-width: 220px;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  padding: 0.85rem 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #1f6dcb 0%, #124f96 100%);
+  border: none;
+  box-shadow: 0 14px 28px rgba(23, 84, 157, 0.2);
+}
+
+.error-page[data-error-variant='warning'] .error-home-link {
+  background: linear-gradient(180deg, #d39a34 0%, #a5650d 100%);
+  box-shadow: 0 14px 28px rgba(165, 101, 13, 0.18);
+}
+
+.error-home-link:hover,
+.error-home-link:focus {
+  transform: translateY(-1px);
+}
+
+.error-side-panel {
+  background:
+    linear-gradient(180deg, rgba(14, 54, 104, 0.05) 0%, rgba(14, 54, 104, 0.12) 100%);
+  border-left: 1px solid rgba(62, 96, 136, 0.12);
+  display: grid;
+  gap: 1rem;
+  align-content: center;
+}
+
+.error-panel-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.error-panel-copy {
+  margin: 0 0 0.5rem;
+  color: var(--error-muted);
+  line-height: 1.65;
+}
+
+.error-metadata {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.error-meta-card {
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(62, 96, 136, 0.12);
+  border-radius: 18px;
+  padding: 1rem 1.05rem;
+}
+
+.error-meta-label {
+  display: block;
+  margin-bottom: 0.38rem;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: var(--error-muted);
+}
+
+.error-meta-value,
+.error-meta-value code {
+  font-size: 0.98rem;
+  color: var(--error-text);
+}
+
+.error-meta-value code {
+  padding: 0;
+  background: transparent;
+}
+
+.error-support-note {
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px dashed rgba(62, 96, 136, 0.2);
+  color: var(--error-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 991px) {
+  .error-card-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .error-side-panel {
+    border-left: 0;
+    border-top: 1px solid rgba(62, 96, 136, 0.12);
+  }
+}
+
+@media (max-width: 640px) {
+  .error-shell {
+    padding: 1.25rem 0.8rem 1.5rem;
+  }
+
+  .error-content,
+  .error-side-panel {
+    padding: 1.6rem;
+  }
+
+  .error-header {
+    align-items: flex-start;
+  }
+
+  .error-code {
+    min-width: 88px;
+    min-height: 88px;
+    border-radius: 24px;
+  }
+
+  .error-home-link {
+    width: 100%;
+  }
+}

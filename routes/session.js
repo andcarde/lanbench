@@ -1,28 +1,39 @@
-
-// session.js
 'use strict';
 
-const config = require('../config.js');
-const mysql = config.mysql;
+/**
+ * @file Construye el middleware de sesion (express-session) respaldado por
+ * Prisma. `store` y `prisma` son inyectables para que los tests usen un
+ * cliente alternativo sin sesion real.
+ *
+ */
 
-// Últiles de sesiones
 const session = require('express-session');
-const mysqlsession = require('express-mysql-session');
-const MySQLStore = mysqlsession(session);
-const sessionStore = new MySQLStore({
-    host: mysql.host,
-    user: mysql.user,
-    password: mysql.password,
-    database: mysql.database,
-    port: mysql.port
-});
+const config = require('../config');
+const { PrismaSessionStore } = require('../utils/prisma-session-store');
 
-const middlewareSession = session ({
-    saveUninitialized: false,
-    secret: config.session.secret,
-    resave: false,
-    store: sessionStore,
-    cookie: config.session.cookie
-});
+/**
+ * Crea el middleware de sesion respaldado por Prisma.
+ *
+ * @param {{
+ *   store?: any,
+ *   secret?: string,
+ *   cookie?: Record<string, any>,
+ *   prisma?: any
+ * }} [options]
+ * @returns {import('express').RequestHandler}
+ */
+function createSessionMiddleware({ store, secret, cookie, prisma } = {}) {
+    const resolvedStore = store || new PrismaSessionStore({ prisma });
 
-module.exports = middlewareSession;
+    return session({
+        saveUninitialized: false,
+        resave: false,
+        secret: secret || config.session.secret,
+        cookie: cookie || config.session.cookie,
+        store: resolvedStore
+    });
+}
+
+module.exports = {
+    createSessionMiddleware
+};

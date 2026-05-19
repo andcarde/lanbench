@@ -1,0 +1,19 @@
+
+2026.05.18.15.15.41.472 POST /register {
+    surname: 'A',
+    lastName: 'A',
+    email: 'a@a.es',
+    password: '[REDACTED]',
+    repeatPassword: '[REDACTED]'
+}
+
+2026.05.18.15.15.50.001 POST /create-session {
+    email: 'a@a.es',
+    password: '[REDACTED]'
+}
+
+2026.05.18.15.17.30.696 POST /create-session {
+    email: 'a@a.es',
+    password: '[REDACTED]'
+}
+
