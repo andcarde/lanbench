@@ -155,8 +155,8 @@ describe('users-controller registerModerator', () => {
 });
 
 /**
- * Construye un request fake con body y session vacios.
- * @param {*} body - Cuerpo de la peticion.
+ * Builds a fake request with empty body and session.
+ * @param {*} body - Request body.
  * @returns {*} Request fake.
  */
 function makeRequest(body) {
@@ -164,8 +164,8 @@ function makeRequest(body) {
 }
 
 /**
- * Crea response recorder con la configuracion recibida.
- * @returns {*} Resultado producido por la funcion.
+ * Creates response recorder with the received configuration.
+ * @returns {*} Result produced by the function.
  */
 function createResponseRecorder() {
     /** @type {any} */

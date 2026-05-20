@@ -3,16 +3,16 @@
 /**
  * @file Repository for the `Annotation` table.
  *
- * La tabla `Annotation` almacena una fila por (`userId`, `datasetId`,
- * `entryId`, `sentenceIndex`). Las anotaciones se reemplazan en bloque por
- * entry — nunca se aplican parches por oracion individual.
+ * The `Annotation` table stores one row per (`userId`, `datasetId`,
+ * `entryId`, `sentenceIndex`). Annotations are replaced in bulk per entry —
+ * individual per-sentence patches are never applied.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  *
  * @typedef {Object} AnnotationSentenceInput
- * @property {string} [sentence]               - Texto de la oracion.
- * @property {string|null} [rejectionReason]   - Razon de rechazo (opcional).
- * @property {number} [sentenceIndex]          - Indice explicito; si falta se usa el del array.
+ * @property {string} [sentence]               - Sentence text.
+ * @property {string|null} [rejectionReason]   - Rejection reason (optional).
+ * @property {number} [sentenceIndex]          - Explicit index; if missing, the array index is used.
  *
  * @typedef {Object} AnnotationRow
  * @property {number} datasetId
@@ -26,7 +26,7 @@
 const defaultPrisma = require('../prisma/client');
 
 /**
- * Construye el repositorio de `Annotation`.
+ * Builds the `Annotation` repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  * @returns {{
@@ -40,12 +40,12 @@ function createAnnotationsRepository({ prisma } = {}) {
     };
 
     /**
-     * Reemplaza, dentro de una transaccion, las anotaciones existentes de
-     * una entry, siempre que el usuario tenga permisos sobre el dataset.
+     * Replaces, within a transaction, the existing annotations of an entry,
+     * provided the user has permissions over the dataset.
      *
-     * Devuelve `{ entryId, savedCount }` cuando la operacion se aplica, o
-     * `null` cuando la entry no es accesible (no existe o el usuario no
-     * tiene permisos).
+     * Returns `{ entryId, savedCount }` when the operation is applied, or
+     * `null` when the entry is not accessible (it does not exist or the user
+     * has no permissions).
      *
      * @param {{ userId:number, datasetId:number, eid:number, sentences: AnnotationSentenceInput[] }} input
      * @returns {Promise<{ entryId:number, savedCount:number }|null>}
@@ -97,8 +97,8 @@ function createAnnotationsRepository({ prisma } = {}) {
     }
 
     /**
-     * Cuenta entries con al menos una anotacion del usuario, restringido al
-     * conjunto `entryIds`.
+     * Counts entries with at least one annotation by the user, restricted to
+     * the `entryIds` set.
      *
      * @param {{ userId:number, entryIds:number[] }} options
      * @returns {Promise<number>}
@@ -122,9 +122,9 @@ function createAnnotationsRepository({ prisma } = {}) {
 }
 
 /**
- * Construye una fila `Annotation` por `sentenceIndex`, descartando entradas
- * sin texto. La funcion no toca BD: se exporta solo para que los tests
- * puedan validar la conversion.
+ * Builds one `Annotation` row per `sentenceIndex`, discarding entries without
+ * text. The function does not touch the DB: it is exported only so that tests
+ * can validate the conversion.
  *
  * @param {{ userId:number, datasetId:number, sentences: AnnotationSentenceInput[] }} options
  * @returns {AnnotationRow[]}

@@ -10,6 +10,7 @@ const { createApp } = require('../../../app');
 
 const app = createApp();
 const { warnIfDatabaseInactive } = require('../../../utils/database-health');
+const { normalizeBigInts } = require('../_helpers/bigint');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
@@ -76,7 +77,7 @@ describe('users database integration', function () {
         const registerPayload = await registerResponse.json();
         assert.equal(registerPayload.message, 'User validated correctly.');
 
-        const loginResponse = await fetch(`${baseUrl}/create-session`, {
+        const loginResponse = await fetch(`${baseUrl}/api/session`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -92,8 +93,8 @@ describe('users database integration', function () {
         const sessionCookie = getSessionCookie(loginResponse);
         assert.ok(sessionCookie, 'No se recibio cookie de sesion en el login.');
 
-        const logoutResponse = await fetch(`${baseUrl}/api/administrator/logout`, {
-            method: 'POST',
+        const logoutResponse = await fetch(`${baseUrl}/api/session`, {
+            method: 'DELETE',
             headers: {
                 cookie: sessionCookie
             },
@@ -130,9 +131,9 @@ describe('users database integration', function () {
 });
 
 /**
- * Obtiene session cookie desde la fuente correspondiente.
- * @param {*} response - Respuesta HTTP usada para devolver el resultado.
- * @returns {*} Resultado producido por la funcion.
+ * Gets the session cookie from the response.
+ * @param {*} response - HTTP response.
+ * @returns {*} Session cookie, or null.
  */
 function getSessionCookie(response) {
     if (typeof response.headers.getSetCookie === 'function') {
@@ -150,11 +151,11 @@ function getSessionCookie(response) {
 }
 
 /**
- * Ejecuta una query SQL contra Prisma y devuelve el resultado.
- * Para SELECT devuelve las filas; para INSERT/UPDATE/DELETE devuelve {affectedRows}.
- * @param {string} sql - Sentencia SQL.
- * @param {Array<*>} [params] - Parametros posicionales.
- * @returns {Promise<*>} Filas resultado o resumen de filas afectadas.
+ * Runs a SQL query against Prisma and returns the result.
+ * For SELECT it returns the rows; for INSERT/UPDATE/DELETE it returns {affectedRows}.
+ * @param {string} sql - SQL statement.
+ * @param {Array<*>} [params] - Positional parameters.
+ * @returns {Promise<*>} Result rows, or affected-rows summary.
  */
 async function dbQuery(sql, params = []) {
     if (/^\s*SELECT\b/i.test(sql)) {
@@ -166,26 +167,8 @@ async function dbQuery(sql, params = []) {
 }
 
 /**
- * Convierte recursivamente los BigInt devueltos por Prisma a Number.
- * @param {*} value - Valor a normalizar.
- * @returns {*} Valor sin BigInt.
- */
-function normalizeBigInts(value) {
-    if (typeof value === 'bigint') return Number(value);
-    if (Array.isArray(value)) return value.map(normalizeBigInts);
-    if (value && typeof value === 'object') {
-        /** @type {Record<string, *>} */
-        const result = {};
-        for (const key of Object.keys(value))
-            result[key] = normalizeBigInts(value[key]);
-        return result;
-    }
-    return value;
-}
-
-/**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Returns a free TCP port.
+ * @returns {Promise<number>} Available port.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

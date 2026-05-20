@@ -17,15 +17,15 @@ describe('annotations router integration', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Comprueba check sentences y devuelve el resultado de la validacion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check sentences and returns the validation result.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async checkSentences() {
                     return [];
                 },
                 /**
-                 * Ejecuta de forma asincrona save sentences contra la capa de persistencia o API correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save sentences against the corresponding persistence layer or API.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async saveSentences() {}
             },
@@ -52,15 +52,15 @@ describe('annotations router integration', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Comprueba check sentences y devuelve el resultado de la validacion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check sentences and returns the validation result.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async checkSentences() {
                     return [];
                 },
                 /**
-                 * Ejecuta de forma asincrona save sentences contra la capa de persistencia o API correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save sentences against the corresponding persistence layer or API.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async saveSentences() {}
             }
@@ -68,13 +68,13 @@ describe('annotations router integration', () => {
         const usersController = createUsersController({
             usersService: {
                 /**
-                 * Ejecuta de forma asincrona la logica de register user.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of register user.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async registerUser() {},
                 /**
-                 * Ejecuta de forma asincrona la logica de authenticate user.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of authenticate user.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async authenticateUser() {
                     return { userId: 1, email: 'user@example.com' };

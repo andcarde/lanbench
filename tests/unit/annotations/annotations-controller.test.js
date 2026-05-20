@@ -15,10 +15,10 @@ describe('annotations-controller', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Comprueba check sentences y devuelve el resultado de la validacion.
-                 * @param {Array<*>} sentences - Valor de sentences usado por la funcion.
-                 * @param {*} entryContext - Valor de entryContext usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check sentences and returns the validation result.
+                 * @param {Array<*>} sentences - Value of sentences used by the function.
+                 * @param {*} entryContext - Value of entryContext used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async checkSentences(sentences, entryContext) {
                     capturedCalls.push({ sentences, entryContext });
@@ -90,8 +90,8 @@ describe('annotations-controller', () => {
         ]);
         assert.equal(capturedCalls.length, 1);
         assert.deepEqual(capturedCalls[0].sentences, ['Esta es correcta.', 'Esto necesita ajuste']);
-        assert.equal(capturedCalls[0].entryContext.eid, 15);
-        assert.deepEqual(capturedCalls[0].entryContext.sourceSentences, [
+        assert.equal(capturedCalls[0].entryContext.entryId, 15);
+        assert.deepEqual(capturedCalls[0].entryContext.englishSentences, [
             'This one is correct.',
             'This one needs revision.'
         ]);
@@ -101,8 +101,8 @@ describe('annotations-controller', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Comprueba check sentences y devuelve el resultado de la validacion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check sentences and returns the validation result.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async checkSentences() {
                     throw new Error('checkSentences should not be called');
@@ -131,9 +131,9 @@ describe('annotations-controller', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Ejecuta de forma asincrona save sentences contra la capa de persistencia o API correspondiente.
-                 * @param {*} payload - Valor de payload usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save sentences against the corresponding persistence layer or API.
+                 * @param {*} payload - Value of payload used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async saveSentences(payload) {
                     capturedSaves.push(payload);
@@ -158,8 +158,10 @@ describe('annotations-controller', () => {
             body: {
                 datasetId: 3,
                 entryId: 9,
-                sentences: ['Primera.', 'Segunda.'],
-                rejectionReasons: ['', 'Demasiado literal']
+                sentences: [
+                    { sentence: 'Primera.', rejectionReason: null },
+                    { sentence: 'Segunda.', rejectionReason: 'Demasiado literal' }
+                ]
             }
         }, response);
 
@@ -175,8 +177,10 @@ describe('annotations-controller', () => {
                 userId: 7,
                 datasetId: 3,
                 rdfId: 9,
-                sentences: ['Primera.', 'Segunda.'],
-                rejectionReasons: ['', 'Demasiado literal']
+                sentences: [
+                    { sentence: 'Primera.', rejectionReason: null },
+                    { sentence: 'Segunda.', rejectionReason: 'Demasiado literal' }
+                ]
             }
         ]);
     });
@@ -187,10 +191,10 @@ describe('annotations-controller', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Comprueba check sentences y devuelve el resultado de la validacion.
-                 * @param {Array<*>} sentences - Valor de sentences usado por la funcion.
-                 * @param {*} entryContext - Valor de entryContext usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check sentences and returns the validation result.
+                 * @param {Array<*>} sentences - Value of sentences used by the function.
+                 * @param {*} entryContext - Value of entryContext used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async checkSentences(sentences, entryContext) {
                     capturedCalls.push({ sentences, entryContext });
@@ -238,8 +242,8 @@ describe('annotations-controller', () => {
         const annotationsController = createAnnotationsController({
             annotationsService: {
                 /**
-                 * Ejecuta de forma asincrona save sentences contra la capa de persistencia o API correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save sentences against the corresponding persistence layer or API.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async saveSentences() {
                     throw new Error('saveSentences should not be called');
@@ -436,8 +440,8 @@ describe('annotations-controller', () => {
 });
 
 /**
- * Crea response recorder con la configuracion recibida.
- * @returns {*} Resultado producido por la funcion.
+ * Creates response recorder with the received configuration.
+ * @returns {*} Result produced by the function.
  */
 function createResponseRecorder() {
     /** @type {any} */
@@ -449,18 +453,18 @@ function createResponseRecorder() {
     /** @type {any} */
     const response = {
         /**
-         * Ejecuta la logica de status.
-         * @param {string} code - Valor de code usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of status.
+         * @param {string} code - Value of code used by the function.
+         * @returns {*} Result produced by the function.
          */
         status(code) {
             recorder.statusCode = code;
             return this;
         },
         /**
-         * Ejecuta la logica de json.
-         * @param {*} payload - Valor de payload usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of json.
+         * @param {*} payload - Value of payload used by the function.
+         * @returns {*} Result produced by the function.
          */
         json(payload) {
             recorder.payload = payload;

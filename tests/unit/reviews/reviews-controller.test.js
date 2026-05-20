@@ -10,8 +10,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye response a partir de los datos recibidos.
- * @returns {*} Resultado producido por la funcion.
+ * Builds response from the received data.
+ * @returns {*} Result produced by the function.
  */
 function buildResponse() {
     /** @type {any} */
@@ -19,29 +19,29 @@ function buildResponse() {
     return {
         captured,
         /**
-         * Ejecuta la logica de status.
-         * @param {string} code - Valor de code usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of status.
+         * @param {string} code - Value of code used by the function.
+         * @returns {*} Result produced by the function.
          */
         status(code) { captured.status = code; return this; },
         /**
-         * Ejecuta la logica de json.
-         * @param {*} payload - Valor de payload usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of json.
+         * @param {*} payload - Value of payload used by the function.
+         * @returns {*} Result produced by the function.
          */
         json(payload) { captured.body = payload; return this; },
         /**
-         * Ejecuta la logica de end.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of end.
+         * @returns {*} Result produced by the function.
          */
         end() { captured.ended = true; return this; }
     };
 }
 
 /**
- * Construye request a partir de los datos recibidos.
- * @param {*} options - Objeto de opciones usado para configurar la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds request from the received data.
+ * @param {*} options - Options object used to configure the function.
+ * @returns {*} Result produced by the function.
  */
 function buildRequest({ user = { id: 7 }, params = {}, body = {}, query = {} } = {}) {
     return { user, params, body, query };
@@ -53,9 +53,9 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Ejecuta de forma asincrona request next review contra la capa de persistencia o API correspondiente.
-                     * @param {*} options - Objeto de opciones usado para configurar la funcion.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs request next review against the corresponding persistence layer or API.
+                     * @param {*} options - Options object used to configure the function.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async requestNextReview({ reviewerId }) {
                         assert.equal(reviewerId, 7);
@@ -74,8 +74,8 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Ejecuta de forma asincrona request next review contra la capa de persistencia o API correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs request next review against the corresponding persistence layer or API.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async requestNextReview() {
                         throw new ServiceError('vacio', { status: 404, code: 'no_review_available' });
@@ -117,9 +117,9 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Ejecuta de forma asincrona submit decision contra la capa de persistencia o API correspondiente.
-                     * @param {*} args - Valor de args usado por la funcion.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs submit decision against the corresponding persistence layer or API.
+                     * @param {*} args - Value of args used by the function.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async submitDecision(args) { called = args; return { reviewId: 5, currentCriterionIndex: 1 }; }
                 }
@@ -153,8 +153,8 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Ejecuta de forma asincrona submit text correction contra la capa de persistencia o API correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs submit text correction against the corresponding persistence layer or API.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async submitTextCorrection() { return [{ sentenceIndex: 0, correctedSentence: 'foo' }]; }
                 }
@@ -175,7 +175,7 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Ejecuta de forma asincrona la logica de finalize review.
+                     * Asynchronously runs the logic of finalize review.
                      */
                     async finalizeReview() { throw new ServiceError('faltan', { status: 409, code: 'criteria_incomplete' }); }
                 }
@@ -207,9 +207,9 @@ describe('reviews-controller (T4.4)', () => {
             const controller = createReviewsController({
                 reviewsService: {
                     /**
-                     * Obtiene feedback for annotator desde la fuente correspondiente.
-                     * @param {*} args - Valor de args usado por la funcion.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets feedback for annotator from the corresponding source.
+                     * @param {*} args - Value of args used by the function.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async getFeedbackForAnnotator(args) { captured = args; return [{ reviewId: 1 }]; }
                 }

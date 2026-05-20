@@ -83,7 +83,6 @@ Dataset {
     id                   INT          [PK, AUTOINCREMENT]
     name                 VARCHAR(128)
     totalEntries         INT
-    content              MEDIUMBLOB
     languages            TEXT?
     colorClass           VARCHAR(64)  [DEFAULT 'dataset-purple']
     llmMode              VARCHAR(20)  [DEFAULT 'none']
@@ -100,7 +99,7 @@ Dataset {
 Notes:
 
 - `totalEntries` is the number of entries belonging to this dataset.
-- `content` is the raw XML payload (MediumBlob).
+- The raw XML payload is **not** persisted on `Dataset`. The dataset XML is reconstructed on demand from the persisted graph (`Entry` + `Tripleset` + `Triple` + `Lex` + `DbpediaLink` + `Link`) by `utils/dataset-xml.js#buildDatasetXml`. The original uploaded filename is also not stored: the download endpoints derive it as `<Dataset.name>.xml` (see section 8).
 - `llmMode` selects how the LLM is used for this dataset (e.g. `none`, suggestion, validation — values defined at the application level).
 - `isReviewEnabled` toggles the review workflow for this dataset; `hasAdditionalReviews` enables further review rounds beyond the first.
 - `sectionsCompleted`, `sectionsInReview`, `sectionsPending` are **persisted progress counters** maintained by the application; they are not derived on the fly.
@@ -460,6 +459,27 @@ The invariant is `sectionsPending + sectionsInReview + sectionsCompleted == ceil
 3. Automatic alerts are computed (rules + LLM in the mode set by `Dataset.llmMode`). For each alert the annotator interacts with, an `AnnotationAlertDecision` row records `alertType`, `alertCode`, the `decision` taken (e.g. applied, dismissed), the optional `suggestion` and `appliedSentence`, and the `reason` if the alert was dismissed.
 4. `Annotation.isAcceptedFirstTry` is set to `false` if the annotator had to override or rework any alert; otherwise it stays `true`.
 
+#### 4.1.1 `POST /api/annotations/send` request shape
+
+Each sentence travels alongside its optional rejection reason in a single object to remove the positional-pairing risk that two parallel arrays would carry (AUDIT-2 §22). The wire format is:
+
+```json
+{
+    "datasetId": 1,
+    "rdfId": 7,
+    "sentences": [
+        { "sentence": "First sentence.", "rejectionReason": null },
+        { "sentence": "Second sentence.", "rejectionReason": "Demasiado literal" }
+    ],
+    "sectionNumber": 2,
+    "isLastEntry": false
+}
+```
+
+- `sentences[i].sentence` is the literal text persisted into `Annotation.sentence`.
+- `sentences[i].rejectionReason` is the justification persisted into `Annotation.rejectionReason` when the annotator overrode automatic alerts; omit, set to `null`, or send an empty string when none applies.
+- `sectionNumber` and `isLastEntry` are optional and trigger section-finalisation bookkeeping when present.
+
 ### 4.2 Review flow (supports US-13)
 
 1. A `Review` row is created when an annotated entry enters the review workflow (`Dataset.isReviewEnabled = true`). The row references the entry, the original annotator and the assigned reviewer.
@@ -619,3 +639,77 @@ An unknown `format` returns `400`. The endpoint does **not** depend on the revie
 `scripts/bootstrap-admin.js` provisions a server-level moderator: it creates a user with `isModerator: true` or sets the flag on an existing user. It does not touch the `Permit` table.
 
 The front-end toolbar (`public/js/toolbar.js`) is the only `public/js/` file that branches on server role: it fetches `/api/session/me`, builds moderator-only navigation entries (`/reviewer` and `/tasks` admin links) iff `isModerator === true`, and renders a moderator badge under the same condition. All other front-end files (`annotations.js`, `datasets.js`, `reviewer.js`, `dataset-admin.js`) consume per-dataset permission DTOs and are independent of `isModerator`.
+
+## 8. Dataset downloads from the visualization tab
+
+This section details the implementation of the user-facing downloads described functionally in `US-29` and `US-30` of [USER-STORIES.md](USER-STORIES.md). Both endpoints live next to the existing `GET /api/datasets/:id/text` (the source of truth for the read-only viewer in `public/dataset-view.html`) and share its authorization model: `requireApiAuth` plus the per-dataset accessibility check performed by `datasets-service.getAccessibleDatasetGraph`.
+
+### 8.1 Endpoint surface
+
+| Method | Path                                       | Handler                            | Purpose                                                                              |
+| ------ | ------------------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `GET`  | `/api/datasets/:id/download`               | `downloadDatasetXml`               | Download the dataset XML reconstructed from the persisted graph.                     |
+| `GET`  | `/api/datasets/:id/download/annotated`     | `downloadDatasetAnnotatedXml`      | Download the extended XML (original content + Spanish annotations). 100% only.       |
+
+Both routes are mounted in `routes/datasets-api.js` under the existing `requireApiAuth` middleware, exactly as `GET /api/datasets/:id/text`. No moderator or admin gating is applied; access is granted to any `Permit` holder of the dataset.
+
+### 8.2 Filename rule
+
+The originally uploaded filename is **not** persisted (see section 2.3). Both download endpoints derive the filename from `Dataset.name`:
+
+- `GET /api/datasets/:id/download` → `<Dataset.name>.xml`
+- `GET /api/datasets/:id/download/annotated` → `<Dataset.name>-extended.xml`
+
+Both responses set `Content-Type: application/xml; charset=utf-8` and `Content-Disposition: attachment; filename="<derived-name>"`.
+
+### 8.3 Original download (`/download`)
+
+`datasets-service.getAccessibleDatasetXmlDownload(userId, datasetId)`:
+
+1. Loads the accessible dataset graph through `getAccessibleDatasetGraph` (same call already used by `getAccessibleDatasetText`).
+2. Rejects with `ServiceError(status: 404, code: 'dataset_without_entries')` when the dataset has no persisted entries — same controlled error as `getAccessibleDatasetText`.
+3. Builds the XML body with `utils/dataset-xml.js#buildDatasetXml` over the persisted entries (same builder used by `/text`).
+4. Returns `{ filename: \`${dataset.name}.xml\`, body, contentType: 'application/xml; charset=utf-8' }`.
+
+The body is identical to the response of `GET /api/datasets/:id/text` — the only difference is the response headers (download instead of inline text).
+
+### 8.4 Extended download (`/download/annotated`)
+
+`datasets-service.getAccessibleDatasetAnnotatedXmlDownload(userId, datasetId)`:
+
+1. Loads the accessible dataset graph including the related `Annotation` rows for each entry (existing repository graph extended with an `annotations` include scoped to the same `datasetId`).
+2. Re-verifies the **completion condition**: `Dataset.sectionsCompleted === ceil(totalEntries / SECTION_SIZE) && Dataset.sectionsPending === 0`. Otherwise throws `ServiceError(status: 409, code: 'dataset_not_completed')`. The frontend disables the button on the same condition (read from the existing dataset DTO), but the backend re-checks it because the UI cannot be trusted to gate write/read access.
+3. Rejects with `dataset_without_entries` when the dataset has no entries (same code path as `/download`).
+4. Builds the extended XML with a new builder `utils/dataset-xml.js#buildAnnotatedDatasetXml` (see section 8.5).
+5. Returns `{ filename: \`${dataset.name}-extended.xml\`, body, contentType: 'application/xml; charset=utf-8' }`.
+
+### 8.5 Spanish lex pairing rule
+
+`buildAnnotatedDatasetXml` reuses `buildDatasetXml` for the structural backbone and adds, **per entry**, one Spanish `<lex>` element for every `Annotation` row of that entry, **ordered by `Annotation.sentenceIndex` ascending**. The output preserves the convention used by the source corpora (see `test-datasets/ru_dev.xml`), where each translation `<lex>` reuses the `lid` of its paired English `<lex>`:
+
+For each annotation `a` of entry `e`:
+
+1. Collect the English lex list of `e`: `englishLexes = e.lexes.filter(l => l.lang === 'en').sort(byPosition)`.
+2. If `a.sentenceIndex < englishLexes.length`:
+   - **Paired** Spanish lex. Use `lid = englishLexes[a.sentenceIndex].lid` (preserves the upper-case `Id<x>` convention).
+3. Otherwise:
+   - **Free** Spanish lex. Use `lid = \`id\${a.sentenceIndex + 1}\`` (lowercase `id` prefix, 1-indexed number).
+4. Emit `<lex comment="" lang="es" lid="<lid>">${escapeXml(a.sentence)}</lex>` immediately after the English lex of the same `lid` when paired, and at the end of the lex group (before `dbpedialinks`/`links`) for free entries. The relative order between original `<lex>` entries is preserved.
+
+The builder never emits a Spanish lex without a matching annotation, and never modifies non-Spanish lex entries already present. Existing `lang="ru"`/other-language lexes are passed through untouched.
+
+The pairing is **positional by `sentenceIndex`**, not by sentence text. The frontend annotator UI is the contract that places sentence `n` of the entry into `Annotation.sentenceIndex = n`; downstream consumers of the extended XML inherit that ordering.
+
+### 8.6 Authorization and access
+
+Both endpoints rely on the existing `getAccessibleDatasetGraph` to enforce per-dataset access:
+
+- A logged-in user without a `Permit` row over the dataset receives the same `404 dataset_not_found` returned by other accessible-dataset endpoints (no information leak about dataset existence).
+- A logged-in user with any `Permit` row (annotator, reviewer, admin, owner) can call both endpoints, mirroring the visibility of the existing `Visualización del XML` tab.
+- A `requireApiModerator()` check is **not** added; moderator status alone is not enough — a `Permit` row over the dataset is still required.
+
+### 8.7 Out of scope
+
+- Byte-identical reproduction of the originally uploaded XML. The download is reconstructed from the persisted graph; whitespace, attribute order and comments may differ from the upload. A future iteration may add a `Dataset.rawContent BLOB` column if byte fidelity is required.
+- Per-user filtering of annotations. The extended XML aggregates every persisted annotation for each entry (the `Annotation` PK already constrains it to one canonical row per `(entryId, datasetId, sentenceIndex)`).
+- Streaming for very large datasets. Bodies are built in memory; the current `buildDatasetXml` already follows the same approach for `/text`.

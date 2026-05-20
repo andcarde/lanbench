@@ -3,10 +3,8 @@
 const assert = require('node:assert/strict');
 const testApi = require('node:test');
 
-const {
-    createUsersRepository,
-    normalizeExactEmail
-} = require('../../../repositories/users-repository');
+const { createUsersRepository } = require('../../../repositories/users-repository');
+const { normalizeEmail } = require('../../../utils/validators');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
@@ -29,12 +27,7 @@ describe('users-repository exact email lookup', () => {
         const result = await repository.findByExactEmail(' Tom@Gmail.COM ');
 
         assert.equal(/** @type {any} */ (result).email, 'tom@gmail.com');
-        assert.deepEqual(calls[0].where, {
-            OR: [
-                { email: 'tom@gmail.com' },
-                { email: 'Tom@Gmail.COM' }
-            ]
-        });
+        assert.deepEqual(calls[0].where, { email: 'tom@gmail.com' });
     });
 
     it('devuelve null si el email queda vacio', async () => {
@@ -49,6 +42,6 @@ describe('users-repository exact email lookup', () => {
         });
 
         assert.equal(await repository.findByExactEmail('   '), null);
-        assert.equal(normalizeExactEmail(' A@B.COM '), 'a@b.com');
+        assert.equal(normalizeEmail(' A@B.COM '), 'a@b.com');
     });
 });

@@ -14,8 +14,8 @@ describe('admin-service (E5)', () => {
         const service = createAdminService({
             datasetsRepository: {
                 /**
-                 * Obtiene admin dataset summaries desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets admin dataset summaries from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findAdminDatasetSummaries() {
                     return [{
@@ -63,9 +63,9 @@ describe('admin-service (E5)', () => {
             now: () => new Date('2026-04-25T11:00:00.000Z'),
             datasetsRepository: {
                 /**
-                 * Obtiene dataset export graph by id desde la fuente correspondiente.
-                 * @param {*} datasetId - Valor de datasetId usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets dataset export graph by id from the corresponding source.
+                 * @param {*} datasetId - Value of datasetId used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findDatasetExportGraphById(datasetId) {
                     assert.equal(datasetId, 8);
@@ -91,8 +91,8 @@ describe('admin-service (E5)', () => {
             now: () => new Date('2026-04-25T11:00:00.000Z'),
             datasetsRepository: {
                 /**
-                 * Obtiene dataset export graph by id desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets dataset export graph by id from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findDatasetExportGraphById() {
                     return exportGraphFixture();
@@ -113,8 +113,8 @@ describe('admin-service (E5)', () => {
         const service = createAdminService({
             datasetsRepository: {
                 /**
-                 * Obtiene dataset export graph by id desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets dataset export graph by id from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findDatasetExportGraphById() {
                     throw new Error('No debería consultar el dataset.');
@@ -136,16 +136,16 @@ describe('admin-service (E5)', () => {
             datasetsRepository: fakeDatasetsRepository(),
             evaluationCriteriaRepository: {
                 /**
-                 * Obtiene many desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets many from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findMany() {
                     return [];
                 },
                 /**
-                 * Crea create con la configuracion recibida.
-                 * @param {*} data - Valor de data usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Creates a criterion with the received configuration.
+                 * @param {*} data - Value of data used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async create(data) {
                     captured = data;
@@ -182,23 +182,23 @@ describe('admin-service (E5)', () => {
             datasetsRepository: fakeDatasetsRepository(),
             evaluationCriteriaRepository: {
                 /**
-                 * Obtiene many desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets many from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findMany() {
                     return [];
                 },
                 /**
-                 * Crea create con la configuracion recibida.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Creates a criterion with the received configuration.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async create() {
                     throw new Error('No debería crear.');
                 },
                 /**
-                 * Actualiza update con los datos indicados.
-                 * @param {*} id - Valor de id usado por la funcion.
-                 * @param {*} data - Valor de data usado por la funcion.
+                 * Updates update with the given data.
+                 * @param {*} id - Value of id used by the function.
+                 * @param {*} data - Value of data used by the function.
                  */
                 async update(id, data) {
                     captured = { id, data };
@@ -240,8 +240,8 @@ describe('admin-service (E5)', () => {
 });
 
 /**
- * Ejecuta la logica de export graph fixture.
- * @returns {*} Resultado producido por la funcion.
+ * Runs the logic of the export graph fixture.
+ * @returns {*} Result produced by the function.
  */
 function exportGraphFixture() {
     return {
@@ -303,21 +303,21 @@ function exportGraphFixture() {
 }
 
 /**
- * Ejecuta la logica de fake datasets repository.
- * @returns {*} Resultado producido por la funcion.
+ * Runs the logic of the fake datasets repository.
+ * @returns {*} Result produced by the function.
  */
 function fakeDatasetsRepository() {
     return {
         /**
-         * Obtiene admin dataset summaries desde la fuente correspondiente.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets admin dataset summaries from the corresponding source.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findAdminDatasetSummaries() {
             return [];
         },
         /**
-         * Obtiene dataset export graph by id desde la fuente correspondiente.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset export graph by id from the corresponding source.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findDatasetExportGraphById() {
             return null;
@@ -326,22 +326,22 @@ function fakeDatasetsRepository() {
 }
 
 /**
- * Ejecuta la logica de fake criteria repository.
- * @returns {*} Resultado producido por la funcion.
+ * Runs the logic of the fake criteria repository.
+ * @returns {*} Result produced by the function.
  */
 function fakeCriteriaRepository() {
     return {
         /**
-         * Obtiene many desde la fuente correspondiente.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets many from the corresponding source.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findMany() {
             return [];
         },
         /**
-         * Crea create con la configuracion recibida.
-         * @param {*} data - Valor de data usado por la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Creates a criterion with the received configuration.
+         * @param {*} data - Value of data used by the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async create(data) {
             return {
@@ -354,9 +354,9 @@ function fakeCriteriaRepository() {
             };
         },
         /**
-         * Actualiza update con los datos indicados.
-         * @param {*} id - Valor de id usado por la funcion.
-         * @param {*} data - Valor de data usado por la funcion.
+         * Updates update with the given data.
+         * @param {*} id - Value of id used by the function.
+         * @param {*} data - Value of data used by the function.
          */
         async update(id, data) {
             return {

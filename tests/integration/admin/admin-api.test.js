@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Integration tests para `/api/admin`.
+ * @file Integration tests for `/api/admin`.
  *
- * Levanta una aplicacion `createApp()` real con repositorios reales,
- * usando un socket TCP libre. Verifica el contrato end-to-end de los
- * endpoints administrativos protegidos por `requireApiModerator`.
+ * Boots a real `createApp()` application with real repositories, using a free
+ * TCP socket. Verifies the end-to-end contract of the administrative endpoints
+ * protected by `requireApiModerator`.
  */
 
 const assert = require('node:assert/strict');
@@ -26,10 +26,10 @@ describe('admin api integration (E5)', function () {
         const calls = [];
         const server = await startApp(true, {
             /**
-             * Ejecuta la logica de list dataset summaries.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock controller for listing dataset summaries.
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
+             * @returns {*} Result produced by the function.
              */
             listDatasetSummaries(_request, response) {
                 calls.push('summary');
@@ -40,10 +40,10 @@ describe('admin api integration (E5)', function () {
                 }]);
             },
             /**
-             * Ejecuta la logica de export dataset.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock controller for exporting a dataset.
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
+             * @returns {*} Result produced by the function.
              */
             exportDataset(_request, response) {
                 calls.push('export');
@@ -53,29 +53,29 @@ describe('admin api integration (E5)', function () {
                     .send('{"dataset":{"datasetId":1},"entries":[]}');
             },
             /**
-             * Ejecuta la logica de list evaluation criteria.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock controller for listing evaluation criteria.
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
+             * @returns {*} Result produced by the function.
              */
             listEvaluationCriteria(_request, response) {
                 calls.push('criteria-list');
                 return response.status(200).json([]);
             },
             /**
-             * Crea evaluation criterion con la configuracion recibida.
-             * @param {*} request - Peticion HTTP con los datos de entrada.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock controller for creating an evaluation criterion.
+             * @param {*} request - HTTP request with the input data.
+             * @param {*} response - HTTP response.
+             * @returns {*} Result produced by the function.
              */
             createEvaluationCriterion(request, response) {
                 calls.push(`criteria-create:${request.body.key}`);
                 return response.status(201).json({ id: 1, key: request.body.key });
             },
             /**
-             * Actualiza evaluation criterion con los datos indicados.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+             * Mock controller for updating an evaluation criterion.
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
              */
             updateEvaluationCriterion(_request, response) {
                 calls.push('criteria-update');
@@ -137,10 +137,10 @@ describe('admin api integration (E5)', function () {
 });
 
 /**
- * Levanta la app con un usuario de sesion segun isModerator.
- * @param {boolean} isModerator - Indica si el usuario es moderador.
- * @param {*} adminController - Controlador admin a inyectar (opcional).
- * @returns {Promise<*>} Servidor con baseUrl y close().
+ * Boots the app with a session user according to isModerator.
+ * @param {boolean} isModerator - Whether the user is a moderator.
+ * @param {*} adminController - Admin controller to inject (optional).
+ * @returns {Promise<*>} Server with baseUrl and close().
  */
 async function startApp(isModerator, adminController = null) {
     const port = await getFreePort();
@@ -148,45 +148,45 @@ async function startApp(isModerator, adminController = null) {
         controllers: {
             adminController: adminController || {
                 /**
-                 * Ejecuta la logica de list dataset summaries.
-                 * @param {*} _request - Valor de _request usado por la funcion.
-                 * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Mock controller for listing dataset summaries.
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 * @returns {*} Result produced by the function.
                  */
                 listDatasetSummaries(_request, response) {
                     return response.status(200).json([]);
                 },
                 /**
-                 * Ejecuta la logica de export dataset.
-                 * @param {*} _request - Valor de _request usado por la funcion.
-                 * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Mock controller for exporting a dataset.
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 * @returns {*} Result produced by the function.
                  */
                 exportDataset(_request, response) {
                     return response.status(200).send('');
                 },
                 /**
-                 * Ejecuta la logica de list evaluation criteria.
-                 * @param {*} _request - Valor de _request usado por la funcion.
-                 * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Mock controller for listing evaluation criteria.
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 * @returns {*} Result produced by the function.
                  */
                 listEvaluationCriteria(_request, response) {
                     return response.status(200).json([]);
                 },
                 /**
-                 * Crea evaluation criterion con la configuracion recibida.
-                 * @param {*} _request - Valor de _request usado por la funcion.
-                 * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Mock controller for creating an evaluation criterion.
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 * @returns {*} Result produced by the function.
                  */
                 createEvaluationCriterion(_request, response) {
                     return response.status(201).json({});
                 },
                 /**
-                 * Actualiza evaluation criterion con los datos indicados.
-                 * @param {*} _request - Valor de _request usado por la funcion.
-                 * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+                 * Mock controller for updating an evaluation criterion.
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
                  */
                 updateEvaluationCriterion(_request, response) {
                     return response.status(200).json({});
@@ -194,11 +194,11 @@ async function startApp(isModerator, adminController = null) {
             }
         },
         /**
-         * Ejecuta la logica de session middleware.
-         * @param {*} request - Peticion HTTP con los datos de entrada.
-         * @param {*} _response - Valor de _response usado por la funcion.
-         * @param {Function} next - Callback de Express para continuar la cadena de middlewares.
-         * @returns {*} Resultado producido por la funcion.
+         * Mock session middleware that injects a fixed session user.
+         * @param {*} request - HTTP request with the input data.
+         * @param {*} _response - HTTP response (unused).
+         * @param {Function} next - Express callback to continue the middleware chain.
+         * @returns {*} Result produced by the function.
          */
         sessionMiddleware(request, _response, next) {
             request.session = {
@@ -223,8 +223,8 @@ async function startApp(isModerator, adminController = null) {
     return {
         baseUrl: `http://127.0.0.1:${port}`,
         /**
-         * Ejecuta la logica de close.
-         * @returns {*} Resultado producido por la funcion.
+         * Closes the HTTP server.
+         * @returns {*} Promise resolved when the server is closed.
          */
         close() {
             return new Promise(resolve => httpServer.close(() => resolve(undefined)));
@@ -233,8 +233,8 @@ async function startApp(isModerator, adminController = null) {
 }
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Returns a free TCP port.
+ * @returns {Promise<number>} Available port.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

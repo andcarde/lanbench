@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * @file Estados validos del ciclo de vida de una entry (tabla `entries`).
+ * @file Valid states of an entry's lifecycle (`entries` table).
  *
- * Transiciones tipicas:
+ * Typical transitions:
  *   `pending` -> `in_progress` -> `annotated` -> `under_review`
  *                                                      |
  *                                            +--> `reviewed`
@@ -12,21 +12,21 @@
  * @typedef {import('../types/typedefs').EntryStatus} EntryStatus
  */
 
-/** @type {'pending'} Entry sin anotacion en curso. */
+/** @type {'pending'} Entry with no annotation in progress. */
 const ENTRY_PENDING = 'pending';
-/** @type {'in_progress'} Entry asignada y en anotacion. */
+/** @type {'in_progress'} Entry assigned and being annotated. */
 const ENTRY_IN_PROGRESS = 'in_progress';
-/** @type {'annotated'} Entry anotada, pendiente de revision. */
+/** @type {'annotated'} Entry annotated, pending review. */
 const ENTRY_ANNOTATED = 'annotated';
-/** @type {'under_review'} Entry en revision por un reviewer. */
+/** @type {'under_review'} Entry under review by a reviewer. */
 const ENTRY_UNDER_REVIEW = 'under_review';
-/** @type {'reviewed'} Entry revisada y aceptada. */
+/** @type {'reviewed'} Entry reviewed and accepted. */
 const ENTRY_REVIEWED = 'reviewed';
-/** @type {'disputed'} Entry con review en disputa. */
+/** @type {'disputed'} Entry with a disputed review. */
 const ENTRY_DISPUTED = 'disputed';
 
 /**
- * Lista canonica con todos los estados de entry.
+ * Canonical list with all entry states.
  * @type {EntryStatus[]}
  */
 const ALL_ENTRY_STATUSES = [

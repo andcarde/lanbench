@@ -1,29 +1,29 @@
 'use strict';
 
 /**
- * @file `EntryDTO` — DTO de una entry parseada desde el XML del benchmark
- * WebNLG. Los atributos siguen los nombres del propio XML (`eid`, `shape`,
- * `shapeType`, `size`) y la categoria semantica asociada.
+ * @file `EntryDTO` — DTO of an entry parsed from the WebNLG benchmark XML.
+ * The attributes follow the XML's own names (`eid`, `shape`, `shapeType`,
+ * `size`) plus the associated semantic category.
  *
- * Esta clase NO incluye triples ni oraciones de referencia; se utiliza
- * principalmente como representacion estructural intermedia. Para el
- * contexto canonico expuesto al frontend consumase {@link EntryContextDTO}
- * (ver `types/typedefs.js`).
+ * This class does NOT include triples or reference sentences; it is used
+ * mainly as an intermediate structural representation. For the canonical
+ * context exposed to the frontend, use {@link EntryContextDTO}
+ * (see `types/typedefs.js`).
  */
 
 /**
- * Datos crudos aceptados por el constructor.
+ * Raw data accepted by the constructor.
  *
  * @typedef {Object} EntryDTOInput
- * @property {string|number} [eid]                  Identificador WebNLG.
- * @property {string} [category]                    Categoria semantica.
- * @property {string|null} [shape]                  Forma del grafo.
- * @property {string|null} [shapeType]              Tipo de forma del grafo.
- * @property {number|string} [size]                 Numero de triples.
+ * @property {string|number} [eid]                  WebNLG identifier.
+ * @property {string} [category]                    Semantic category.
+ * @property {string|null} [shape]                  Graph shape.
+ * @property {string|null} [shapeType]              Graph shape type.
+ * @property {number|string} [size]                 Number of triples.
  */
 
 /**
- * Entry parseada del benchmark XML WebNLG.
+ * Entry parsed from the WebNLG XML benchmark.
  */
 class EntryDTO {
     /**
@@ -43,7 +43,7 @@ class EntryDTO {
     }
 
     /**
-     * Construye un `EntryDTO` desde cualquier objeto-fuente WebNLG.
+     * Builds an `EntryDTO` from any WebNLG source object.
      *
      * @param {EntryDTOInput | null | undefined} source
      * @returns {EntryDTO}
@@ -59,7 +59,7 @@ class EntryDTO {
     }
 
     /**
-     * Serializa la entry a un objeto JSON-compatible.
+     * Serializes the entry to a JSON-compatible object.
      * @returns {EntryDTOInput}
      */
     toJSON() {

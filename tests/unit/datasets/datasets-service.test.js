@@ -14,8 +14,8 @@ describe('datasets-service', () => {
         const capturedCalls = [];
         const service = createDatasetsService(/** @type {any} */ ({
             /**
-             * Ejecuta la logica de read dataset.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of read dataset.
+             * @returns {*} Result produced by the function.
              */
             readDataset() {
                 return {
@@ -23,15 +23,15 @@ describe('datasets-service', () => {
                 };
             },
             /**
-             * Ejecuta la logica de read file as buffer.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of read file as buffer.
+             * @returns {*} Result produced by the function.
              */
             readFileAsBuffer() {
                 return Buffer.from('<benchmark />');
             },
             /**
-             * Convierte parse dataset import al formato esperado.
-             * @returns {*} Resultado producido por la funcion.
+             * Converts parse dataset import to the expected format.
+             * @returns {*} Result produced by the function.
              */
             parseDatasetImport() {
                 return {
@@ -52,9 +52,9 @@ describe('datasets-service', () => {
             },
             datasetsRepository: {
                 /**
-                 * Crea owned dataset con la configuracion recibida.
-                 * @param {*} payload - Valor de payload usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Creates owned dataset with the received configuration.
+                 * @param {*} payload - Value of payload used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async createOwnedDataset(payload) {
                     capturedCalls.push(payload);
@@ -149,7 +149,7 @@ describe('datasets-service', () => {
         const payload = await service.createDataset(
             7,
             { filename: 'tmp.xml', originalname: 'Opciones.xml' },
-            { llmMode: 'generation', isReviewEnabled: 'true', hasAdditionalReviews: 'on' }
+            { llmMode: 'generation', isReviewEnabled: 'true', hasAdditionalReviews: '1' }
         );
 
         assert.equal(capturedDatasetData.llmMode, 'generation');
@@ -166,8 +166,8 @@ describe('datasets-service', () => {
         const service = createDatasetsService(/** @type {any} */ ({
             datasetsRepository: {
                 /**
-                 * Obtiene accessible dataset graph by id desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets accessible dataset graph by id from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findAccessibleDatasetGraphById() {
                     return {
@@ -198,8 +198,8 @@ describe('datasets-service', () => {
                 }
             },
             /**
-             * Convierte parse annotation entries al formato esperado.
-             * @returns {*} Resultado producido por la funcion.
+             * Converts parse annotation entries to the expected format.
+             * @returns {*} Result produced by the function.
              */
             parseAnnotationEntries() {
                 throw new Error('No debería leer del snapshot XML.');
@@ -236,8 +236,8 @@ describe('datasets-service', () => {
         const service = createDatasetsService(/** @type {any} */ ({
             datasetsRepository: {
                 /**
-                 * Obtiene accessible dataset graph by id desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets accessible dataset graph by id from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findAccessibleDatasetGraphById() {
                     return {
@@ -270,9 +270,9 @@ describe('datasets-service', () => {
                 }
             },
             /**
-             * Construye dataset xml a partir de los datos recibidos.
-             * @param {Array<*>} entries - Valor de entries usado por la funcion.
-             * @returns {*} Resultado producido por la funcion.
+             * Builds dataset xml from the received data.
+             * @param {Array<*>} entries - Value of entries used by the function.
+             * @returns {*} Result produced by the function.
              */
             buildDatasetXml(entries) {
                 assert.equal(entries.length, 1);
@@ -280,8 +280,8 @@ describe('datasets-service', () => {
                 return '<benchmark>rebuilt</benchmark>';
             },
             /**
-             * Convierte parse dataset xml al formato esperado.
-             * @returns {*} Resultado producido por la funcion.
+             * Converts parse dataset xml to the expected format.
+             * @returns {*} Result produced by the function.
              */
             parseDatasetXml() {
                 throw new Error('No debería validar el snapshot XML.');
@@ -292,11 +292,215 @@ describe('datasets-service', () => {
         assert.equal(xml, '<benchmark>rebuilt</benchmark>');
     });
 
+    it('getAccessibleDatasetXmlDownload devuelve filename, body y contentType', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphById() {
+                    return {
+                        id: 11,
+                        name: 'ru_dev',
+                        entries: [{
+                            eid: 3,
+                            category: 'Airport',
+                            shape: null,
+                            shapeType: null,
+                            size: 1,
+                            triplesets: [{
+                                type: 'original',
+                                triples: [{
+                                    subject: 'Madrid',
+                                    predicate: 'isPartOf',
+                                    object: 'Spain'
+                                }]
+                            }],
+                            lexes: [],
+                            dbpediaLinks: [],
+                            links: []
+                        }]
+                    };
+                }
+            },
+            buildDatasetXml() {
+                return '<benchmark>download</benchmark>';
+            }
+        }));
+
+        const payload = await service.getAccessibleDatasetXmlDownload(7, 11);
+
+        assert.deepEqual(payload, {
+            filename: 'ru_dev.xml',
+            body: '<benchmark>download</benchmark>',
+            contentType: 'application/xml; charset=utf-8'
+        });
+    });
+
+    it('getAccessibleDatasetXmlDownload rechaza con 404 cuando el dataset no tiene entries', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphById() {
+                    return {
+                        id: 11,
+                        name: 'empty',
+                        entries: []
+                    };
+                }
+            },
+            buildDatasetXml() {
+                throw new Error('buildDatasetXml should not be called for empty dataset');
+            }
+        }));
+
+        await assert.rejects(
+            service.getAccessibleDatasetXmlDownload(7, 11),
+            (/** @type {any} */ err) => err?.status === 404 && err?.code === 'dataset_without_entries'
+        );
+    });
+
+    it('getAccessibleDatasetAnnotatedXmlDownload devuelve filename, body y contentType al 100% completado', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphWithAnnotationsById() {
+                    return {
+                        id: 11,
+                        name: 'ru_dev',
+                        totalEntries: 10,
+                        sectionsCompleted: 1,
+                        sectionsPending: 0,
+                        entries: [{
+                            eid: 1,
+                            category: 'Place',
+                            shape: null,
+                            shapeType: null,
+                            size: 1,
+                            triplesets: [],
+                            lexes: [],
+                            dbpediaLinks: [],
+                            links: [],
+                            annotations: [
+                                { sentenceIndex: 0, sentence: 'Madrid está en España.' }
+                            ]
+                        }]
+                    };
+                }
+            },
+            buildAnnotatedDatasetXml(/** @type {any} */ entries) {
+                assert.equal(entries.length, 1);
+                assert.equal(entries[0].annotations.length, 1);
+                assert.equal(entries[0].annotations[0].sentence, 'Madrid está en España.');
+                return '<benchmark>extended</benchmark>';
+            }
+        }));
+
+        const payload = await service.getAccessibleDatasetAnnotatedXmlDownload(7, 11);
+
+        assert.deepEqual(payload, {
+            filename: 'ru_dev-extended.xml',
+            body: '<benchmark>extended</benchmark>',
+            contentType: 'application/xml; charset=utf-8'
+        });
+    });
+
+    it('getAccessibleDatasetAnnotatedXmlDownload rechaza con 409 dataset_not_completed cuando faltan secciones', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphWithAnnotationsById() {
+                    return {
+                        id: 11,
+                        name: 'ru_dev',
+                        totalEntries: 20,
+                        sectionsCompleted: 1,
+                        sectionsPending: 1,
+                        entries: [{
+                            eid: 1,
+                            category: 'Place',
+                            triplesets: [],
+                            lexes: [],
+                            dbpediaLinks: [],
+                            links: [],
+                            annotations: []
+                        }]
+                    };
+                }
+            },
+            buildAnnotatedDatasetXml() {
+                throw new Error('No debería construirse el XML si el dataset no está completado.');
+            }
+        }));
+
+        await assert.rejects(
+            service.getAccessibleDatasetAnnotatedXmlDownload(7, 11),
+            (/** @type {any} */ err) => err?.status === 409 && err?.code === 'dataset_not_completed'
+        );
+    });
+
+    it('getAccessibleDatasetAnnotatedXmlDownload rechaza con 409 si sectionsPending > 0 aunque sectionsCompleted iguale el total', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphWithAnnotationsById() {
+                    return {
+                        id: 11,
+                        name: 'ru_dev',
+                        totalEntries: 10,
+                        sectionsCompleted: 1,
+                        sectionsPending: 2,
+                        entries: [{
+                            eid: 1,
+                            triplesets: [],
+                            lexes: [],
+                            dbpediaLinks: [],
+                            links: [],
+                            annotations: []
+                        }]
+                    };
+                }
+            },
+            buildAnnotatedDatasetXml() {
+                throw new Error('No debería construirse el XML si sectionsPending > 0.');
+            }
+        }));
+
+        await assert.rejects(
+            service.getAccessibleDatasetAnnotatedXmlDownload(7, 11),
+            (/** @type {any} */ err) => err?.status === 409 && err?.code === 'dataset_not_completed'
+        );
+    });
+
+    it('getAccessibleDatasetAnnotatedXmlDownload rechaza con 404 dataset_without_entries cuando no hay entries', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            datasetsRepository: {
+                async findAccessibleDatasetGraphWithAnnotationsById() {
+                    return {
+                        id: 11,
+                        name: 'empty',
+                        totalEntries: 0,
+                        sectionsCompleted: 0,
+                        sectionsPending: 0,
+                        entries: []
+                    };
+                }
+            },
+            buildAnnotatedDatasetXml() {
+                throw new Error('No debería construirse el XML para un dataset vacío.');
+            }
+        }));
+
+        await assert.rejects(
+            service.getAccessibleDatasetAnnotatedXmlDownload(7, 11),
+            (/** @type {any} */ err) => err?.status === 404 && err?.code === 'dataset_without_entries'
+        );
+    });
+
     it('deleteDataset exige administracion y delega el borrado recursivo', async () => {
         /** @type {any[]} */
         const deleted = [];
         const service = createDatasetsService(/** @type {any} */ ({
             datasetsRepository: {
+                async deleteDatasetRecursively(/** @type {*} */ payload) {
+                    deleted.push(payload);
+                    return { datasetId: payload.datasetId };
+                }
+            },
+            datasetsPermissionsRepository: {
                 async findPermitForUser(/** @type {*} */ payload) {
                     assert.deepEqual(payload, { datasetId: 12, userId: 7 });
                     return {
@@ -304,10 +508,6 @@ describe('datasets-service', () => {
                         isOwned: false,
                         dataset: { id: 12, name: 'Dataset 12' }
                     };
-                },
-                async deleteDatasetRecursively(/** @type {*} */ payload) {
-                    deleted.push(payload);
-                    return { datasetId: payload.datasetId };
                 }
             },
             usersRepository: {}

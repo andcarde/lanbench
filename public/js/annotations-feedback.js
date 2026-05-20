@@ -1,11 +1,11 @@
 // @ts-nocheck
 /**
- * @file Renderizador del feedback de validacion en la pagina de anotacion.
+ * @file Renderer for the validation feedback on the annotation page.
  *
- * Convierte la lista canonica de {@link SentenceValidationDTO} devuelta por
- * `/api/annotations/check` en componentes Bootstrap (badges + tooltips +
- * cuadros de propuesta). Expuesto como UMD para que pueda usarse desde
- * tests y desde la pagina sin un sistema de modulos.
+ * Converts the canonical list of {@link SentenceValidationDTO} returned by
+ * `/api/annotations/check` into Bootstrap components (badges + tooltips +
+ * proposal boxes). Exposed as UMD so it can be used from tests and from the
+ * page without a module system.
  */
 'use strict';
 
@@ -19,9 +19,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
 
     /**
-     * Convierte escape html al formato esperado.
-     * @param {*} value - Valor de value usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Escapes a value for safe insertion as HTML text.
+     * @param {*} value - Value to escape.
+     * @returns {string} HTML-escaped string.
      */
     function escapeHtml(value) {
         if (value === null || value === undefined) return '';
@@ -34,9 +34,9 @@
     }
 
     /**
-     * Convierte format status label al formato esperado.
-     * @param {string} status - Valor de status usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Formats a review status into a human-readable label.
+     * @param {string} status - Review status.
+     * @returns {string} Display label.
      */
     function formatStatusLabel(status) {
         if (status === 'completed') return 'Aceptada';
@@ -45,9 +45,9 @@
     }
 
     /**
-     * Convierte format failed criteria al formato esperado.
-     * @param {*} failedCriteria - Valor de failedCriteria usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Formats the failed criteria into a readable summary.
+     * @param {*} failedCriteria - List of failed criteria.
+     * @returns {string} Summary string.
      */
     function formatFailedCriteria(failedCriteria) {
         if (!Array.isArray(failedCriteria) || failedCriteria.length === 0)
@@ -58,9 +58,9 @@
     }
 
     /**
-     * Convierte format corrections al formato esperado.
-     * @param {Array} corrections - Valor de corrections usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Formats the corrections into a readable summary.
+     * @param {Array} corrections - List of corrections.
+     * @returns {string} Summary string.
      */
     function formatCorrections(corrections) {
         if (!Array.isArray(corrections) || corrections.length === 0)
@@ -71,9 +71,9 @@
     }
 
     /**
-     * Convierte format feedback row al formato esperado.
-     * @param {*} review - Valor de review usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Formats a review into a feedback table row (data + HTML).
+     * @param {*} review - Review feedback entry.
+     * @returns {*} Row object with summary fields and HTML, or null.
      */
     function formatFeedbackRow(review) {
         if (!review || typeof review !== 'object')
@@ -99,8 +99,8 @@
     }
 
     /**
-     * Renderiza feedback table en la interfaz.
-     * @param {*} feedback - Valor de feedback usado por la funcion.
+     * Renders the feedback table HTML.
+     * @param {*} feedback - List of feedback entries.
      */
     function renderFeedbackTable(feedback) {
         if (!Array.isArray(feedback) || feedback.length === 0)

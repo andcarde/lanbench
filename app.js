@@ -44,6 +44,8 @@ const { createUsersController } = require('./controllers/users-controller');
 const { createReviewsController } = require('./controllers/reviews-controller');
 const { createAnnotationsService } = require('./services/annotations-service');
 const { createDatasetsService } = require('./services/datasets-service');
+const { createDatasetsPermissionsService } = require('./services/datasets-permissions-service');
+const { createDatasetsStatisticsService } = require('./services/datasets-statistics-service');
 const { createAdminService } = require('./services/admin-service');
 const {
     createSectionAssignmentService,
@@ -61,10 +63,16 @@ const {
 const {
     createDatasetsRepository,
 } = require('./repositories/datasets-repository');
+const {
+    createDatasetsPermissionsRepository,
+} = require('./repositories/datasets-permissions-repository');
+const {
+    createDatasetsStatisticsRepository,
+} = require('./repositories/datasets-statistics-repository');
 const { warnIfDatabaseInactive } = require('./utils/database-health');
 
 /**
- * Coleccion de controllers cableados con sus dependencias.
+ * Collection of controllers wired with their dependencies.
  * @typedef {Object} ControllerBundle
  * @property {ReturnType<typeof createAnnotationsController>} annotationsController
  * @property {ReturnType<typeof createDatasetsController>} datasetsController
@@ -74,23 +82,22 @@ const { warnIfDatabaseInactive } = require('./utils/database-health');
  */
 
 /**
- * Overrides aceptados por {@link createControllers} y {@link createApp}.
- * Cada override sustituye al controller real (util en tests).
+ * Overrides accepted by {@link createControllers} and {@link createApp}.
+ * Each override replaces the real controller (useful in tests).
  *
  * @typedef {Partial<ControllerBundle>} ControllerOverrides
  */
 
 /**
- * Opciones aceptadas por {@link createApp}.
+ * Options accepted by {@link createApp}.
  * @typedef {Object} CreateAppOptions
  * @property {ControllerOverrides} [controllers]
  * @property {ExpressRequestHandler} [sessionMiddleware]
  */
 
 /**
- * Construye los controllers de la aplicacion con sus servicios y
- * repositorios. Acepta un objeto de `overrides` para inyectar dobles
- * (mocks/stubs) en pruebas.
+ * Builds the application's controllers with their services and repositories.
+ * Accepts an `overrides` object to inject test doubles (mocks/stubs).
  *
  * @param {ControllerOverrides} [overrides]
  * @returns {ControllerBundle}
@@ -102,7 +109,11 @@ function createControllers(overrides = {}) {
     });
     const reviewsRepository = createReviewsRepository();
     const datasetsRepository = createDatasetsRepository();
-    const datasetsService = createDatasetsService({ datasetsRepository });
+    const datasetsPermissionsRepository = createDatasetsPermissionsRepository();
+    const datasetsStatisticsRepository = createDatasetsStatisticsRepository();
+    const datasetsService = createDatasetsService({ datasetsRepository, datasetsPermissionsRepository });
+    const datasetsPermissionsService = createDatasetsPermissionsService({ datasetsPermissionsRepository });
+    const datasetsStatisticsService = createDatasetsStatisticsService({ datasetsRepository, datasetsStatisticsRepository });
     const continueDatasetService = createContinueDatasetService({
         sectionAssignmentsRepository,
         sectionAssignmentService,
@@ -126,6 +137,8 @@ function createControllers(overrides = {}) {
             overrides.datasetsController ||
             createDatasetsController({
                 datasetsService,
+                datasetsPermissionsService,
+                datasetsStatisticsService,
             }),
         adminController:
             overrides.adminController ||
@@ -142,9 +155,9 @@ function createControllers(overrides = {}) {
 }
 
 /**
- * Construye la aplicacion Express con todos sus routers, middlewares y
- * handler global de errores. Permite inyectar un `sessionMiddleware`
- * alternativo (util para tests sin BD) y overrides de controllers.
+ * Builds the Express application with all its routers, middlewares and global
+ * error handler. Allows injecting an alternative `sessionMiddleware` (useful
+ * for tests without a DB) and controller overrides.
  *
  * @param {CreateAppOptions} [options]
  * @returns {ExpressApplication}
@@ -154,6 +167,7 @@ function createApp({
     sessionMiddleware,
 } = {}) {
     const app = express();
+    app.disable('x-powered-by'); // don't disclose framework/version via the X-Powered-By header
     const controllers = createControllers(controllerOverrides);
     const publicDirectory = path.join(__dirname, 'public');
 
@@ -216,8 +230,8 @@ function createApp({
 }
 
 /**
- * Construye el `errorHandler` final de Express. Devuelve paginas HTML para
- * 404 y 400, y `problema.html` para cualquier error >= 500.
+ * Builds Express's final `errorHandler`. Returns HTML pages for 404 and 400,
+ * and `problema.html` for any error >= 500.
  *
  * @param {{ publicDirectory?: string }} [options]
  * @returns {ExpressErrorRequestHandler}
@@ -254,8 +268,8 @@ function createErrorHandler({ publicDirectory } = {}) {
 }
 
 /**
- * Extrae el status numerico de un error. Devuelve 500 si el error no
- * declara un `status` entero.
+ * Extracts the numeric status from an error. Returns 500 if the error does not
+ * declare an integer `status`.
  *
  * @param {Error & { status?: number }} error
  * @returns {number}
@@ -267,10 +281,10 @@ function normalizeErrorStatus(error) {
 }
 
 /**
- * Arranca el servidor HTTP en el puerto indicado (por defecto el de
- * configuracion). Muestra un aviso si la BD parece inactiva tras el arranque.
+ * Starts the HTTP server on the given port (the configured one by default).
+ * Shows a warning if the DB appears inactive after startup.
  *
- * @param {number} [port] - Puerto en el que escuchar.
+ * @param {number} [port] - Port to listen on.
  * @returns {import('node:http').Server}
  */
 function startServer(port = config.port) {

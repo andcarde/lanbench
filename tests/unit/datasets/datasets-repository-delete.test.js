@@ -105,9 +105,9 @@ describe('datasets-repository createOwnedDataset', () => {
 });
 
 /**
- * Construye un tx falso que registra llamadas Prisma.
- * @param {Array<*>} calls - Llamadas capturadas.
- * @returns {*} Transaccion falsa.
+ * Builds a fake tx that records Prisma calls.
+ * @param {Array<*>} calls - Captured calls.
+ * @returns {*} Fake transaction.
  */
 function buildTransactionRecorder(calls) {
     /** @type {Record<string, any>} */
@@ -149,9 +149,9 @@ function buildTransactionRecorder(calls) {
 }
 
 /**
- * Construye un tx falso para creación de datasets.
- * @param {Array<*>} calls - Llamadas capturadas.
- * @returns {*} Transacción falsa.
+ * Builds a fake tx for dataset creation.
+ * @param {Array<*>} calls - Captured calls.
+ * @returns {*} Fake transaction.
  */
 function buildCreateTransactionRecorder(calls) {
     /** @type {any[]} */
@@ -204,10 +204,10 @@ function buildCreateTransactionRecorder(calls) {
 }
 
 /**
- * Crea un modelo falso para createMany sin filas.
- * @param {Array<*>} calls - Llamadas capturadas.
- * @param {string} model - Nombre del modelo.
- * @returns {*} Modelo falso.
+ * Creates a fake model for createMany with no rows.
+ * @param {Array<*>} calls - Captured calls.
+ * @param {string} model - Model name.
+ * @returns {*} Fake model.
  */
 function createEmptyCreateManyModel(calls, model) {
     return {

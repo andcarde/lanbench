@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Lector y parser del benchmark XML WebNLG.
+ * @file Reader and parser for the WebNLG XML benchmark.
  *
- * Expone `readDataset` (path -> {@link DatasetDTO}) y `parseDatasetImport`
- * (Buffer -> filas normalizadas listas para persistir). Acepta paths
- * temporales `legacy` resolviendo `resolveExistingTempFilePath`.
+ * Exposes `readDataset` (path -> {@link DatasetDTO}) and `parseDatasetImport`
+ * (Buffer -> normalized rows ready to persist). Accepts `legacy` temporary
+ * paths by resolving `resolveExistingTempFilePath`.
  */
 
 const { readFileSync } = require('node:fs');
@@ -24,9 +24,9 @@ const { resolveExistingTempFilePath } = require('./temp-storage');
 const parser = createBenchmarkXmlParser();
 
 /**
- * Lee un dataset XML desde el sistema de ficheros y lo parsea a DatasetDTO.
- * @param {*} filename - Ruta absoluta o nombre del fichero en el temporal.
- * @returns {*} DatasetDTO con las entries parseadas.
+ * Reads an XML dataset from the file system and parses it into a DatasetDTO.
+ * @param {*} filename - Absolute path or filename in the temporary directory.
+ * @returns {*} DatasetDTO with the parsed entries.
  */
 function readDataset(filename) {
     const filePath = resolveInputFilePath(filename);
@@ -35,10 +35,10 @@ function readDataset(filename) {
 }
 
 /**
- * Parsea un contenido XML benchmark y lo convierte en DatasetDTO.
- * @param {*} xml - Contenido XML (string o buffer).
- * @param {string} [sourceName] - Nombre legible para los mensajes de error.
- * @returns {*} DatasetDTO con las entries parseadas.
+ * Parses XML benchmark content and converts it into a DatasetDTO.
+ * @param {*} xml - XML content (string or buffer).
+ * @param {string} [sourceName] - Human-readable name for error messages.
+ * @returns {*} DatasetDTO with the parsed entries.
  */
 function parseDatasetXml(xml, sourceName = 'XML') {
     const datasetImport = parseDatasetImport(xml, sourceName);
@@ -55,10 +55,10 @@ function parseDatasetXml(xml, sourceName = 'XML') {
 }
 
 /**
- * Parsea XML benchmark a una estructura intermedia lista para persistir.
- * @param {*} xml - Contenido XML.
- * @param {string} [sourceName] - Nombre legible para los mensajes de error.
- * @returns {{entries:Array<*>, languages:Array<string>}} Datos normalizados.
+ * Parses XML benchmark content into an intermediate structure ready to persist.
+ * @param {*} xml - XML content.
+ * @param {string} [sourceName] - Human-readable name for error messages.
+ * @returns {{entries:Array<*>, languages:Array<string>}} Normalized data.
  */
 function parseDatasetImport(xml, sourceName = 'XML') {
     const rawEntries = getRawEntries(xml);
@@ -75,9 +75,9 @@ function parseDatasetImport(xml, sourceName = 'XML') {
 }
 
 /**
- * Parsea XML benchmark a una lista de annotation entries listas para la UI.
- * @param {*} xml - Contenido XML.
- * @returns {Array<*>} Entries con triples y oraciones en ingles.
+ * Parses XML benchmark content into a list of annotation entries ready for the UI.
+ * @param {*} xml - XML content.
+ * @returns {Array<*>} Entries with triples and English sentences.
  */
 function parseAnnotationEntries(xml) {
     const datasetImport = parseDatasetImport(xml);
@@ -85,10 +85,10 @@ function parseAnnotationEntries(xml) {
 }
 
 /**
- * Adapta una entry cruda parseada por fast-xml-parser al registro intermedio.
- * @param {*} rawEntry - Nodo `<entry>` parseado.
- * @param {*} position - Indice ordinal dentro del dataset.
- * @returns {*} Registro de importacion normalizado.
+ * Adapts a raw entry parsed by fast-xml-parser into the intermediate record.
+ * @param {*} rawEntry - Parsed `<entry>` node.
+ * @param {*} position - Ordinal index within the dataset.
+ * @returns {*} Normalized import record.
  */
 function mapRawEntryToImportRecord(rawEntry, position) {
     return {
@@ -107,10 +107,10 @@ function mapRawEntryToImportRecord(rawEntry, position) {
 }
 
 /**
- * Parsea los triplesets de una entry (originales o modificados).
- * @param {*} rawTriplesets - Coleccion de triplesets parseada.
- * @param {*} tripleKey - Clave del triple ("otriple" | "mtriple").
- * @returns {Array<*>} Triplesets normalizados con triples no nulos.
+ * Parses an entry's triplesets (original or modified).
+ * @param {*} rawTriplesets - Parsed tripleset collection.
+ * @param {*} tripleKey - Triple key ("otriple" | "mtriple").
+ * @returns {Array<*>} Normalized triplesets with non-null triples.
  */
 function parseTriplesets(rawTriplesets, tripleKey) {
     return toArray(rawTriplesets)
@@ -135,9 +135,9 @@ function parseTriplesets(rawTriplesets, tripleKey) {
 }
 
 /**
- * Parsea las lexicalizaciones `<lex>` de una entry.
- * @param {*} rawLexes - Coleccion parseada.
- * @returns {Array<*>} Lexes normalizadas con `lid`, `lang`, `comment` y `text`.
+ * Parses an entry's `<lex>` lexicalizations.
+ * @param {*} rawLexes - Parsed collection.
+ * @returns {Array<*>} Normalized lexes with `lid`, `lang`, `comment` and `text`.
  */
 function parseLexes(rawLexes) {
     return toArray(rawLexes).map((/** @type {*} */ rawLex, /** @type {*} */ position) => ({
@@ -152,9 +152,9 @@ function parseLexes(rawLexes) {
 }
 
 /**
- * Parsea una coleccion de enlaces (DBpedia o internos) en triples normalizados.
- * @param {*} rawLinks - Coleccion parseada.
- * @returns {Array<*>} Enlaces normalizados (sin nulos).
+ * Parses a collection of links (DBpedia or internal) into normalized triples.
+ * @param {*} rawLinks - Parsed collection.
+ * @returns {Array<*>} Normalized links (without nulls).
  */
 function parseLinkCollection(rawLinks) {
     return toArray(rawLinks)
@@ -177,9 +177,9 @@ function parseLinkCollection(rawLinks) {
 }
 
 /**
- * Adapta una entry intermedia al formato consumido por la UI de anotacion.
- * @param {*} entry - Entry intermedia ya parseada.
- * @returns {*} Annotation entry con triples y oraciones en ingles.
+ * Adapts an intermediate entry to the format consumed by the annotation UI.
+ * @param {*} entry - Already-parsed intermediate entry.
+ * @returns {*} Annotation entry with triples and English sentences.
  */
 function mapImportEntryToAnnotationEntry(entry) {
     return {
@@ -198,9 +198,9 @@ function mapImportEntryToAnnotationEntry(entry) {
 }
 
 /**
- * Aplana una coleccion de triplesets en una lista plana de triples.
- * @param {*} triplesets - Coleccion intermedia.
- * @returns {Array<*>} Triples planos.
+ * Flattens a collection of triplesets into a flat list of triples.
+ * @param {*} triplesets - Intermediate collection.
+ * @returns {Array<*>} Flat triples.
  */
 function flattenTriplesets(triplesets) {
     return toArray(triplesets).flatMap((/** @type {*} */ tripleset) => toArray(tripleset?.triples).map((/** @type {*} */ triple) => ({
@@ -211,9 +211,9 @@ function flattenTriplesets(triplesets) {
 }
 
 /**
- * Recolecta el conjunto unico de codigos de idioma presentes en las entries.
- * @param {*} entries - Lista intermedia de entries con sus lexes.
- * @returns {Array<string>} Codigos de idioma sin repeticiones.
+ * Collects the unique set of language codes present in the entries.
+ * @param {*} entries - Intermediate list of entries with their lexes.
+ * @returns {Array<string>} Language codes without duplicates.
  */
 function collectLanguages(entries) {
     return [...new Set(
@@ -222,9 +222,9 @@ function collectLanguages(entries) {
 }
 
 /**
- * Extrae las entries crudas de un benchmark parseado.
- * @param {*} xml - Contenido XML.
- * @returns {Array<*>} Nodos `<entry>` parseados.
+ * Extracts the raw entries from a parsed benchmark.
+ * @param {*} xml - XML content.
+ * @returns {Array<*>} Parsed `<entry>` nodes.
  */
 function getRawEntries(xml) {
     const parsed = parser.parse(toXmlString(xml));
@@ -232,9 +232,9 @@ function getRawEntries(xml) {
 }
 
 /**
- * Coacciona contenido XML (Buffer, Uint8Array o string) a una cadena UTF-8.
- * @param {*} xml - Contenido bruto.
- * @returns {string} XML como string.
+ * Coerces XML content (Buffer, Uint8Array or string) into a UTF-8 string.
+ * @param {*} xml - Raw content.
+ * @returns {string} XML as a string.
  */
 function toXmlString(xml) {
     if (Buffer.isBuffer(xml))
@@ -250,9 +250,9 @@ function toXmlString(xml) {
 }
 
 /**
- * Resuelve la ruta absoluta del fichero XML aceptando ruta absoluta o nombre en temporal.
- * @param {*} filename - Ruta o nombre del fichero.
- * @returns {string} Ruta absoluta a leer.
+ * Resolves the absolute path of the XML file, accepting an absolute path or a name in the temporary directory.
+ * @param {*} filename - File path or name.
+ * @returns {string} Absolute path to read.
  */
 function resolveInputFilePath(filename) {
     if (typeof filename !== 'string' || filename.trim().length === 0)

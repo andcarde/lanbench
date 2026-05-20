@@ -13,11 +13,12 @@
 const { randomBytes } = require('node:crypto');
 const { existsSync, readFileSync } = require('node:fs');
 const { resolve } = require('node:path');
+const { trimmedOr, toBoolean } = require('./utils/validators');
 
 loadEnvFile(resolve(__dirname, '.env'));
 
 /**
- * Configuracion de conexion a MySQL/MariaDB.
+ * MySQL/MariaDB connection configuration.
  * @typedef {Object} MysqlConfig
  * @property {string} host
  * @property {string} user
@@ -27,7 +28,7 @@ loadEnvFile(resolve(__dirname, '.env'));
  */
 
 /**
- * Configuracion de la cookie de sesion.
+ * Session cookie configuration.
  * @typedef {Object} SessionCookieConfig
  * @property {true} httpOnly
  * @property {boolean} secure
@@ -35,14 +36,14 @@ loadEnvFile(resolve(__dirname, '.env'));
  */
 
 /**
- * Configuracion de la sesion.
+ * Session configuration.
  * @typedef {Object} SessionConfig
  * @property {string} secret
  * @property {SessionCookieConfig} cookie
  */
 
 /**
- * Configuracion del proveedor Ollama (modo local).
+ * Ollama provider configuration (local mode).
  * @typedef {Object} OllamaConfig
  * @property {string} host
  * @property {string} model
@@ -50,7 +51,7 @@ loadEnvFile(resolve(__dirname, '.env'));
  */
 
 /**
- * Configuracion del proveedor Groq (modo cloud).
+ * Groq provider configuration (cloud mode).
  * @typedef {Object} GroqConfig
  * @property {string} apiBase
  * @property {string} model
@@ -59,7 +60,7 @@ loadEnvFile(resolve(__dirname, '.env'));
  */
 
 /**
- * Configuracion global de la aplicacion.
+ * Global application configuration.
  * @typedef {Object} AppConfig
  * @property {MysqlConfig} mysql
  * @property {number} port
@@ -74,10 +75,10 @@ loadEnvFile(resolve(__dirname, '.env'));
 /** @type {AppConfig} */
 const config = {
     mysql: {
-        host: normalizeString(process.env.DB_HOST, 'localhost'),
-        user: normalizeString(process.env.DB_USER, 'root'),
-        password: normalizeString(process.env.DB_PASSWORD, ''),
-        database: normalizeString(process.env.DB_NAME, 'lanbench'),
+        host: trimmedOr(process.env.DB_HOST, 'localhost'),
+        user: trimmedOr(process.env.DB_USER, 'root'),
+        password: trimmedOr(process.env.DB_PASSWORD, ''),
+        database: trimmedOr(process.env.DB_NAME, 'lanbench'),
         port: normalizePositiveInteger(process.env.DB_PORT, 3306)
     },
 
@@ -87,47 +88,33 @@ const config = {
         secret: normalizeSessionSecret(process.env.SESSION_SECRET),
         cookie: {
             httpOnly: true,
-            secure: normalizeBoolean(process.env.SESSION_COOKIE_SECURE, isProductionEnvironment()),
+            secure: toBoolean(process.env.SESSION_COOKIE_SECURE, isProductionEnvironment()),
             sameSite: normalizeSameSite(process.env.SESSION_COOKIE_SAME_SITE, 'lax')
         }
     },
 
-    // Selector de proveedor LLM: 'local' (Ollama) o 'cloud' (Groq).
+    // LLM provider selector: 'local' (Ollama) or 'cloud' (Groq).
     model: normalizeModelMode(process.env.MODEL, 'cloud'),
 
     ollama: {
-        host: normalizeString(process.env.OLLAMA_HOST, 'http://127.0.0.1:11434'),
-        model: normalizeString(process.env.OLLAMA_MODEL, 'llama3.2:3b'),
+        host: trimmedOr(process.env.OLLAMA_HOST, 'http://127.0.0.1:11434'),
+        model: trimmedOr(process.env.OLLAMA_MODEL, 'llama3.2:3b'),
         requestTimeoutMs: normalizePositiveInteger(process.env.OLLAMA_TIMEOUT_MS, 30000)
     },
 
     groq: {
-        apiBase: normalizeString(process.env.GROQ_API_BASE, 'https://api.groq.com/openai/v1'),
-        model: normalizeString(process.env.GROQ_MODEL, 'llama-3.3-70b-versatile'),
-        apiKey: normalizeString(process.env.GROQ_API_KEY, ''),
+        apiBase: trimmedOr(process.env.GROQ_API_BASE, 'https://api.groq.com/openai/v1'),
+        model: trimmedOr(process.env.GROQ_MODEL, 'llama-3.3-70b-versatile'),
+        apiKey: trimmedOr(process.env.GROQ_API_KEY, ''),
         requestTimeoutMs: normalizePositiveInteger(process.env.GROQ_TIMEOUT_MS, 60000)
     },
 
-    debugMode: normalizeBoolean(process.env.DEBUG_MODE, true),
+    debugMode: toBoolean(process.env.DEBUG_MODE, true),
     isProduction: isProductionEnvironment()
 };
 
 /**
- * Aplica `trim()` y rechaza cadenas vacias. Devuelve el `fallback` si el
- * valor no es una cadena con contenido util.
- *
- * @param {string|undefined} value
- * @param {string} fallback
- * @returns {string}
- */
-function normalizeString(value, fallback) {
-    if (typeof value === 'string' && value.trim().length > 0)
-        return value.trim();
-    return fallback;
-}
-
-/**
- * Convierte un valor a entero positivo, o devuelve `fallback` si no es valido.
+ * Converts a value to a positive integer, or returns `fallback` if invalid.
  *
  * @param {string|number|undefined} value
  * @param {number} fallback
@@ -141,28 +128,7 @@ function normalizePositiveInteger(value, fallback) {
 }
 
 /**
- * Convierte una variable de entorno textual a booleano. Acepta
- * `true|1|yes` y `false|0|no` (case-insensitive).
- *
- * @param {string|undefined} value
- * @param {boolean} fallback
- * @returns {boolean}
- */
-function normalizeBoolean(value, fallback) {
-    if (typeof value !== 'string')
-        return fallback;
-
-    const normalized = value.trim().toLowerCase();
-    if (normalized === 'true' || normalized === '1' || normalized === 'yes')
-        return true;
-    if (normalized === 'false' || normalized === '0' || normalized === 'no')
-        return false;
-
-    return fallback;
-}
-
-/**
- * Normaliza el atributo `SameSite` de la cookie. Acepta `strict|lax|none`.
+ * Normalizes the cookie's `SameSite` attribute. Accepts `strict|lax|none`.
  *
  * @param {string|undefined} value
  * @param {'strict'|'lax'|'none'} fallback
@@ -180,11 +146,11 @@ function normalizeSameSite(value, fallback) {
 }
 
 /**
- * Carga variables del fichero `.env` en `process.env` sin sobrescribir las
- * que ya estuvieran definidas. Acepta valores entre comillas simples o
- * dobles y omite lineas vacias y comentarios (`#`).
+ * Loads variables from the `.env` file into `process.env` without overwriting
+ * those already defined. Accepts values in single or double quotes and skips
+ * empty lines and comments (`#`).
  *
- * @param {string} filePath - Ruta absoluta al `.env`.
+ * @param {string} filePath - Absolute path to the `.env`.
  * @returns {void}
  */
 function loadEnvFile(filePath) {
@@ -215,8 +181,8 @@ function loadEnvFile(filePath) {
 }
 
 /**
- * Normaliza el selector de modo del modelo LLM. Solo `local` o `cloud` son
- * validos; cualquier otro valor devuelve `fallback`.
+ * Normalizes the LLM model mode selector. Only `local` or `cloud` are valid;
+ * any other value returns `fallback`.
  *
  * @param {string|undefined} value
  * @param {'local'|'cloud'} fallback
@@ -234,9 +200,9 @@ function normalizeModelMode(value, fallback) {
 }
 
 /**
- * Valida el `SESSION_SECRET`. Si la variable no tiene >= 32 caracteres,
- * genera un secret efimero de 64 bytes (proceso actual unicamente — las
- * sesiones existentes quedaran invalidadas tras un reinicio).
+ * Validates the `SESSION_SECRET`. If the variable does not have >= 32
+ * characters, generates an ephemeral 64-byte secret (current process only —
+ * existing sessions will be invalidated after a restart).
  *
  * @param {string|undefined} value
  * @returns {string}
@@ -249,7 +215,7 @@ function normalizeSessionSecret(value) {
 }
 
 /**
- * Devuelve `true` si `NODE_ENV === 'production'` (case-insensitive).
+ * Returns `true` if `NODE_ENV === 'production'` (case-insensitive).
  *
  * @returns {boolean}
  */

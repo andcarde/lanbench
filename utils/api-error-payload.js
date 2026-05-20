@@ -1,15 +1,15 @@
 'use strict';
 
 /**
- * @file Helpers para devolver el envelope estandar de error JSON.
+ * @file Helpers for returning the standard JSON error envelope.
  *
- * Todas las APIs responden errores con la forma:
+ * All APIs respond to errors with the shape:
  *
  *     { error: true, message: string, code?: string, ...extra }
  *
- * Centralizar el envelope aqui asegura que controllers, middlewares y rutas
- * no diverjan en la estructura, y que los 500 dejen siempre constancia en
- * `response.locals.serverErrorReason` (consumido por el request logger).
+ * Centralizing the envelope here ensures that controllers, middlewares and
+ * routes do not diverge in structure, and that 500s always leave a record in
+ * `response.locals.serverErrorReason` (consumed by the request logger).
  *
  * @typedef {import('express').Response} ExpressResponse
  *
@@ -25,8 +25,8 @@ const UNAUTHENTICATED_CODE = 'unauthenticated';
 const INVALID_PAYLOAD_CODE = 'invalid_payload';
 
 /**
- * Construye el payload con el envelope estandar. `extra` se mezcla primero,
- * de forma que `error`, `message` y `code` siempre ganan.
+ * Builds the payload with the standard envelope. `extra` is merged first, so
+ * that `error`, `message` and `code` always win.
  *
  * @param {string} message
  * @param {string} [code]
@@ -50,8 +50,8 @@ function buildApiErrorPayload(message, code, extra = {}) {
 }
 
 /**
- * Variante que extrae `message`/`code` de un `Error` (idealmente
- * `ServiceError`), aplicando un `fallbackMessage` si el error no aporta uno.
+ * Variant that extracts `message`/`code` from an `Error` (ideally a
+ * `ServiceError`), applying a `fallbackMessage` if the error does not provide one.
  *
  * @param {(Error & { code?: string }) | null | undefined} error
  * @param {string} [fallbackMessage]
@@ -70,8 +70,8 @@ function buildApiErrorPayloadFromError(error, fallbackMessage = DEFAULT_INTERNAL
 }
 
 /**
- * Responde una peticion JSON aplicando el envelope unificado. Distingue
- * 4xx vs 500 y registra `serverErrorReason` cuando aplica.
+ * Responds to a JSON request applying the unified envelope. Distinguishes
+ * 4xx vs 500 and records `serverErrorReason` when applicable.
  *
  * @param {ExpressResponse} response
  * @param {(Error & { status?: number, code?: string }) | null | undefined} error
@@ -90,7 +90,7 @@ function respondWithApiError(response, error, fallbackMessage = DEFAULT_INTERNAL
 }
 
 /**
- * Respuesta estandar `401` para sesion ausente o invalida.
+ * Standard `401` response for an absent or invalid session.
  *
  * @param {ExpressResponse} response
  * @returns {ExpressResponse}
@@ -100,7 +100,7 @@ function respondUnauthenticated(response) {
 }
 
 /**
- * Respuesta estandar `400` para payload mal formado.
+ * Standard `400` response for a malformed payload.
  *
  * @param {ExpressResponse} response
  * @param {string} message
@@ -112,7 +112,6 @@ function respondInvalidPayload(response, message) {
 
 module.exports = {
     buildApiErrorPayload,
-    buildApiErrorPayloadFromError,
     respondWithApiError,
     respondUnauthenticated,
     respondInvalidPayload

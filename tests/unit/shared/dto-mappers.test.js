@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Unit tests para los mappers canonicos (`contracts/dto-mappers`).
+ * @file Unit tests for the canonical mappers (`contracts/dto-mappers`).
  *
- * Cubre la normalizacion de DTOs (DatasetList, Section, EntryContext,
- * SentenceValidation, SavedAnnotation) contra fixtures sinteticas.
+ * Covers DTO normalization (DatasetList, Section, EntryContext,
+ * SentenceValidation, SavedAnnotation) against synthetic fixtures.
  */
 
 const assert = require('node:assert/strict');
@@ -22,12 +22,12 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 describe('dto-mappers', () => {
-    it('mapDatasetListDTO normaliza tanto forma legacy como canónica', () => {
+    it('mapDatasetListDTO produce el DatasetListDTO canonico', () => {
         assert.deepEqual(
             mapDatasetListDTO({
-                datasetId: 5,
+                id: 5,
                 name: 'Mi dataset',
-                triplesRDF: 17,
+                totalEntries: 17,
                 completedPercent: 20,
                 remainPercent: 80,
                 withoutReviewPercent: 0,
@@ -49,9 +49,9 @@ describe('dto-mappers', () => {
 
     it('mapDatasetListDTO conserva el estado de revision del dataset', () => {
         const dto = mapDatasetListDTO({
-            datasetId: 8,
+            id: 8,
             name: 'Reviewable',
-            triplesRDF: 10,
+            totalEntries: 10,
             review: {
                 canReview: true,
                 showReviewButton: true,
@@ -70,12 +70,14 @@ describe('dto-mappers', () => {
 
     it('mapDatasetListDTO expone las opciones de LLM del dataset', () => {
         const dto = mapDatasetListDTO({
-            datasetId: 9,
+            id: 9,
             name: 'Sin LLM',
-            triplesRDF: 3,
-            llmMode: 'none',
-            isReviewEnabled: false,
-            hasAdditionalReviews: true
+            totalEntries: 3,
+            options: {
+                llmMode: 'none',
+                isReviewEnabled: false,
+                hasAdditionalReviews: true
+            }
         });
 
         assert.deepEqual(dto.options, {
@@ -85,31 +87,27 @@ describe('dto-mappers', () => {
         });
     });
 
-    it('mapDatasetSectionDTO aplana la estructura legacy a DatasetSection canónico', () => {
+    it('mapDatasetSectionDTO produce el DatasetSectionDTO canonico desde la forma plana', () => {
         assert.deepEqual(
             mapDatasetSectionDTO({
-                dataset: {
-                    datasetId: 4,
-                    name: 'Dataset 4',
-                    totalSections: 3
-                },
-                section: {
-                    number: 2,
-                    size: 10,
-                    totalEntries: 1,
-                    startEntry: 11,
-                    endEntry: 11,
-                    isLastSection: false
-                },
+                datasetId: 4,
+                datasetName: 'Dataset 4',
+                totalSections: 3,
+                sectionIndex: 2,
+                sectionSize: 10,
+                totalEntries: 1,
+                startEntry: 11,
+                endEntry: 11,
+                isLastSection: false,
                 entries: [{
-                    eid: 22,
+                    entryId: 22,
                     category: 'Building',
-                    originalTriples: [{
+                    triples: [{
                         subject: 'A',
                         predicate: 'B',
                         object: 'C'
                     }],
-                    sourceSentences: ['Sentence']
+                    englishSentences: ['Sentence']
                 }]
             }),
             {
@@ -140,9 +138,9 @@ describe('dto-mappers', () => {
     it('mapDatasetSectionDTO corrige Airport a Place si los triples no son de aeropuerto', () => {
         const dto = mapDatasetSectionDTO({
             entries: [{
-                eid: 1,
+                entryId: 1,
                 category: 'Airport',
-                originalTriples: [{
+                triples: [{
                     subject: 'Punjab,_Pakistan',
                     predicate: 'leaderTitle',
                     object: 'Provincial_Assembly_of_the_Punjab'
@@ -156,9 +154,9 @@ describe('dto-mappers', () => {
     it('mapDatasetSectionDTO conserva Airport cuando los triples si son de aeropuerto', () => {
         const dto = mapDatasetSectionDTO({
             entries: [{
-                eid: 99,
+                entryId: 99,
                 category: 'Airport',
-                originalTriples: [{
+                triples: [{
                     subject: 'Allama_Iqbal_International_Airport',
                     predicate: 'location',
                     object: 'Punjab,_Pakistan'
@@ -243,9 +241,9 @@ describe('dto-mappers', () => {
                 }]
             }),
             {
-                eid: 9,
+                entryId: 9,
                 category: 'Airport',
-                sourceSentences: ['Sentence'],
+                englishSentences: ['Sentence'],
                 triples: [{
                     subject: 'Allama_Iqbal_International_Airport',
                     predicate: 'location',
@@ -270,9 +268,9 @@ describe('dto-mappers', () => {
                 }]
             }),
             {
-                eid: 1,
+                entryId: 1,
                 category: 'Place',
-                sourceSentences: [
+                englishSentences: [
                     'The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.'
                 ],
                 triples: [{

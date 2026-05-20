@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * @file Helpers HTTP comunes a los clientes LLM.
+ * @file HTTP helpers shared by the LLM clients.
  *
- * Provee `fetchWithTimeout`, `extractJsonPayload` (parser tolerante a
- * codigo markdown) y `removeTrailingSlashes`, todos sin dependencias
- * externas para evitar bibliotecas redundantes.
+ * Provides `fetchWithTimeout`, `extractJsonPayload` (a parser tolerant of
+ * markdown code) and `removeTrailingSlashes`, all without external
+ * dependencies to avoid redundant libraries.
  */
 
 /**
- * Quita barras finales sin expresiones regulares.
- * @param {string} value - Texto de entrada.
- * @returns {string} Texto sin barras finales.
+ * Removes trailing slashes without regular expressions.
+ * @param {string} value - Input text.
+ * @returns {string} Text without trailing slashes.
  */
 function removeTrailingSlashes(value) {
     let endIndex = value.length;
@@ -21,9 +21,9 @@ function removeTrailingSlashes(value) {
 }
 
 /**
- * Lee de forma defensiva el cuerpo textual de una respuesta.
- * @param {*} response - Respuesta fetch.
- * @returns {Promise<string>} Texto o cadena vacia.
+ * Defensively reads the textual body of a response.
+ * @param {*} response - Fetch response.
+ * @returns {Promise<string>} Text, or empty string.
  */
 async function safeReadText(response) {
     try {
@@ -35,10 +35,10 @@ async function safeReadText(response) {
 }
 
 /**
- * Extrae y parsea el primer JSON encontrado en una cadena.
- * @param {string} rawResponse - Texto bruto.
- * @param {string} providerName - Nombre del proveedor para mensajes de error.
- * @returns {*} Objeto JSON.
+ * Extracts and parses the first JSON found in a string.
+ * @param {string} rawResponse - Raw text.
+ * @param {string} providerName - Provider name for error messages.
+ * @returns {*} JSON object.
  */
 function extractJsonPayload(rawResponse, providerName) {
     const startIndex = rawResponse.indexOf('{');
@@ -50,14 +50,14 @@ function extractJsonPayload(rawResponse, providerName) {
         return JSON.parse(rawResponse.substring(startIndex, endIndex + 1));
     } catch (caughtError) {
         const error = /** @type {any} */ (caughtError);
-        throw new Error(`No se pudo parsear el JSON de ${providerName}: ${error.message}`);
+        throw new Error(`No se pudo parsear el JSON de ${providerName}: ${error.message}`, { cause: caughtError });
     }
 }
 
 /**
- * Ejecuta una peticion fetch con timeout abortable. Devuelve el texto crudo del cuerpo.
- * @param {*} options - URL, init de fetch, timeout y proveedor.
- * @returns {Promise<*>} Respuesta lista para parsear.
+ * Performs a fetch request with an abortable timeout. Returns the raw body text.
+ * @param {*} options - URL, fetch init, timeout and provider.
+ * @returns {Promise<*>} Response ready to parse.
  */
 async function fetchWithTimeout({ url, init, timeoutMs, providerName }) {
     const controller = new AbortController();
@@ -75,7 +75,7 @@ async function fetchWithTimeout({ url, init, timeoutMs, providerName }) {
     } catch (caughtError) {
         const error = /** @type {any} */ (caughtError);
         if (error?.name === 'AbortError')
-            throw new Error(`La petición a ${providerName} ha excedido el tiempo máximo de espera.`);
+            throw new Error(`La petición a ${providerName} ha excedido el tiempo máximo de espera.`, { cause: caughtError });
         throw error;
     } finally {
         clearTimeout(timeoutId);
@@ -84,7 +84,6 @@ async function fetchWithTimeout({ url, init, timeoutMs, providerName }) {
 
 module.exports = {
     removeTrailingSlashes,
-    safeReadText,
     extractJsonPayload,
     fetchWithTimeout
 };

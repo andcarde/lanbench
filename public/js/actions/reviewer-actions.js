@@ -1,9 +1,9 @@
 // @ts-nocheck
 /**
- * @file Acciones (AJAX) consumidas por la pagina del revisor.
+ * @file Actions (AJAX) consumed by the reviewer page.
  *
- * Centraliza llamadas a `/api/reviews/*` (`request`, decisiones,
- * correcciones, `finalize`, `release`).
+ * Centralizes calls to `/api/reviews/*` (`request`, decisions, corrections,
+ * `finalize`, `release`).
  */
 'use strict';
 
@@ -18,10 +18,10 @@
     const BASE = '/api/reviews';
 
     /**
-     * Ejecuta de forma asincrona la logica de call json.
-     * @param {string} url - Valor de url usado por la funcion.
-     * @param {*} options - Valor de options usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Performs a JSON call against the server and returns { ok, status, data }.
+     * @param {string} url - URL to call.
+     * @param {*} options - Fetch options (method, body, headers).
+     * @returns {Promise<*>} Normalized result of the call.
      */
     async function callJson(url, options = {}) {
         const fetchImpl = typeof fetch === 'function' ? fetch : null;
@@ -42,15 +42,15 @@
         let data = null;
         if (text) {
             try { data = JSON.parse(text); }
-            catch (_e) { data = text; }
+            catch { data = text; }
         }
         return { ok: response.ok, status: response.status, data };
     }
 
     /**
-     * Obtiene next review desde la fuente correspondiente.
-     * @param {?number} datasetId - Dataset opcional para acotar la revision.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Requests the next review from the API.
+     * @param {?number} datasetId - Optional dataset to scope the review.
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function fetchNextReview(datasetId = null) {
         const normalizedDatasetId = Number(datasetId);
@@ -65,19 +65,19 @@
     }
 
     /**
-     * Obtiene review context desde la fuente correspondiente.
-     * @param {number} reviewId - Valor de reviewId usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Fetches the context of the given review.
+     * @param {number} reviewId - Review id.
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function fetchReviewContext(reviewId) {
         return callJson(`${BASE}/${encodeURIComponent(reviewId)}`, { method: 'GET' });
     }
 
     /**
-     * Ejecuta submit decision contra la capa de persistencia o API correspondiente.
-     * @param {number} reviewId - Valor de reviewId usado por la funcion.
-     * @param {*} payload - Valor de payload usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Submits a criterion decision for the given review.
+     * @param {number} reviewId - Review id.
+     * @param {*} payload - Decision payload (criterionCode, decision, comment).
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function submitDecision(reviewId, payload) {
         return callJson(`${BASE}/${encodeURIComponent(reviewId)}/decisions`, {
@@ -87,10 +87,10 @@
     }
 
     /**
-     * Ejecuta submit correction contra la capa de persistencia o API correspondiente.
-     * @param {number} reviewId - Valor de reviewId usado por la funcion.
-     * @param {*} payload - Valor de payload usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Submits a text correction for a sentence of the given review.
+     * @param {number} reviewId - Review id.
+     * @param {*} payload - Correction payload (sentenceIndex, correctedSentence, comment).
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function submitCorrection(reviewId, payload) {
         return callJson(`${BASE}/${encodeURIComponent(reviewId)}/corrections`, {
@@ -100,17 +100,17 @@
     }
 
     /**
-     * Ejecuta la logica de finalize review.
-     * @param {number} reviewId - Valor de reviewId usado por la funcion.
+     * Finalizes (closes) the given review.
+     * @param {number} reviewId - Review id.
      */
     function finalizeReview(reviewId) {
         return callJson(`${BASE}/${encodeURIComponent(reviewId)}/finalize`, { method: 'POST' });
     }
 
     /**
-     * Ejecuta release review contra la capa de persistencia o API correspondiente.
-     * @param {number} reviewId - Valor de reviewId usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Releases the given review back to the pending pool.
+     * @param {number} reviewId - Review id.
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function releaseReview(reviewId) {
         return callJson(`${BASE}/${encodeURIComponent(reviewId)}/release`, { method: 'POST' });

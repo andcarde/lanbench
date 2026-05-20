@@ -1,5 +1,5 @@
 body {
-  background: #e7e7e7;
+  background: #fff;
   font-family: Arial, Helvetica, sans-serif;
   min-height: 100vh;
   color: #000;
@@ -11,8 +11,8 @@ body {
 
 .main-panel {
   min-height: calc(100vh - 48px);
-  border: 1px solid #8a8a8a;
-  background: #ededed;
+  border: 1px solid #ececec;
+  background: #fff;
   position: relative;
   padding: 36px 56px 80px;
 }

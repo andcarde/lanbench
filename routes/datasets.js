@@ -1,13 +1,13 @@
 'use strict';
 
 /**
- * @file Router publico `/datasets` — paginas HTML de dataset.
+ * @file Public router `/datasets` — dataset HTML pages.
  *
- *   - `GET /`             redirige a `/tasks`.
- *   - `GET /:id/view`     pagina de visualizacion del dataset.
- *   - `GET /:id/admin`    pagina de administracion del dataset.
+ *   - `GET /`             redirects to `/tasks`.
+ *   - `GET /:id/view`     dataset view page.
+ *   - `GET /:id/admin`    dataset administration page.
  *
- * Todas protegidas con `requirePageAuth`.
+ * All protected with `requirePageAuth`.
  */
 
 const express = require('express');

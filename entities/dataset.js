@@ -1,39 +1,39 @@
 'use strict';
 
 /**
- * @file `DatasetDTO` — agrupa las entries parseadas de un fichero benchmark
- * XML (WebNLG) en una estructura serializable.
+ * @file `DatasetDTO` — groups the entries parsed from an XML benchmark file
+ * (WebNLG) into a serializable structure.
  *
- * Esta clase es deliberadamente delgada: actua como contenedor estructural
- * (lista de {@link EntryDTO}) y como punto de extension cuando se necesite
- * añadir metadatos de dataset que viajen con las entries.
+ * This class is deliberately thin: it acts as a structural container
+ * (a list of {@link EntryDTO}) and as an extension point when dataset
+ * metadata that travels with the entries needs to be added.
  *
  * @typedef {import('./entry').EntryDTO} EntryDTO
  */
 
 /**
- * Datos crudos aceptados por el constructor.
+ * Raw data accepted by the constructor.
  *
  * @typedef {Object} DatasetDTOInput
  * @property {EntryDTO[]} [entries]
  */
 
 /**
- * Resultado de parsear un fichero benchmark XML WebNLG: una lista plana de
- * {@link EntryDTO} sin metadatos adicionales.
+ * Result of parsing a WebNLG XML benchmark file: a flat list of
+ * {@link EntryDTO} with no additional metadata.
  */
 class DatasetDTO {
     /**
      * @param {DatasetDTOInput} [options]
      */
     constructor({ entries = [] } = {}) {
-        /** @type {EntryDTO[]} Entries del dataset (puede estar vacio). */
+        /** @type {EntryDTO[]} Dataset entries (may be empty). */
         this.entries = entries;
     }
 
     /**
-     * Construye un `DatasetDTO` a partir de cualquier fuente con propiedad
-     * `entries`. Si `entries` no es un array, queda vacio.
+     * Builds a `DatasetDTO` from any source with an `entries` property.
+     * If `entries` is not an array, it stays empty.
      *
      * @param {{ entries?: EntryDTO[] } | null | undefined} source
      * @returns {DatasetDTO}
@@ -45,7 +45,7 @@ class DatasetDTO {
     }
 
     /**
-     * Serializa la instancia a un objeto JSON-compatible.
+     * Serializes the instance to a JSON-compatible object.
      * @returns {{ entries: EntryDTO[] }}
      */
     toJSON() {

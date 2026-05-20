@@ -3,13 +3,13 @@
 /**
  * @file Repository for the `Dataset` model (plus its entry/triple graph).
  *
- * Encapsula todas las consultas a Prisma relativas a datasets: descubrimiento
- * con permisos, alta transaccional del grafo completo (entries, triplesets,
- * triples, lexes, links), contadores agregados, y baja recursiva.
+ * Encapsulates all Prisma queries related to datasets: permission-aware
+ * discovery, transactional insertion of the full graph (entries, triplesets,
+ * triples, lexes, links), aggregate counters, and recursive deletion.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  *
- * @typedef {Object} DatasetRow             Forma minima devuelta por Prisma.
+ * @typedef {Object} DatasetRow             Minimal shape returned by Prisma.
  * @property {number} id
  * @property {string} name
  * @property {string} colorClass
@@ -23,7 +23,7 @@
  * @property {boolean} isReviewer
  * @property {boolean} isAdmin
  *
- * @typedef {Object} EntryRecord            Entry normalizada lista para persistir.
+ * @typedef {Object} EntryRecord            Normalized entry ready to persist.
  * @property {string|number} eid
  * @property {string} category
  * @property {string|null} shape
@@ -41,17 +41,17 @@ const defaultPrisma = require('../prisma/client');
 const { ACTIVE_REVIEW_STATUSES } = require('../constants/review-status');
 const { SECTION_SIZE } = require('../constants/datasets');
 
-/** Opciones de la transaccion de importacion (maxWait/timeout en ms). */
+/** Options for the import transaction (maxWait/timeout in ms). */
 const DATASET_IMPORT_TRANSACTION_OPTIONS = {
     maxWait: 20000,
     timeout: 120000
 };
-/** Tamano del lote para `createMany` (limites de MySQL/Prisma). */
+/** Batch size for `createMany` (MySQL/Prisma limits). */
 const CREATE_MANY_BATCH_SIZE = 500;
 
 /**
- * Construye el repositorio de datasets cableado al `prisma` recibido (o al
- * cliente compartido por defecto).
+ * Builds the datasets repository wired to the received `prisma` (or to the
+ * shared default client).
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  */
@@ -61,8 +61,8 @@ function createDatasetsRepository({ prisma } = {}) {
     };
 
     /**
-     * Lista todos los datasets sobre los que el usuario tiene algun permiso
-     * activo (`isOwned`, `isAnnotator`, `isReviewer` o `isAdmin`).
+     * Lists all datasets on which the user has some active permission
+     * (`isOwned`, `isAnnotator`, `isReviewer` or `isAdmin`).
      *
      * @param {number} userId
      * @returns {Promise<Array<DatasetRow & { permits: PermitRow[] }>>}
@@ -82,7 +82,7 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Recupera un dataset accesible por su id (incluye permisos del usuario).
+     * Retrieves an accessible dataset by its id (includes the user's permissions).
      *
      * @param {{ userId:number, datasetId:number }} input
      * @returns {Promise<(DatasetRow & { permits: PermitRow[] })|null>}
@@ -102,9 +102,9 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Recupera el dataset accesible al usuario con todo su grafo cargado:
-     * entries (ordenadas por `position`) y sus triplesets, triples, lexes,
-     * `dbpediaLinks` y `links`.
+     * Retrieves the dataset accessible to the user with its full graph loaded:
+     * entries (ordered by `position`) and their triplesets, triples, lexes,
+     * `dbpediaLinks` and `links`.
      *
      * @param {{ userId:number, datasetId:number }} input
      * @returns {Promise<Record<string, any>|null>}
@@ -146,9 +146,60 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Da de alta un dataset con `permit` (`isOwned`/`isAdmin`/`isAnnotator`)
-     * para el usuario propietario y persiste su grafo de entries en una
-     * unica transaccion (`DATASET_IMPORT_TRANSACTION_OPTIONS`).
+     * Retrieves the dataset accessible to the user with its full graph and the
+     * `annotations` persisted per entry (ordered by `sentenceIndex`).
+     * Endpoint dedicated to the extended-XML download (US-30): the additional
+     * `annotations` include is not added to the base graph so as not to make
+     * the other endpoints, which only need the original content, more
+     * expensive.
+     *
+     * @param {{ userId:number, datasetId:number }} input
+     * @returns {Promise<Record<string, any>|null>}
+     */
+    async function findAccessibleDatasetGraphWithAnnotationsById({ userId, datasetId }) {
+        return deps.prisma.dataset.findFirst({
+            where: {
+                id: datasetId,
+                permits: {
+                    some: accessiblePermitWhere(userId)
+                }
+            },
+            include: {
+                permits: userPermitInclude(userId),
+                entries: {
+                    orderBy: { position: 'asc' },
+                    include: {
+                        triplesets: {
+                            orderBy: [{ type: 'asc' }, { position: 'asc' }],
+                            include: {
+                                triples: {
+                                    orderBy: { position: 'asc' }
+                                }
+                            }
+                        },
+                        lexes: {
+                            orderBy: { position: 'asc' }
+                        },
+                        dbpediaLinks: {
+                            orderBy: { position: 'asc' }
+                        },
+                        links: {
+                            orderBy: { position: 'asc' }
+                        },
+                        annotations: {
+                            where: { datasetId },
+                            orderBy: { sentenceIndex: 'asc' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Creates a dataset with a `permit` (`isOwned`/`isAdmin`/`isAnnotator`)
+     * for the owning user and persists its entry graph in a single transaction
+     * (`DATASET_IMPORT_TRANSACTION_OPTIONS`).
      *
      * @param {{
      *   userId:number,
@@ -192,16 +243,20 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Actualiza contadores de secciones cuando se completa una seccion
-     * anotada. Si `isReviewEnabled` esta desactivado, la seccion pasa
-     * directamente de `pending` a `completed`. Si esta activado, pasa a
-     * `inReview` a la espera de revision.
+     * Updates section counters when an annotated section is completed. If
+     * `isReviewEnabled` is off, the section goes directly from `pending` to
+     * `completed`. If it is on, it goes to `inReview` awaiting review.
+     *
+     * When `client` (a Prisma transaction client) is passed, both operations
+     * run in that already-open transaction (Prisma does not allow nested
+     * `$transaction`). Without `client`, it opens its own transaction.
      *
      * @param {number} datasetId
+     * @param {PrismaClientLike} [client] - Cliente transaccional opcional.
      * @returns {Promise<DatasetRow>}
      */
-    async function markSectionAsAnnotated(datasetId) {
-        return deps.prisma.$transaction(async (/** @type {*} */ tx) => {
+    async function markSectionAsAnnotated(datasetId, client) {
+        const run = async (/** @type {*} */ tx) => {
             const dataset = await tx.dataset.findUnique({
                 where: { id: datasetId },
                 select: { isReviewEnabled: true }
@@ -218,122 +273,13 @@ function createDatasetsRepository({ prisma } = {}) {
                     ...targetCounterUpdate
                 }
             });
-        });
-    }
-
-    /**
-     * Obtiene el permiso de un usuario sobre un dataset, incluyendo
-     * informacion minima del dataset (modo LLM, revision activa, etc.) y
-     * del propio usuario.
-     *
-     * @param {{ datasetId:number, userId:number }} input
-     * @returns {Promise<Record<string, any>|null>}
-     */
-    async function findPermitForUser({ datasetId, userId }) {
-        return deps.prisma.permit.findUnique({
-            where: {
-                datasetId_userId: { datasetId, userId }
-            },
-            include: {
-                dataset: {
-                    select: {
-                        id: true,
-                        name: true,
-                        llmMode: true,
-                        isReviewEnabled: true,
-                        hasAdditionalReviews: true
-                    }
-                },
-                user: {
-                    select: {
-                        id: true,
-                        email: true
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Lista usuarios con algun permiso activo sobre un dataset.
-     *
-     * @param {{ datasetId:number }} input
-     * @returns {Promise<Array<Record<string, any>>>}
-     */
-    async function findPermissionRowsByDataset({ datasetId }) {
-        return deps.prisma.permit.findMany({
-            where: {
-                datasetId,
-                OR: activePermissionConditions()
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        isModerator: true
-                    }
-                }
-            },
-            orderBy: { userId: 'asc' }
-        });
-    }
-
-    /**
-     * Crea o actualiza permisos de usuario en dataset. Solo escribe los
-     * booleanos pasados; `isOwned` se respeta en `create` y nunca cambia
-     * en `update`.
-     *
-     * @param {{ datasetId:number, userId:number, isAnnotator?:boolean, isReviewer?:boolean, isAdmin?:boolean }} payload
-     * @returns {Promise<PermitRow>}
-     */
-    async function upsertDatasetPermission(payload) {
-        const data = {
-            isAnnotator: Boolean(payload.isAnnotator),
-            isReviewer: Boolean(payload.isReviewer),
-            isAdmin: Boolean(payload.isAdmin)
         };
 
-        return deps.prisma.permit.upsert({
-            where: {
-                datasetId_userId: {
-                    datasetId: payload.datasetId,
-                    userId: payload.userId
-                }
-            },
-            create: {
-                datasetId: payload.datasetId,
-                userId: payload.userId,
-                isOwned: false,
-                ...data
-            },
-            update: data,
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        email: true,
-                        isModerator: true
-                    }
-                }
-            }
-        });
+        return client ? run(client) : deps.prisma.$transaction(run);
     }
 
     /**
-     * Borra cualquier `Permit` para `(datasetId, userId)` (revoca el acceso).
-     *
-     * @param {{ datasetId:number, userId:number }} input
-     * @returns {Promise<{ count: number }>}
-     */
-    async function deleteDatasetPermission({ datasetId, userId }) {
-        return deps.prisma.permit.deleteMany({
-            where: { datasetId, userId }
-        });
-    }
-
-    /**
-     * Obtiene una entry por posicion global dentro del dataset.
+     * Gets an entry by its global position within the dataset.
      *
      * @param {{ datasetId:number, position:number }} input
      * @returns {Promise<{ id:number, eid:string|number, position:number }|null>}
@@ -352,8 +298,8 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista los ids de entries que pertenecen a una seccion (segun el
-     * particionado por `SECTION_SIZE`).
+     * Lists the ids of entries that belong to a section (according to the
+     * partitioning by `SECTION_SIZE`).
      *
      * @param {{ datasetId:number, sectionIndex:number }} input
      * @returns {Promise<number[]>}
@@ -376,26 +322,9 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista los `size` de todas las entries del dataset ordenadas por
-     * `position`.
-     *
-     * @param {number} datasetId
-     * @returns {Promise<number[]>}
-     */
-    async function findEntrySizesByDataset(datasetId) {
-        const rows = await deps.prisma.entry.findMany({
-            where: { datasetId },
-            select: { size: true },
-            orderBy: { position: 'asc' }
-        });
-
-        return rows.map((/** @type {*} */ row) => row.size);
-    }
-
-    /**
-     * Borra un dataset y todas sus filas dependientes de forma
-     * transaccional, respetando el orden de borrado para no violar las
-     * FKs (decisiones, comentarios y reviews antes que entries, etc.).
+     * Deletes a dataset and all its dependent rows transactionally, respecting
+     * the deletion order so as not to violate the FKs (decisions, comments and
+     * reviews before entries, etc.).
      *
      * @param {{ datasetId:number }} input
      * @returns {Promise<{ datasetId:number }>}
@@ -453,69 +382,9 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Obtiene el grafo minimo necesario para calcular estadisticas del
-     * dataset (anotaciones por usuario, reviews con resoluciones y tiempos).
-     *
-     * @param {{ datasetId:number }} input
-     * @returns {Promise<Record<string, any>|null>}
-     */
-    async function findDatasetStatisticsGraph({ datasetId }) {
-        return deps.prisma.dataset.findUnique({
-            where: { id: datasetId },
-            select: {
-                id: true,
-                name: true,
-                totalEntries: true,
-                sectionAssignments: {
-                    select: {
-                        userId: true,
-                        timeSpentSeconds: true
-                    }
-                },
-                entries: {
-                    select: {
-                        id: true,
-                        annotations: {
-                            select: {
-                                userId: true,
-                                isAcceptedFirstTry: true,
-                                user: {
-                                    select: {
-                                        id: true,
-                                        email: true
-                                    }
-                                }
-                            }
-                        },
-                        reviews: {
-                            select: {
-                                id: true,
-                                reviewerId: true,
-                                status: true,
-                                timeSpentSeconds: true,
-                                reviewer: {
-                                    select: {
-                                        id: true,
-                                        email: true
-                                    }
-                                },
-                                comments: {
-                                    select: {
-                                        isAcceptedFirstTry: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Lista entries con estado `annotated` que el `userId` aun no ha
-     * anotado y sobre las que no hay reviews vivas. Solo el `datasetId` se
-     * devuelve — la usa el servicio para descubrir datasets revisables.
+     * Lists entries in `annotated` state that `userId` has not yet annotated
+     * and on which there are no live reviews. Only the `datasetId` is
+     * returned — used by the service to discover reviewable datasets.
      *
      * @param {{ userId:number, datasetIds:number[] }} input
      * @returns {Promise<Array<{ datasetId:number }>>}
@@ -550,7 +419,7 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Cuenta entries con al menos una anotacion, agrupando por dataset.
+     * Counts entries with at least one annotation, grouped by dataset.
      *
      * @param {{ datasetIds:number[] }} input
      * @returns {Promise<Array<{ datasetId:number, count:number }>>}
@@ -583,8 +452,8 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista las reviews activas asignadas al `userId` dentro de los datasets
-     * dados, devolviendo solo el `datasetId` (para mapeo agregado).
+     * Lists the active reviews assigned to `userId` within the given datasets,
+     * returning only the `datasetId` (for aggregate mapping).
      *
      * @param {{ userId:number, datasetIds:number[] }} input
      * @returns {Promise<Array<{ entry: { datasetId:number } }>>}
@@ -619,17 +488,12 @@ function createDatasetsRepository({ prisma } = {}) {
         findAccessibleMany,
         findAccessibleById,
         findAccessibleDatasetGraphById,
+        findAccessibleDatasetGraphWithAnnotationsById,
         createOwnedDataset,
         markSectionAsAnnotated,
         findEntryByPosition,
         findEntryIdsBySection,
-        findEntrySizesByDataset,
-        findPermitForUser,
-        findPermissionRowsByDataset,
-        upsertDatasetPermission,
-        deleteDatasetPermission,
         deleteDatasetRecursively,
-        findDatasetStatisticsGraph,
         findReviewableEntryDatasetIds,
         findActiveReviewDatasetIdsForReviewer,
         countAnnotatedEntriesByDataset
@@ -637,9 +501,9 @@ function createDatasetsRepository({ prisma } = {}) {
 }
 
 /**
- * Construye la condicion `where` Prisma que identifica un permiso activo
- * (cualquiera de `isOwned`, `isAnnotator`, `isReviewer`, `isAdmin`) para el
- * usuario dado.
+ * Builds the Prisma `where` condition that identifies an active permission
+ * (any of `isOwned`, `isAnnotator`, `isReviewer`, `isAdmin`) for the given
+ * user.
  *
  * @param {number} userId
  * @returns {Record<string, any>}
@@ -652,7 +516,7 @@ function accessiblePermitWhere(userId) {
 }
 
 /**
- * Devuelve la lista de subcondiciones OR que delimitan "permiso efectivo".
+ * Returns the list of OR subconditions that delimit "effective permission".
  *
  * @returns {Array<Record<string, true>>}
  */
@@ -666,8 +530,8 @@ function activePermissionConditions() {
 }
 
 /**
- * Construye el fragmento `include`/`where` que recupera SOLO el permiso del
- * usuario actual al traer un dataset.
+ * Builds the `include`/`where` fragment that retrieves ONLY the current user's
+ * permission when fetching a dataset.
  *
  * @param {number} userId
  * @returns {Record<string, any>}
@@ -685,10 +549,9 @@ function userPermitInclude(userId) {
 }
 
 /**
- * Persiste el grafo completo de un dataset recien creado:
- * `entries` -> `triplesets` -> `triples`, mas `lexes`, `dbpediaLinks` y
- * `links`. Usa lotes `createMany` para minimizar el numero de roundtrips
- * a la BD.
+ * Persists the full graph of a just-created dataset:
+ * `entries` -> `triplesets` -> `triples`, plus `lexes`, `dbpediaLinks` and
+ * `links`. Uses `createMany` batches to minimize the number of DB roundtrips.
  *
  * @param {*} tx
  * @param {number} datasetId
@@ -721,7 +584,7 @@ async function persistDatasetGraph(tx, datasetId, entryRecords) {
 }
 
 /**
- * Persiste las filas principales de `entry` (sin sus dependencias).
+ * Persists the main `entry` rows (without their dependencies).
  *
  * @param {*} tx
  * @param {number} datasetId
@@ -741,10 +604,10 @@ async function createEntryRows(tx, datasetId, entryRecords) {
 }
 
 /**
- * Obtiene ids de entries por posicion.
- * @param {*} tx - Transaccion Prisma.
+ * Gets entry ids by position.
+ * @param {*} tx - Prisma transaction.
  * @param {number} datasetId - Dataset.
- * @returns {Promise<Map<*, *>>} Mapa posicion -> entryId.
+ * @returns {Promise<Map<*, *>>} Map of position -> entryId.
  */
 async function findEntryIdsByPosition(tx, datasetId) {
     const createdEntries = await tx.entry.findMany({
@@ -760,10 +623,10 @@ async function findEntryIdsByPosition(tx, datasetId) {
 }
 
 /**
- * Construye filas dependientes de entry.
- * @param {Array<*>} entryRecords - Entries normalizadas.
- * @param {Map<*, *>} entryIdByPosition - Ids por posicion.
- * @returns {*} Filas por tabla.
+ * Builds the rows dependent on an entry.
+ * @param {Array<*>} entryRecords - Normalized entries.
+ * @param {Map<*, *>} entryIdByPosition - Ids by position.
+ * @returns {*} Rows per table.
  */
 function buildRelatedRows(entryRecords, entryIdByPosition) {
     const rows = {
@@ -787,11 +650,11 @@ function buildRelatedRows(entryRecords, entryIdByPosition) {
 }
 
 /**
- * Busca triplesets creados para el dataset.
- * @param {*} tx - Transaccion Prisma.
- * @param {Array<*>} triplesetRows - Filas de tripleset.
- * @param {Map<*, *>} entryIdByPosition - Ids por posicion.
- * @returns {Promise<Array<*>>} Triplesets creados.
+ * Finds the triplesets created for the dataset.
+ * @param {*} tx - Prisma transaction.
+ * @param {Array<*>} triplesetRows - Tripleset rows.
+ * @param {Map<*, *>} entryIdByPosition - Ids by position.
+ * @returns {Promise<Array<*>>} Created triplesets.
  */
 async function findCreatedTriplesets(tx, triplesetRows, entryIdByPosition) {
     if (triplesetRows.length === 0)
@@ -813,11 +676,11 @@ async function findCreatedTriplesets(tx, triplesetRows, entryIdByPosition) {
 }
 
 /**
- * Construye filas de triples.
- * @param {Array<*>} entryRecords - Entries normalizadas.
- * @param {Map<*, *>} entryIdByPosition - Ids por posicion.
- * @param {Map<*, *>} triplesetIdByKey - Ids por clave de tripleset.
- * @returns {Array<*>} Filas de triple.
+ * Builds triple rows.
+ * @param {Array<*>} entryRecords - Normalized entries.
+ * @param {Map<*, *>} entryIdByPosition - Ids by position.
+ * @param {Map<*, *>} triplesetIdByKey - Ids by tripleset key.
+ * @returns {Array<*>} Triple rows.
  */
 function buildTripleRows(entryRecords, entryIdByPosition, triplesetIdByKey) {
     /** @type {any[]} */
@@ -836,10 +699,10 @@ function buildTripleRows(entryRecords, entryIdByPosition, triplesetIdByKey) {
 }
 
 /**
- * Persiste filas si hay datos.
- * @param {*} model - Modelo Prisma.
- * @param {Array<*>} rows - Filas.
- * @returns {Promise<void>} Promesa de persistencia.
+ * Persists rows if there is data.
+ * @param {*} model - Prisma model.
+ * @param {Array<*>} rows - Rows.
+ * @returns {Promise<void>} Persistence promise.
  */
 async function createRowsIfAny(model, rows) {
     for (let start = 0; start < rows.length; start += CREATE_MANY_BATCH_SIZE) {
@@ -850,10 +713,10 @@ async function createRowsIfAny(model, rows) {
 }
 
 /**
- * Obtiene entryId o lanza error contextual.
- * @param {Map<*, *>} entryIdByPosition - Ids por posicion.
- * @param {number} position - Posicion.
- * @returns {number} Id de entry.
+ * Gets an entryId or throws a contextual error.
+ * @param {Map<*, *>} entryIdByPosition - Ids by position.
+ * @param {number} position - Position.
+ * @returns {number} Entry id.
  */
 function requireEntryId(entryIdByPosition, position) {
     const entryId = entryIdByPosition.get(position);
@@ -863,7 +726,7 @@ function requireEntryId(entryIdByPosition, position) {
 }
 
 /**
- * Acumula filas `tripleset` para el `entryId` dado.
+ * Accumulates `tripleset` rows for the given `entryId`.
  *
  * @param {Array<Record<string, any>>} targetRows
  * @param {number} entryId
@@ -882,10 +745,10 @@ function pushTriplesets(targetRows, entryId, triplesets, type) {
 }
 
 /**
- * Agrega filas de lexicalizaciones.
- * @param {Array<*>} targetRows - Filas destino.
+ * Adds lexicalization rows.
+ * @param {Array<*>} targetRows - Destination rows.
  * @param {number} entryId - Entry.
- * @param {Array<*>} lexes - Lexicalizaciones.
+ * @param {Array<*>} lexes - Lexicalizations.
  * @returns {void}
  */
 function pushLexRows(targetRows, entryId, lexes) {
@@ -902,10 +765,10 @@ function pushLexRows(targetRows, entryId, lexes) {
 }
 
 /**
- * Agrega filas de enlaces RDF.
- * @param {Array<*>} targetRows - Filas destino.
+ * Adds RDF link rows.
+ * @param {Array<*>} targetRows - Destination rows.
  * @param {number} entryId - Entry.
- * @param {Array<*>} links - Enlaces.
+ * @param {Array<*>} links - Links.
  * @returns {void}
  */
 function pushLinkRows(targetRows, entryId, links) {
@@ -922,8 +785,8 @@ function pushLinkRows(targetRows, entryId, links) {
 }
 
 /**
- * Acumula filas `triple` para los triplesets dados, resolviendo el
- * `triplesetId` por la clave `entryId:type:position`.
+ * Accumulates `triple` rows for the given triplesets, resolving the
+ * `triplesetId` by the key `entryId:type:position`.
  *
  * @param {Array<Record<string, any>>} targetRows
  * @param {Map<string, number>} triplesetIdByKey
@@ -953,8 +816,8 @@ function pushTriples(targetRows, triplesetIdByKey, entryId, triplesets, type) {
 }
 
 /**
- * Clave compuesta utilizada para resolver `triplesetId` durante el flujo de
- * importacion (`entryId:type:position`).
+ * Composite key used to resolve `triplesetId` during the import flow
+ * (`entryId:type:position`).
  *
  * @param {number} entryId
  * @param {'original'|'modified'} type

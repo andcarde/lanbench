@@ -1,17 +1,17 @@
 // @ts-nocheck
 /**
- * @file Frontend de las paginas de error (`bad-request.html`,
- * `forbidden.html`, `not-found.html`, `problema.html`).
+ * @file Frontend for the error pages (`bad-request.html`, `forbidden.html`,
+ * `not-found.html`, `problema.html`).
  *
- * Muestra al usuario un detalle dinamico (mensaje del servidor cuando lo
- * hay, motivo desde la querystring si no) e implementa el boton "volver".
+ * Shows the user a dynamic detail (the server message when present, the reason
+ * from the querystring otherwise) and implements the "back" button.
  */
 (function () {
   "use strict";
 
   /**
-   * Ejecuta la logica de inject toolbar.
-   * @returns {*} Resultado producido por la funcion.
+   * Injects the shared app toolbar into the error page if not already present.
+   * @returns {void}
    */
   function injectToolbar() {
     if (document.querySelector(".app-toolbar"))
@@ -33,8 +33,8 @@
   }
 
   /**
-   * Ejecuta la logica de resolve requested path.
-   * @returns {*} Resultado producido por la funcion.
+   * Resolves the requested path (pathname + querystring) for display.
+   * @returns {string} The requested path.
    */
   function resolveRequestedPath() {
     const pathname = window.location.pathname || "/";
@@ -43,7 +43,8 @@
   }
 
   /**
-   * Actualiza metadata con los datos indicados.
+   * Populates the error metadata nodes (path, status and timestamp).
+   * @returns {void}
    */
   function populateMetadata() {
     const pathNode = document.getElementById("errorPathValue");

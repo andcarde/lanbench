@@ -153,7 +153,7 @@ describe('spanish-service persistence', () => {
 
         const context = {
             triples: [{ subject: 'Madrid', predicate: 'country', object: 'Spain' }],
-            sourceSentences: ['Madrid is in Spain.']
+            englishSentences: ['Madrid is in Spain.']
         };
         const result = await spanishService.checkBatch(['Madrid esta en Francia.'], context);
 
@@ -170,9 +170,9 @@ describe('spanish-service persistence', () => {
         const spanishService = createSpanishService({
             annotationsRepository: {
                 /**
-                 * Ejecuta de forma asincrona la logica de replace for accessible entry.
-                 * @param {*} payload - Valor de payload usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of replace for accessible entry.
+                 * @param {*} payload - Value of payload used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async replaceForAccessibleEntry(payload) {
                     capturedCalls.push(payload);
@@ -185,8 +185,10 @@ describe('spanish-service persistence', () => {
             userId: 8,
             datasetId: 3,
             rdfId: 12,
-            sentences: ['Primera.', 'Segunda.'],
-            rejectionReasons: [null, 'Motivo']
+            sentences: [
+                { sentence: 'Primera.', rejectionReason: null },
+                { sentence: 'Segunda.', rejectionReason: 'Motivo' }
+            ]
         });
 
         assert.deepEqual(result, {

@@ -13,8 +13,8 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Ejecuta de forma asincrona la logica de list accessible dataset items.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the list-accessible-dataset-items service method.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async listAccessibleDatasetItems() {
                     throw new Error('listAccessibleDatasetItems should not be called');
@@ -48,9 +48,9 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Ejecuta de forma asincrona la logica de list accessible dataset items.
-                 * @param {*} userId - Valor de userId usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the list-accessible-dataset-items service method.
+                 * @param {*} userId - Value of userId used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async listAccessibleDatasetItems(userId) {
                     assert.equal(userId, 7);
@@ -74,8 +74,8 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Obtiene accessible dataset item desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets the accessible dataset item from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async getAccessibleDatasetItem() {
                     throw new Error('getAccessibleDatasetItem should not be called');
@@ -101,8 +101,8 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Obtiene accessible dataset item desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets the accessible dataset item from the corresponding source.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async getAccessibleDatasetItem() {
                     throw new Error('getAccessibleDatasetItem should not be called');
@@ -149,11 +149,11 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Obtiene accessible dataset section desde la fuente correspondiente.
-                 * @param {*} userId - Valor de userId usado por la funcion.
-                 * @param {*} datasetId - Valor de datasetId usado por la funcion.
-                 * @param {number} sectionNumber - Valor de sectionNumber usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets the accessible dataset section from the corresponding source.
+                 * @param {*} userId - Value of userId used by the function.
+                 * @param {*} datasetId - Value of datasetId used by the function.
+                 * @param {number} sectionNumber - Value of sectionNumber used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async getAccessibleDatasetSection(userId, datasetId, sectionNumber) {
                     assert.equal(userId, 7);
@@ -179,10 +179,10 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Obtiene accessible dataset text desde la fuente correspondiente.
-                 * @param {*} userId - Valor de userId usado por la funcion.
-                 * @param {*} datasetId - Valor de datasetId usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Gets the accessible dataset text from the corresponding source.
+                 * @param {*} userId - Value of userId used by the function.
+                 * @param {*} datasetId - Value of datasetId used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async getAccessibleDatasetText(userId, datasetId) {
                     assert.equal(userId, 7);
@@ -203,12 +203,166 @@ describe('datasets-controller', () => {
         assert.equal(recorder.payload, xmlContent);
     });
 
+    it('downloadDatasetXml descarga el XML como adjunto con su filename', async () => {
+        const xmlBody = '<benchmark>downloaded</benchmark>';
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetXmlDownload(/** @type {*} */ userId, /** @type {*} */ datasetId) {
+                    assert.equal(userId, 7);
+                    assert.equal(datasetId, 8);
+                    return {
+                        filename: 'ru_dev.xml',
+                        body: xmlBody,
+                        contentType: 'application/xml; charset=utf-8'
+                    };
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetXml({
+            params: { id: '8' },
+            session: { user: { id: 7, email: 'user7@example.com' } }
+        }, response);
+
+        assert.equal(recorder.statusCode, 200);
+        assert.equal(recorder.contentType, 'application/xml; charset=utf-8');
+        assert.equal(recorder.headers['Content-Disposition'], 'attachment; filename="ru_dev.xml"');
+        assert.equal(recorder.payload, xmlBody);
+    });
+
+    it('downloadDatasetXml devuelve 400 cuando id no es entero positivo', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetXmlDownload() {
+                    throw new Error('getAccessibleDatasetXmlDownload should not be called');
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetXml({
+            params: { id: 'x' },
+            session: { user: { id: 7, email: 'user7@example.com' } }
+        }, response);
+
+        assert.equal(recorder.statusCode, 400);
+        assert.deepEqual(recorder.payload, {
+            error: true,
+            message: 'El id del dataset es inválido.',
+            code: 'invalid_payload'
+        });
+    });
+
+    it('downloadDatasetXml devuelve 401 sin sesión válida', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetXmlDownload() {
+                    throw new Error('getAccessibleDatasetXmlDownload should not be called');
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetXml({ params: { id: '8' } }, response);
+
+        assert.equal(recorder.statusCode, 401);
+        assert.equal(recorder.payload?.code, 'unauthenticated');
+    });
+
+    it('downloadDatasetAnnotatedXml descarga el XML extendido con filename <name>-extended.xml', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetAnnotatedXmlDownload(/** @type {*} */ userId, /** @type {*} */ datasetId) {
+                    assert.equal(userId, 7);
+                    assert.equal(datasetId, 8);
+                    return {
+                        filename: 'ru_dev-extended.xml',
+                        body: '<benchmark>extended</benchmark>',
+                        contentType: 'application/xml; charset=utf-8'
+                    };
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetAnnotatedXml({
+            params: { id: '8' },
+            session: { user: { id: 7, email: 'user7@example.com' } }
+        }, response);
+
+        assert.equal(recorder.statusCode, 200);
+        assert.equal(recorder.contentType, 'application/xml; charset=utf-8');
+        assert.equal(
+            recorder.headers['Content-Disposition'],
+            'attachment; filename="ru_dev-extended.xml"'
+        );
+        assert.equal(recorder.payload, '<benchmark>extended</benchmark>');
+    });
+
+    it('downloadDatasetAnnotatedXml propaga el 409 dataset_not_completed del service', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetAnnotatedXmlDownload() {
+                    const error = /** @type {any} */ (new Error('El dataset todavía no está completado al 100%.'));
+                    error.status = 409;
+                    error.code = 'dataset_not_completed';
+                    throw error;
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetAnnotatedXml({
+            params: { id: '8' },
+            session: { user: { id: 7, email: 'user7@example.com' } }
+        }, response);
+
+        assert.equal(recorder.statusCode, 409);
+        assert.equal(recorder.payload?.code, 'dataset_not_completed');
+    });
+
+    it('downloadDatasetAnnotatedXml devuelve 400 cuando id no es entero positivo', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetAnnotatedXmlDownload() {
+                    throw new Error('getAccessibleDatasetAnnotatedXmlDownload should not be called');
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetAnnotatedXml({
+            params: { id: 'x' },
+            session: { user: { id: 7, email: 'user7@example.com' } }
+        }, response);
+
+        assert.equal(recorder.statusCode, 400);
+        assert.equal(recorder.payload?.code, 'invalid_payload');
+    });
+
+    it('downloadDatasetAnnotatedXml devuelve 401 sin sesión válida', async () => {
+        const datasetsController = createDatasetsController({
+            datasetsService: {
+                async getAccessibleDatasetAnnotatedXmlDownload() {
+                    throw new Error('getAccessibleDatasetAnnotatedXmlDownload should not be called');
+                }
+            }
+        });
+
+        const { response, recorder } = createResponseRecorder();
+        await datasetsController.downloadDatasetAnnotatedXml({ params: { id: '8' } }, response);
+
+        assert.equal(recorder.statusCode, 401);
+        assert.equal(recorder.payload?.code, 'unauthenticated');
+    });
+
     it('createDataset devuelve 400 si no se sube fichero', async () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Crea dataset con la configuracion recibida.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Creates a dataset with the received configuration.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async createDataset() {
                     throw new Error('createDataset should not be called');
@@ -248,10 +402,10 @@ describe('datasets-controller', () => {
         const datasetsController = createDatasetsController({
             datasetsService: {
                 /**
-                 * Crea dataset con la configuracion recibida.
-                 * @param {*} userId - Valor de userId usado por la funcion.
-                 * @param {*} file - Valor de file usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Creates a dataset with the received configuration.
+                 * @param {*} userId - Value of userId used by the function.
+                 * @param {*} file - Value of file used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async createDataset(userId, file, /** @type {*} */ options) {
                     assert.equal(userId, 7);
@@ -333,51 +487,62 @@ describe('datasets-controller', () => {
 });
 
 /**
- * Crea response recorder con la configuracion recibida.
- * @returns {*} Resultado producido por la funcion.
+ * Creates a response recorder with the received configuration.
+ * @returns {*} Result produced by the function.
  */
 function createResponseRecorder() {
     /** @type {any} */
     const recorder = {
         statusCode: null,
         payload: null,
-        contentType: null
+        contentType: null,
+        headers: {}
     };
 
     /** @type {any} */
     const response = {
         locals: {},
         /**
-         * Ejecuta la logica de status.
-         * @param {string} code - Valor de code usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Records the HTTP status code.
+         * @param {string} code - Value of code used by the function.
+         * @returns {*} Result produced by the function.
          */
         status(code) {
             recorder.statusCode = code;
             return this;
         },
         /**
-         * Ejecuta la logica de type.
-         * @param {*} value - Valor de value usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Records the response content type.
+         * @param {*} value - Value of value used by the function.
+         * @returns {*} Result produced by the function.
          */
         type(value) {
             recorder.contentType = value;
             return this;
         },
         /**
-         * Ejecuta la logica de send.
-         * @param {*} payload - Valor de payload usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Records an HTTP header.
+         * @param {string} name - Header name.
+         * @param {string} value - Header value.
+         * @returns {*} Result produced by the function.
+         */
+        set(name, value) {
+            recorder.headers[name] = value;
+            return this;
+        },
+        /**
+         * Records the sent payload.
+         * @param {*} payload - Value of payload used by the function.
+         * @returns {*} Result produced by the function.
          */
         send(payload) {
             recorder.payload = payload;
             return this;
         },
         /**
-         * Ejecuta la logica de json.
-         * @param {*} payload - Valor de payload usado por la funcion.
-         * @returns {*} Resultado producido por la funcion.
+         * Records the JSON payload.
+         * @param {*} payload - Value of payload used by the function.
+         * @returns {*} Result produced by the function.
          */
         json(payload) {
             recorder.payload = payload;

@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * @file Health-check de la base de datos.
+ * @file Database health-check.
  *
- * Expone `warnIfDatabaseInactive` (mostrar warning amigable en consola al
- * arrancar) y los helpers que comprueban conectividad delegando en
- * `mysql2`. Mantiene los efectos secundarios (logs) separados de la pura
- * deteccion para facilitar tests.
+ * Exposes `warnIfDatabaseInactive` (print a friendly console warning at
+ * startup) and the helpers that check connectivity by delegating to `mysql2`.
+ * It keeps the side effects (logs) separate from the pure detection to make
+ * testing easier.
  */
 
 const config = require('../config');
@@ -15,9 +15,9 @@ const DATABASE_INACTIVE_MESSAGE =
     'ERROR: La conexión a la base de datos está inactiva.';
 
 /**
- * Comprueba si la base de datos configurada acepta conexiones.
- * @param {*} options - Dependencias opcionales para pruebas.
- * @returns {Promise<boolean>} True si la conexion esta activa.
+ * Checks whether the configured database accepts connections.
+ * @param {*} options - Optional dependencies for testing.
+ * @returns {Promise<boolean>} True if the connection is active.
  */
 function checkDatabaseConnection({
     mysqlClient,
@@ -39,9 +39,9 @@ function checkDatabaseConnection({
 }
 
 /**
- * Implementacion por defecto usando el driver mariadb (promesas).
- * @param {*} connectionConfig - Configuracion de conexion.
- * @returns {Promise<boolean>} True si la conexion se establece y cierra sin error.
+ * Default implementation using the mariadb driver (promises).
+ * @param {*} connectionConfig - Connection configuration.
+ * @returns {Promise<boolean>} True if the connection is established and closed without error.
  */
 async function checkWithMariadb(connectionConfig) {
     let mariadb;
@@ -61,16 +61,16 @@ async function checkWithMariadb(connectionConfig) {
     try {
         await connection.end();
     } catch {
-        // Ignorar errores al cerrar la conexion.
+        // Ignore errors when closing the connection.
     }
 
     return true;
 }
 
 /**
- * Escribe una advertencia si la conexion a base de datos no esta disponible.
- * @param {*} options - Dependencias opcionales para pruebas.
- * @returns {Promise<boolean>} True si la conexion esta activa.
+ * Writes a warning if the database connection is not available.
+ * @param {*} options - Optional dependencies for testing.
+ * @returns {Promise<boolean>} True if the connection is active.
  */
 async function warnIfDatabaseInactive({
     checkConnection = checkDatabaseConnection,

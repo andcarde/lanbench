@@ -11,29 +11,11 @@
 const path = require('node:path');
 
 /**
- * Directorio raiz del proyecto (un nivel por encima de `constants/`).
+ * Directory that contains the test datasets (`test-datasets/`).
  * @type {string}
  */
-const PROJECT_ROOT_DIR = path.resolve(__dirname, '..');
-
-/**
- * Directorio que contiene los datasets de prueba (`test_datasets/`).
- * @type {string}
- */
-const TEST_DATA_PATH = path.join(PROJECT_ROOT_DIR, 'test_datasets');
-
-/**
- * Resuelve una ruta a partir de la raiz del proyecto.
- *
- * @param {...string} segments - Segmentos de ruta relativos a la raiz.
- * @returns {string} Ruta absoluta resultante.
- */
-function fromProjectRoot(...segments) {
-    return path.join(PROJECT_ROOT_DIR, ...segments);
-}
+const TEST_DATA_PATH = path.resolve(__dirname, '..', 'test-datasets');
 
 module.exports = {
-    PROJECT_ROOT_DIR,
-    TEST_DATA_PATH,
-    fromProjectRoot
+    TEST_DATA_PATH
 };

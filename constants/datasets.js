@@ -1,31 +1,39 @@
 'use strict';
 
 /**
- * @file Constantes globales relacionadas con la presentacion y el particionado
- * de datasets.
+ * @file Global constants related to dataset presentation and partitioning.
  */
 
 /**
- * Clases CSS rotativas asignadas a los datasets para distinguirlos visualmente.
+ * Rotating CSS classes assigned to datasets to distinguish them visually.
  * @type {string[]}
  */
 const DATASET_COLORS = ['dataset-purple', 'dataset-violet', 'dataset-green-progress'];
 
 /**
- * Tamano objetivo de cada seccion (numero de entries por bloque de trabajo).
+ * Default CSS class for `Dataset.colorClass`. Matches the `@default` in the
+ * Prisma schema and is used as a fallback in mappers/services when the row
+ * lacks an explicit color.
+ * @type {string}
+ */
+const DEFAULT_DATASET_COLOR = 'dataset-purple';
+
+/**
+ * Target size of each section (number of entries per work block).
  * @type {number}
  */
 const SECTION_SIZE = 10;
 
 /**
- * Idiomas declarados por defecto en un dataset cuando el origen no aporta
- * la lista explicitamente.
+ * Languages declared by default in a dataset when the source does not provide
+ * the list explicitly.
  * @type {string[]}
  */
 const DEFAULT_LANGUAGES = ['Spanish', 'English'];
 
 module.exports = {
     DATASET_COLORS,
+    DEFAULT_DATASET_COLOR,
     SECTION_SIZE,
     DEFAULT_LANGUAGES
 };

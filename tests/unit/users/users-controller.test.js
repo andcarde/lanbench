@@ -15,9 +15,9 @@ describe('users-controller', () => {
         const usersController = createUsersController({
             usersService: {
                 /**
-                 * Ejecuta de forma asincrona la logica de register user.
-                 * @param {*} payload - Valor de payload usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the register-user service method.
+                 * @param {*} payload - Value of payload used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async registerUser(/** @type {*} */ payload) {
                     capturedCalls.push(payload);
@@ -86,9 +86,9 @@ describe('users-controller', () => {
         const usersController = createUsersController({
             usersService: {
                 /**
-                 * Ejecuta de forma asincrona la logica de authenticate user.
-                 * @param {Array<*>} credentials - Valor de credentials usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the authenticate-user service method.
+                 * @param {Array<*>} credentials - Value of credentials used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async authenticateUser(credentials) {
                     assert.deepEqual(credentials, {
@@ -161,8 +161,8 @@ describe('users-controller', () => {
 });
 
 /**
- * Crea response recorder con la configuracion recibida.
- * @returns {*} Resultado producido por la funcion.
+ * Creates a response recorder that captures status code and JSON payload.
+ * @returns {*} { response, recorder }.
  */
 function createResponseRecorder() {
     /** @type {any} */

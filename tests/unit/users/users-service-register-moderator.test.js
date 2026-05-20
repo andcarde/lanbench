@@ -12,9 +12,9 @@ const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 const VALID_CODE = 'AbCdEfGhIjKlMnOp';
 
 /**
- * Construye un repositorio de codigos falso que registra las llamadas.
+ * Builds a fake codes repository that records calls.
  * @param {*} options - Opciones de comportamiento.
- * @returns {*} Stub con `consumeCalls`, `insertCalls` y los metodos del repositorio.
+ * @returns {*} Stub with `consumeCalls`, `insertCalls` and the repository methods.
  */
 function makeRegisterCodesRepository({ consumeResult = true } = {}) {
     /** @type {string[]} */

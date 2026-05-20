@@ -15,8 +15,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye un repositorio falso que captura las llamadas a insertCodes.
- * @returns {*} Stub con array `calls` y metodo `insertCodes`.
+ * Builds a fake repository that captures calls to insertCodes.
+ * @returns {*} Stub with a `calls` array and an `insertCodes` method.
  */
 function makeRepo() {
     /** @type {string[][]} */
@@ -31,9 +31,9 @@ function makeRepo() {
 }
 
 /**
- * Construye un repositorio falso cuyo insertCodes siempre lanza el error dado.
+ * Builds a fake repository whose insertCodes always throws the given error.
  * @param {Error} error - Error a lanzar.
- * @returns {*} Stub con insertCodes rechazado.
+ * @returns {*} Stub whose insertCodes rejects.
  */
 function makeFailingRepo(error) {
     return {
@@ -44,8 +44,8 @@ function makeFailingRepo(error) {
 }
 
 /**
- * Construye un Writable en memoria que captura chunks como string.
- * @returns {*} Objeto con `stream`, `chunks` y `text()`.
+ * Builds an in-memory Writable that captures chunks as a string.
+ * @returns {*} Object with `stream`, `chunks` and `text()`.
  */
 function captureStream() {
     /** @type {string[]} */
@@ -60,9 +60,9 @@ function captureStream() {
 }
 
 /**
- * Construye un Readable que emite el texto dado y luego termina.
- * @param {string} text - Texto a entregar como stdin.
- * @returns {Readable} Stream listo para readline.
+ * Builds a Readable that emits the given text and then ends.
+ * @param {string} text - Text to provide as stdin.
+ * @returns {Readable} Stream ready for readline.
  */
 function readableFromText(text) {
     const stream = new Readable({ read() {} });

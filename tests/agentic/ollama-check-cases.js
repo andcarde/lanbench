@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Casos de uso para el smoke-test manual de Ollama.
+ * @file Use cases for the manual Ollama smoke test.
  *
- * Cada caso define un id legible, una oracion en espanol y el contexto RDF
- * minimo para que el LLM disponga de la informacion que tendria en
- * produccion. Sirve para diagnosticar regresiones del prompt.
+ * Each case defines a readable id, a Spanish sentence and the minimal RDF
+ * context so the LLM has the information it would have in
+ * production. Used to diagnose prompt regressions.
  */
 
 module.exports = [

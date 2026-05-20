@@ -3,9 +3,9 @@
 /**
  * @file Authentication / authorization middlewares.
  *
- * Resuelve el usuario actual a partir de `request.session.user` o de un
- * usuario ya unido a `request.user`, instancia la clase canonica `User` y
- * decide la respuesta segun el tipo de endpoint (paginas HTML vs JSON API).
+ * Resolves the current user from `request.session.user` or a user already
+ * attached to `request.user`, instantiates the canonical `User` class and
+ * decides the response based on the endpoint type (HTML pages vs JSON API).
  *
  * @typedef {import('express').Request}       ExpressRequest
  * @typedef {import('express').Response}      ExpressResponse
@@ -16,11 +16,11 @@
 const { User } = require('../entities/user');
 
 /**
- * Resuelve el usuario actual a partir de `request.user` (si ya es una
- * instancia de {@link User}) o de `request.session.user`.
+ * Resolves the current user from `request.user` (if it is already a
+ * {@link User} instance) or from `request.session.user`.
  *
  * @param {ExpressRequest & { user?: User|object }} request
- * @returns {User|null} Usuario valido o `null`.
+ * @returns {User|null} Valid user, or `null`.
  */
 function resolveSessionUser(request) {
     if (request && request.user instanceof User)
@@ -29,12 +29,12 @@ function resolveSessionUser(request) {
 }
 
 /**
- * Resuelve el id del usuario actual aceptando `request.user` como objeto
- * plano, instancia {@link User} o sesion serializada. Util cuando solo se
- * necesita el `id` y no la instancia completa.
+ * Resolves the current user's id, accepting `request.user` as a plain object,
+ * a {@link User} instance or a serialized session. Useful when only the `id`
+ * is needed and not the full instance.
  *
  * @param {ExpressRequest & { user?: { id?: unknown } }} request
- * @returns {number|null} Id entero positivo o `null`.
+ * @returns {number|null} Positive integer id, or `null`.
  */
 function resolveSessionUserId(request) {
     const directId = request?.user?.id;
@@ -50,8 +50,8 @@ function resolveSessionUserId(request) {
 }
 
 /**
- * Middleware para paginas HTML: si no hay usuario autenticado, redirige a
- * `/login` con cookie `message`.
+ * Middleware for HTML pages: if there is no authenticated user, redirects to
+ * `/login` with a `message` cookie.
  *
  * @param {ExpressRequest & { user?: User }} request
  * @param {ExpressResponse} response
@@ -77,8 +77,8 @@ function requirePageAuth(request, response, next) {
 }
 
 /**
- * Middleware para endpoints JSON: si no hay usuario autenticado, responde
- * con `401` y payload estandar.
+ * Middleware for JSON endpoints: if there is no authenticated user, responds
+ * with `401` and a standard payload.
  *
  * @param {ExpressRequest & { user?: User }} request
  * @param {ExpressResponse} response
@@ -102,8 +102,8 @@ function requireApiAuth(request, response, next) {
 }
 
 /**
- * Construye un middleware HTML que exige rol global `moderator`.
- * Sin sesion redirige a `/login`; sin rol redirige a `/forbidden`.
+ * Builds an HTML middleware that requires the global `moderator` role.
+ * Without a session it redirects to `/login`; without the role, to `/forbidden`.
  *
  * @returns {ExpressMiddleware}
  */
@@ -122,8 +122,9 @@ function requirePageModerator() {
             return response.redirect('/login');
         }
 
-        if (user.isModerator !== true)
+        if (user.isModerator !== true) {
             return response.redirect('/forbidden');
+        }
 
         /** @type {*} */ (request).user = user;
         return next();
@@ -131,8 +132,8 @@ function requirePageModerator() {
 }
 
 /**
- * Construye un middleware JSON que exige rol global `moderator`.
- * Sin sesion responde `401`; sin rol responde `403`.
+ * Builds a JSON middleware that requires the global `moderator` role.
+ * Without a session it responds `401`; without the role, `403`.
  *
  * @returns {ExpressMiddleware}
  */

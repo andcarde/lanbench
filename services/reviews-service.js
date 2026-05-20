@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * @file Reviews service — orquestacion del ciclo de vida de una review.
+ * @file Reviews service — orchestration of a review's lifecycle.
  *
- * Cubre:
- *   - Asignacion de la siguiente entry revisable.
- *   - Avance por criterios (`currentCriterionIndex`) con
+ * Covers:
+ *   - Assignment of the next reviewable entry.
+ *   - Advancing through criteria (`currentCriterionIndex`) with
  *     `upsertDecision`.
- *   - Cierre (`completed`/`disputed`) propagando el estado a la entry.
- *   - Lista de feedback recibido por el anotador.
+ *   - Closure (`completed`/`disputed`) propagating the state to the entry.
+ *   - The list of feedback received by the annotator.
  *
  * @typedef {import('../types/typedefs').ReviewStatus}        ReviewStatus
  * @typedef {import('../types/typedefs').ReviewDecision}      ReviewDecisionValue
@@ -48,11 +48,11 @@ const {
     ENTRY_DISPUTED
 } = require('../constants/entry-status');
 
-/** Duracion por defecto de una review (2 horas). */
+/** Default duration of a review (2 hours). */
 const DEFAULT_REVIEW_DURATION_MS = 2 * 60 * 60 * 1000;
 
 /**
- * Construye el servicio de revisiones.
+ * Builds the reviews service.
  *
  * @param {ReviewsServiceDeps} [dependencies]
  */
@@ -70,9 +70,9 @@ function createReviewsService({
     };
 
     /**
-     * Reserva una entry pendiente de revision para el reviewer o devuelve la activa.
+     * Reserves an entry pending review for the reviewer, or returns the active one.
      * @param {*} options - { reviewerId, datasetId? }.
-     * @returns {Promise<*>} Resumen de la revision activa o creada.
+     * @returns {Promise<*>} Summary of the active or newly created review.
      */
     async function requestNextReview({ reviewerId, datasetId = null }) {
         const reviewDatasetId = normalizeOptionalDatasetId(datasetId);
@@ -122,9 +122,9 @@ function createReviewsService({
     }
 
     /**
-     * Recupera el contexto completo de una revision (entry, decisiones, comentarios).
+     * Retrieves the full context of a review (entry, decisions, comments).
      * @param {*} options - { reviewId, reviewerId }.
-     * @returns {Promise<*>} DTO con el contexto de revision.
+     * @returns {Promise<*>} DTO with the review context.
      */
     async function getReviewContext({ reviewId, reviewerId }) {
         const review = await loadOwnedReview({ reviewId, reviewerId });
@@ -155,9 +155,9 @@ function createReviewsService({
     }
 
     /**
-     * Registra la decision del reviewer para un criterio y avanza el progreso.
+     * Records the reviewer's decision for a criterion and advances the progress.
      * @param {*} options - { reviewId, reviewerId, criterionCode, decision, comment }.
-     * @returns {Promise<*>} Resumen actualizado de la revision.
+     * @returns {Promise<*>} Updated review summary.
      */
     async function submitDecision({ reviewId, reviewerId, criterionCode, decision, comment }) {
         if (!isValidCriterionCode(criterionCode))
@@ -218,9 +218,9 @@ function createReviewsService({
     }
 
     /**
-     * Guarda una correccion textual con comentario sobre una oracion anotada.
+     * Saves a text correction with a comment over an annotated sentence.
      * @param {*} options - { reviewId, reviewerId, sentenceIndex, originalSentence, correctedSentence, comment }.
-     * @returns {Promise<Array<*>>} Comentarios de la revision tras anadir la correccion.
+     * @returns {Promise<Array<*>>} The review's comments after adding the correction.
      */
     async function submitTextCorrection({ reviewId, reviewerId, sentenceIndex, originalSentence, correctedSentence, comment }) {
         const trimmedComment = typeof comment === 'string' ? comment.trim() : '';
@@ -257,9 +257,9 @@ function createReviewsService({
     }
 
     /**
-     * Cierra una revision aplicando estados finales sobre la review, la entry y las anotaciones.
+     * Closes a review, applying final states to the review, the entry and the annotations.
      * @param {*} options - { reviewId, reviewerId }.
-     * @returns {Promise<*>} Resumen actualizado de la revision cerrada.
+     * @returns {Promise<*>} Updated summary of the closed review.
      */
     async function finalizeReview({ reviewId, reviewerId }) {
         const review = await loadOwnedReview({ reviewId, reviewerId });
@@ -311,7 +311,7 @@ function createReviewsService({
     }
 
     /**
-     * Libera una revision asignada sin cerrarla para que vuelva al pool de pendientes.
+     * Releases an assigned review without closing it so it returns to the pending pool.
      * @param {*} options - { reviewId, reviewerId }.
      * @returns {Promise<void>}
      */
@@ -331,9 +331,9 @@ function createReviewsService({
     }
 
     /**
-     * Recupera el feedback completado dirigido a un anotador concreto.
+     * Retrieves the completed feedback addressed to a specific annotator.
      * @param {*} options - { annotatorId, datasetId?, limit? }.
-     * @returns {Promise<Array<*>>} Entradas de feedback ya mapeadas.
+     * @returns {Promise<Array<*>>} Already-mapped feedback entries.
      */
     async function getFeedbackForAnnotator({ annotatorId, datasetId = null, limit = 50 }) {
         const reviews = await deps.reviewsRepository.findCompletedReviewsForAnnotator({
@@ -346,9 +346,9 @@ function createReviewsService({
     }
 
     /**
-     * Carga una revision exigiendo que pertenezca al reviewer indicado.
+     * Loads a review, requiring that it belongs to the given reviewer.
      * @param {*} options - { reviewId, reviewerId }.
-     * @returns {Promise<*>} Fila de revision.
+     * @returns {Promise<*>} Review row.
      */
     async function loadOwnedReview({ reviewId, reviewerId }) {
         const review = await deps.reviewsRepository.findReviewById(reviewId);
@@ -361,8 +361,8 @@ function createReviewsService({
     }
 
     /**
-     * Exige que el usuario sea revisor del dataset solicitado.
-     * @param {*} options - Identificadores.
+     * Requires that the user be a reviewer of the requested dataset.
+     * @param {*} options - Identifiers.
      */
     async function requireDatasetReviewerPermission({ reviewerId, datasetId }) {
         const permit = await deps.datasetsRepository.findPermitForUser({ datasetId, userId: reviewerId });
@@ -386,9 +386,9 @@ function createReviewsService({
 }
 
 /**
- * Normaliza dataset opcional usado para acotar revision.
- * @param {*} value - Valor recibido.
- * @returns {?number} Dataset valido o null.
+ * Normalizes the optional dataset used to scope a review.
+ * @param {*} value - Received value.
+ * @returns {?number} Valid dataset, or null.
  */
 function normalizeOptionalDatasetId(value) {
     const parsed = Number(value);
@@ -396,9 +396,9 @@ function normalizeOptionalDatasetId(value) {
 }
 
 /**
- * Indica si el estado recibido corresponde a una revision ya cerrada.
- * @param {*} status - Estado actual de la revision.
- * @returns {boolean} True si esta cerrada o liberada.
+ * Indicates whether the received status corresponds to an already-closed review.
+ * @param {*} status - Current review status.
+ * @returns {boolean} True if it is closed or released.
  */
 function isReviewClosed(status) {
     return status === REVIEW_COMPLETED
@@ -407,9 +407,9 @@ function isReviewClosed(status) {
 }
 
 /**
- * Construye el resumen ligero usado por las respuestas de la API.
- * @param {*} review - Fila de revision o null.
- * @returns {?*} Resumen serializable o null.
+ * Builds the lightweight summary used by the API responses.
+ * @param {*} review - Review row, or null.
+ * @returns {?*} Serializable summary, or null.
  */
 function buildReviewSummary(review) {
     if (!review)
@@ -429,9 +429,9 @@ function buildReviewSummary(review) {
 }
 
 /**
- * Construye el DTO de contexto de revision con triples, oraciones, decisiones y comentarios.
+ * Builds the review-context DTO with triples, sentences, decisions and comments.
  * @param {*} options - { review, entry, decisions, comments }.
- * @returns {*} DTO listo para servir al cliente.
+ * @returns {*} DTO ready to serve to the client.
  */
 function buildReviewContextDTO({ review, entry, decisions, comments }) {
     const triples = entry && Array.isArray(entry.triplesets)
@@ -495,9 +495,9 @@ function buildReviewContextDTO({ review, entry, decisions, comments }) {
 }
 
 /**
- * Construye una entrada de feedback ya mapeada para mostrarse al anotador.
- * @param {*} review - Revision completada con decisiones y comentarios.
- * @returns {*} Entrada de feedback serializable.
+ * Builds an already-mapped feedback entry to show to the annotator.
+ * @param {*} review - Completed review with decisions and comments.
+ * @returns {*} Serializable feedback entry.
  */
 function buildFeedbackEntry(review) {
     const decisions = Array.isArray(review.decisions) ? review.decisions : [];

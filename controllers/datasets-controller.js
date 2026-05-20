@@ -1,21 +1,25 @@
 'use strict';
 
 /**
- * @file Datasets controller — endpoints HTTP de gestion de datasets.
+ * @file Datasets controller — HTTP endpoints for dataset management.
  *
- * Cubre: listado de datasets accesibles al usuario, alta desde upload XML,
- * lectura de seccion para anotacion, exportacion XML, baja recursiva y
- * gestion de permisos por dataset.
+ * Covers: listing the datasets accessible to the user, creation from XML
+ * upload, reading a section for annotation, XML export, recursive deletion and
+ * per-dataset permission management.
  *
  * @typedef {import('express').Request}  ExpressRequest
  * @typedef {import('express').Response} ExpressResponse
  *
  * @typedef {Object} DatasetsControllerDeps
  * @property {Record<string, any>} [datasetsService]
+ * @property {Record<string, any>} [datasetsPermissionsService]
+ * @property {Record<string, any>} [datasetsStatisticsService]
  */
 
 const { unlink } = require('node:fs');
 const { createDatasetsService } = require('../services/datasets-service');
+const { createDatasetsPermissionsService } = require('../services/datasets-permissions-service');
+const { createDatasetsStatisticsService } = require('../services/datasets-statistics-service');
 const { listCandidateTempFilePaths } = require('../utils/temp-storage');
 const { toPositiveInteger } = require('../utils/validators');
 const {
@@ -24,40 +28,25 @@ const {
     respondInvalidPayload
 } = require('../utils/api-error-payload');
 const { resolveSessionUserId } = require('../middlewares/auth');
-const {
-    mapDatasetListDTO,
-    mapDatasetListDTOs,
-    mapDatasetSectionDTO
-} = require('../contracts/dto-mappers');
+const { mapDatasetSectionDTO } = require('../contracts/dto-mappers');
 
 /**
- * Construye el controlador de datasets.
+ * Builds the datasets controller.
  *
  * @param {DatasetsControllerDeps} [options]
  */
-function createDatasetsController({ datasetsService } = {}) {
+function createDatasetsController({
+    datasetsService,
+    datasetsPermissionsService,
+    datasetsStatisticsService
+} = {}) {
     const service = datasetsService || createDatasetsService();
+    const permissionsService = datasetsPermissionsService || createDatasetsPermissionsService();
+    const statisticsService = datasetsStatisticsService || createDatasetsStatisticsService();
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-     */
-    async function listDatasets(request, response) {
-        const userId = resolveSessionUserId(request);
-        if (userId === null)
-            return respondUnauthenticated(response);
-
-        try {
-            const datasets = await service.listAccessibleDatasets(userId);
-            return response.status(200).json(mapDatasetListDTOs(datasets));
-        } catch (caughtError) {
-            return respondWithApiError(response, /** @type {any} */ (caughtError));
-        }
-    }
-
-    /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function listAllDatasets(request, response) {
         const userId = resolveSessionUserId(request);
@@ -66,15 +55,15 @@ function createDatasetsController({ datasetsService } = {}) {
 
         try {
             const datasetList = await service.listAccessibleDatasetItems(userId);
-            return response.status(200).json(mapDatasetListDTOs(datasetList));
+            return response.status(200).json(datasetList);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
         }
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function getDatasetById(request, response) {
         const userId = resolveSessionUserId(request);
@@ -87,15 +76,15 @@ function createDatasetsController({ datasetsService } = {}) {
 
         try {
             const dataset = await service.getAccessibleDatasetItem(userId, datasetId);
-            return response.status(200).json(mapDatasetListDTO(dataset, datasetId));
+            return response.status(200).json(dataset);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
         }
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function getDatasetSection(request, response) {
         const userId = resolveSessionUserId(request);
@@ -119,8 +108,8 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function getDatasetText(request, response) {
         const userId = resolveSessionUserId(request);
@@ -143,8 +132,62 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * Downloads the rebuilt dataset XML as an attachment.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
+     */
+    async function downloadDatasetXml(request, response) {
+        const userId = resolveSessionUserId(request);
+        if (userId === null)
+            return respondUnauthenticated(response);
+
+        const datasetId = toPositiveInteger(request.params.id);
+        if (datasetId === null)
+            return respondInvalidPayload(response, 'El id del dataset es inválido.');
+
+        try {
+            const { filename, body, contentType } = await service.getAccessibleDatasetXmlDownload(userId, datasetId);
+            return response
+                .status(200)
+                .type(contentType)
+                .set('Content-Disposition', buildAttachmentHeader(filename))
+                .send(body);
+        } catch (caughtError) {
+            return respondWithApiError(response, /** @type {any} */ (caughtError));
+        }
+    }
+
+    /**
+     * Downloads the extended XML (original + Spanish annotations) as an
+     * attachment. Requires the dataset to be 100% complete.
+     *
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
+     */
+    async function downloadDatasetAnnotatedXml(request, response) {
+        const userId = resolveSessionUserId(request);
+        if (userId === null)
+            return respondUnauthenticated(response);
+
+        const datasetId = toPositiveInteger(request.params.id);
+        if (datasetId === null)
+            return respondInvalidPayload(response, 'El id del dataset es inválido.');
+
+        try {
+            const { filename, body, contentType } = await service.getAccessibleDatasetAnnotatedXmlDownload(userId, datasetId);
+            return response
+                .status(200)
+                .type(contentType)
+                .set('Content-Disposition', buildAttachmentHeader(filename))
+                .send(body);
+        } catch (caughtError) {
+            return respondWithApiError(response, /** @type {any} */ (caughtError));
+        }
+    }
+
+    /**
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function createDataset(request, response) {
         const userId = resolveSessionUserId(request);
@@ -156,12 +199,7 @@ function createDatasetsController({ datasetsService } = {}) {
 
         try {
             const payload = await service.createDataset(userId, request.file, request.body || {});
-            return response.status(201).json({
-                ...payload,
-                dataset: payload?.dataset
-                    ? mapDatasetListDTO(payload.dataset, payload.id)
-                    : payload.dataset
-            });
+            return response.status(201).json(payload);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
         } finally {
@@ -170,10 +208,10 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * Lista permisos de usuarios sobre un dataset.
-     * @param {*} request - Peticion HTTP.
-     * @param {*} response - Respuesta HTTP.
-     * @returns {Promise<*>} Respuesta JSON.
+     * Lists user permissions over a dataset.
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
      */
     async function listDatasetPermissions(request, response) {
         const userId = resolveSessionUserId(request);
@@ -185,7 +223,7 @@ function createDatasetsController({ datasetsService } = {}) {
             return respondInvalidPayload(response, 'El id del dataset es inválido.');
 
         try {
-            const payload = await service.listDatasetPermissions(userId, datasetId);
+            const payload = await permissionsService.listDatasetPermissions(userId, datasetId);
             return response.status(200).json(payload);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
@@ -193,10 +231,10 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * Anade un usuario al dataset con los permisos indicados (annotator por defecto).
-     * @param {*} request - Peticion HTTP.
-     * @param {*} response - Respuesta HTTP.
-     * @returns {Promise<*>} Respuesta JSON.
+     * Adds a user to the dataset with the given permissions (annotator by default).
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
      */
     async function addDatasetPermission(request, response) {
         const userId = resolveSessionUserId(request);
@@ -211,7 +249,7 @@ function createDatasetsController({ datasetsService } = {}) {
         const userEmail = body.email;
 
         try {
-            const userPermission = await service.addDatasetPermissionByEmail(
+            const userPermission = await permissionsService.addDatasetPermissionByEmail(
                 userId,
                 datasetId,
                 userEmail,
@@ -224,10 +262,10 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * Actualiza permisos de usuario sobre un dataset.
-     * @param {*} request - Peticion HTTP.
-     * @param {*} response - Respuesta HTTP.
-     * @returns {Promise<*>} Respuesta JSON.
+     * Updates a user's permissions over a dataset.
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
      */
     async function updateDatasetPermission(request, response) {
         const actorId = resolveSessionUserId(request);
@@ -240,7 +278,7 @@ function createDatasetsController({ datasetsService } = {}) {
             return respondInvalidPayload(response, 'Los identificadores son inválidos.');
 
         try {
-            const payload = await service.updateDatasetPermission(
+            const payload = await permissionsService.updateDatasetPermission(
                 actorId,
                 datasetId,
                 targetUserId,
@@ -255,10 +293,10 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * Borra completamente un dataset y sus dependencias.
-     * @param {*} request - Peticion HTTP.
-     * @param {*} response - Respuesta HTTP.
-     * @returns {Promise<*>} Respuesta JSON.
+     * Fully deletes a dataset and its dependencies.
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
      */
     async function deleteDataset(request, response) {
         const actorId = resolveSessionUserId(request);
@@ -278,10 +316,10 @@ function createDatasetsController({ datasetsService } = {}) {
     }
 
     /**
-     * Devuelve estadisticas del dataset.
-     * @param {*} request - Peticion HTTP.
-     * @param {*} response - Respuesta HTTP.
-     * @returns {Promise<*>} Respuesta JSON.
+     * Returns the dataset's statistics.
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
      */
     async function getDatasetStatistics(request, response) {
         const userId = resolveSessionUserId(request);
@@ -293,7 +331,7 @@ function createDatasetsController({ datasetsService } = {}) {
             return respondInvalidPayload(response, 'El id del dataset es inválido.');
 
         try {
-            const payload = await service.getDatasetStatistics(userId, datasetId);
+            const payload = await statisticsService.getDatasetStatistics(userId, datasetId);
             return response.status(200).json(payload);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
@@ -302,10 +340,11 @@ function createDatasetsController({ datasetsService } = {}) {
 
     return {
         listAllDatasets,
-        listDatasets,
         getDatasetById,
         getDatasetSection,
         getDatasetText,
+        downloadDatasetXml,
+        downloadDatasetAnnotatedXml,
         createDataset,
         listDatasetPermissions,
         addDatasetPermission,
@@ -316,8 +355,23 @@ function createDatasetsController({ datasetsService } = {}) {
 }
 
 /**
- * Borra silenciosamente un archivo temporal subido durante la carga de datasets.
- * @param {*} filename - Nombre o ruta del archivo temporal.
+ * Builds the `Content-Disposition` header for a download. Sanitizes the
+ * filename by escaping double quotes and backslashes, in compliance with
+ * RFC 6266 token quoting.
+ *
+ * @param {*} filename - File name proposed to the client.
+ * @returns {string} Header ready for `response.set`.
+ */
+function buildAttachmentHeader(filename) {
+    const safeFilename = String(filename || 'dataset.xml')
+        .replaceAll('\\', String.raw`\\`)
+        .replaceAll('"', String.raw`\"`);
+    return `attachment; filename="${safeFilename}"`;
+}
+
+/**
+ * Silently deletes a temporary file uploaded during dataset upload.
+ * @param {*} filename - Name or path of the temporary file.
  * @returns {void}
  */
 function deleteTempFile(filename) {

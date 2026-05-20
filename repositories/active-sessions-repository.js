@@ -3,10 +3,10 @@
 /**
  * @file Repository for the `ActiveSession` table.
  *
- * Una `ActiveSession` representa el progreso (`sectionNumber` + `entryNumber`)
- * de un `userId` sobre un `datasetId` en un `mode` concreto
- * (`annotation`/`review`). La clave unica `datasetId_userId_mode` garantiza
- * que solo exista una sesion activa por triada.
+ * An `ActiveSession` represents the progress (`sectionNumber` + `entryNumber`)
+ * of a `userId` over a `datasetId` in a specific `mode`
+ * (`annotation`/`review`). The unique key `datasetId_userId_mode` guarantees
+ * that only one active session exists per triple.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  *
@@ -28,8 +28,8 @@
 const defaultPrisma = require('../prisma/client');
 
 /**
- * Construye el repositorio de `ActiveSession`. Acepta `prisma` para inyectar
- * un cliente alternativo (tests).
+ * Builds the `ActiveSession` repository. Accepts `prisma` to inject an
+ * alternative client (tests).
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  * @returns {{
@@ -44,7 +44,7 @@ function createActiveSessionsRepository({ prisma } = {}) {
     };
 
     /**
-     * Recupera la sesion activa identificada por `(datasetId, userId, mode)`.
+     * Retrieves the active session identified by `(datasetId, userId, mode)`.
      *
      * @param {ActiveSessionKey} key
      * @returns {Promise<ActiveSessionRow|null>}
@@ -56,7 +56,7 @@ function createActiveSessionsRepository({ prisma } = {}) {
     }
 
     /**
-     * Crea o actualiza la sesion activa para `(datasetId, userId, mode)`.
+     * Creates or updates the active session for `(datasetId, userId, mode)`.
      *
      * @param {ActiveSessionUpsertInput} input
      * @returns {Promise<ActiveSessionRow>}
@@ -70,8 +70,8 @@ function createActiveSessionsRepository({ prisma } = {}) {
     }
 
     /**
-     * Borra la sesion activa para `(datasetId, userId, mode)`. Si la fila
-     * no existe, devuelve `null` en lugar de propagar el error de Prisma.
+     * Deletes the active session for `(datasetId, userId, mode)`. If the row
+     * does not exist, returns `null` instead of propagating the Prisma error.
      *
      * @param {ActiveSessionKey} key
      * @returns {Promise<ActiveSessionRow|null>}

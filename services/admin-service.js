@@ -1,16 +1,17 @@
 'use strict';
 
 /**
- * @file Admin service — lectura/escritura de datos administrativos
- * (resumen de datasets, exportacion, gestion de criterios de evaluacion).
+ * @file Admin service — reading/writing administrative data (dataset summary,
+ * export, management of evaluation criteria).
  *
- * Convive con `users-service`/`datasets-service`/`reviews-service`: aqui se
- * concentran las operaciones disponibles solo para el `moderator` global.
+ * Coexists with `users-service`/`datasets-service`/`reviews-service`: this is
+ * where the operations available only to the global `moderator` are
+ * concentrated.
  *
  * @typedef {Object} AdminServiceDeps
  * @property {Record<string, any>} [datasetsRepository]
  * @property {Record<string, any>} [evaluationCriteriaRepository]
- * @property {() => Date}          [now] - Reloj inyectable (tests deterministas).
+ * @property {() => Date}          [now] - Injectable clock (deterministic tests).
  *
  * @typedef {Object} ExportResult
  * @property {'json'|'xml'} format
@@ -46,13 +47,14 @@ const { createDatasetsRepository } = require('../repositories/datasets-repositor
 const { createEvaluationCriteriaRepository } = require('../repositories/evaluation-criteria-repository');
 const { ServiceError } = require('./service-error');
 const { calculatePercentagesFromSectionCounters } = require('../utils/dataset-progress');
-const { escapeXml } = require('../utils/xml-format');
+const { escapeXml, renderAttrs } = require('../utils/xml-format');
+const { toIntegerNormalized, trimmedOr } = require('../utils/validators');
 
-/** Formatos de exportacion soportados por `exportDatasetProgress`. */
+/** Export formats supported by `exportDatasetProgress`. */
 const SUPPORTED_EXPORT_FORMATS = new Set(['json', 'xml']);
 
 /**
- * Construye el servicio de administracion. Acepta repos y reloj inyectables.
+ * Builds the admin service. Accepts injectable repos and clock.
  *
  * @param {AdminServiceDeps} [options]
  */
@@ -65,7 +67,7 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
     };
 
     /**
-     * Recupera el resumen administrativo de todos los datasets.
+     * Retrieves the administrative summary of all datasets.
      *
      * @returns {Promise<DatasetSummaryDTO[]>}
      */
@@ -75,20 +77,20 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
     }
 
     /**
-     * Exporta el progreso completo de un dataset (anotaciones, decisiones y
-     * metricas) en `json` o `xml`.
+     * Exports a dataset's full progress (annotations, decisions and metrics)
+     * in `json` or `xml`.
      *
      * @param {number} datasetId
      * @param {{ format?: 'json'|'xml' }} [options]
      * @returns {Promise<ExportResult>}
-     * @throws {ServiceError} `404` si el dataset no existe; `400` si el formato no es soportado.
+     * @throws {ServiceError} `404` if the dataset does not exist; `400` if the format is not supported.
      */
     async function exportDatasetProgress(datasetId, { format = 'json' } = {}) {
         const normalizedFormat = normalizeFormat(format);
         const dataset = await deps.datasetsRepository.findDatasetExportGraphById(datasetId);
 
         if (!dataset)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
+            throw ServiceError.datasetNotFound();
 
         const exportedAt = deps.now().toISOString();
         const payload = mapDatasetExport(dataset, exportedAt);
@@ -112,8 +114,8 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
     }
 
     /**
-     * Lista los criterios de evaluacion. Por defecto incluye tambien los
-     * marcados como `inactive` para la UI de administracion.
+     * Lists the evaluation criteria. By default also includes those marked as
+     * `inactive` for the administration UI.
      *
      * @param {{ includeInactive?: boolean }} [options]
      * @returns {Promise<EvaluationCriterionDTO[]>}
@@ -124,8 +126,8 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
     }
 
     /**
-     * Crea un nuevo criterio de evaluacion. Valida que `key` siga el patron
-     * canonico (snake-case + digitos) y que `label` no este vacio.
+     * Creates a new evaluation criterion. Validates that `key` follows the
+     * canonical pattern (snake-case + digits) and that `label` is not empty.
      *
      * @param {Record<string, any>} input
      * @returns {Promise<EvaluationCriterionDTO>}
@@ -137,14 +139,14 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
     }
 
     /**
-     * Actualiza un criterio existente. Acepta solo los campos presentes en
-     * `input` (parches), valida el `criterionId` y traduce `P2025` (Prisma
-     * "not found") a un `ServiceError` 404.
+     * Updates an existing criterion. Accepts only the fields present in
+     * `input` (patches), validates `criterionId` and translates `P2025`
+     * (Prisma "not found") into a 404 `ServiceError`.
      *
      * @param {number} criterionId
      * @param {Record<string, any>} input
      * @returns {Promise<EvaluationCriterionDTO>}
-     * @throws {ServiceError} `400` si `criterionId` o `input` son invalidos; `404` si no existe.
+     * @throws {ServiceError} `400` if `criterionId` or `input` are invalid; `404` if it does not exist.
      */
     async function updateEvaluationCriterion(criterionId, input) {
         if (!Number.isInteger(criterionId) || criterionId <= 0)
@@ -178,7 +180,7 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
 }
 
 /**
- * Convierte la fila cruda del repo en el DTO de resumen para la UI admin.
+ * Converts the raw repo row into the summary DTO for the admin UI.
  *
  * @param {Record<string, any>} summary
  * @returns {DatasetSummaryDTO}
@@ -187,26 +189,26 @@ function mapDatasetSummary(summary) {
     return {
         datasetId: summary.id,
         name: summary.name,
-        totalEntries: toNonNegativeInteger(summary.totalEntries),
-        reservedEntries: toNonNegativeInteger(summary.reservedEntries),
-        annotatedEntries: toNonNegativeInteger(summary.annotatedEntries),
-        reviewedEntries: toNonNegativeInteger(summary.reviewedEntries),
-        disputedEntries: toNonNegativeInteger(summary.disputedEntries),
-        activeAssignments: toNonNegativeInteger(summary.activeAssignments),
+        totalEntries: toIntegerNormalized(summary.totalEntries),
+        reservedEntries: toIntegerNormalized(summary.reservedEntries),
+        annotatedEntries: toIntegerNormalized(summary.annotatedEntries),
+        reviewedEntries: toIntegerNormalized(summary.reviewedEntries),
+        disputedEntries: toIntegerNormalized(summary.disputedEntries),
+        activeAssignments: toIntegerNormalized(summary.activeAssignments),
         progress: calculatePercentagesFromSectionCounters({
             sectionsCompleted: summary.sectionsCompleted,
             sectionsInReview: summary.sectionsInReview,
             sectionsPending: summary.sectionsPending,
             reviewEnabled: Boolean(summary.isReviewEnabled),
-            annotatedEntries: toNonNegativeInteger(summary.annotatedEntries),
-            totalEntries: toNonNegativeInteger(summary.totalEntries)
+            annotatedEntries: toIntegerNormalized(summary.annotatedEntries),
+            totalEntries: toIntegerNormalized(summary.totalEntries)
         }),
         updatedAt: toIso(summary.updatedAt)
     };
 }
 
 /**
- * Convierte el grafo completo de un dataset en el payload de exportacion.
+ * Converts a dataset's full graph into the export payload.
  *
  * @param {Record<string, any>} dataset
  * @param {string} exportedAt
@@ -231,7 +233,7 @@ function mapDatasetExport(dataset, exportedAt) {
                 sectionsPending: dataset.sectionsPending,
                 reviewEnabled: Boolean(dataset.isReviewEnabled),
                 annotatedEntries,
-                totalEntries: toNonNegativeInteger(dataset.totalEntries)
+                totalEntries: toIntegerNormalized(dataset.totalEntries)
             })
         },
         entries: (dataset.entries || []).map(mapExportEntry)
@@ -239,8 +241,8 @@ function mapDatasetExport(dataset, exportedAt) {
 }
 
 /**
- * Convierte una entry (con anotaciones y decisiones de alerta) en el
- * sub-payload de exportacion correspondiente.
+ * Converts an entry (with annotations and alert decisions) into its
+ * corresponding export sub-payload.
  *
  * @param {Record<string, any>} entry
  * @returns {Record<string, any>}
@@ -289,7 +291,7 @@ function mapExportEntry(entry) {
 }
 
 /**
- * Aplana la coleccion `triplesets -> triples` en un array unico por entry.
+ * Flattens the `triplesets -> triples` collection into a single array per entry.
  *
  * @param {Array<Record<string, any>>|undefined} triplesets
  * @returns {Array<Record<string, any>>}
@@ -305,14 +307,14 @@ function flattenTriplesets(triplesets) {
 }
 
 /**
- * Normaliza el cuerpo `input` de creacion/actualizacion de criterio.
- * En modo creacion exige `key` y `label`; en modo update solo procesa
- * los campos presentes.
+ * Normalizes the criterion create/update `input` body. In create mode it
+ * requires `key` and `label`; in update mode it only processes the fields
+ * present.
  *
  * @param {Record<string, any>|null|undefined} input
  * @param {{ creating: boolean }} options
  * @returns {Record<string, any>}
- * @throws {ServiceError} `400` con codigos especificos por validacion fallida.
+ * @throws {ServiceError} `400` with specific codes per failed validation.
  */
 function normalizeCriterionInput(input, { creating }) {
     const source = input && typeof input === 'object' ? input : {};
@@ -327,7 +329,7 @@ function normalizeCriterionInput(input, { creating }) {
     }
 
     if (creating || source.label !== undefined) {
-        const label = normalizeString(source.label);
+        const label = trimmedOr(source.label);
         if (!label)
             throw new ServiceError('La etiqueta del criterio es obligatoria.', {
                 status: 400,
@@ -337,7 +339,7 @@ function normalizeCriterionInput(input, { creating }) {
     }
 
     if (source.description !== undefined)
-        data.description = normalizeString(source.description);
+        data.description = trimmedOr(source.description);
 
     if (source.sortOrder !== undefined)
         data.sortOrder = toInteger(source.sortOrder, 0);
@@ -351,11 +353,11 @@ function normalizeCriterionInput(input, { creating }) {
 }
 
 /**
- * Valida y normaliza el formato de exportacion.
+ * Validates and normalizes the export format.
  *
  * @param {unknown} format
- * @returns {string} `'json'` o `'xml'`.
- * @throws {ServiceError} `400` si el formato no esta soportado.
+ * @returns {string} `'json'` or `'xml'`.
+ * @throws {ServiceError} `400` if the format is not supported.
  */
 function normalizeFormat(format) {
     const normalized = typeof format === 'string' ? format.toLowerCase() : 'json';
@@ -368,34 +370,21 @@ function normalizeFormat(format) {
 }
 
 /**
- * Devuelve la `key` normalizada si cumple el patron `^[a-z][a-z0-9_-]{1,63}$`;
- * en otro caso `null`.
+ * Returns the normalized `key` if it matches the pattern
+ * `^[a-z][a-z0-9_-]{1,63}$`; otherwise `null`.
  *
  * @param {unknown} value
  * @returns {string|null}
  */
 function normalizeKey(value) {
-    const normalized = normalizeString(value);
+    const normalized = trimmedOr(value);
     if (!normalized || !/^[a-z][a-z0-9_-]{1,63}$/.test(normalized))
         return null;
     return normalized;
 }
 
 /**
- * Devuelve la cadena `trim()`-eada si es un string util; en otro caso `null`.
- *
- * @param {unknown} value
- * @returns {string|null}
- */
-function normalizeString(value) {
-    if (typeof value !== 'string')
-        return null;
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
-}
-
-/**
- * Convierte la fila Prisma de criterio en el DTO expuesto a la UI.
+ * Converts the Prisma criterion row into the DTO exposed to the UI.
  *
  * @param {Record<string, any>} criterion
  * @returns {EvaluationCriterionDTO}
@@ -415,7 +404,7 @@ function mapCriterion(criterion) {
 }
 
 /**
- * Construye una serializacion XML manual del payload de exportacion.
+ * Builds a manual XML serialization of the export payload.
  *
  * @param {Record<string, any>} payload
  * @returns {string}
@@ -423,19 +412,32 @@ function mapCriterion(criterion) {
 function buildExportXml(payload) {
     const entries = payload.entries.map((/** @type {*} */ entry) => {
         const annotations = entry.annotations.map((/** @type {*} */ annotation) => `
-      <annotation entryId="${annotation.entryId}" datasetId="${annotation.datasetId}" userId="${annotation.userId}" sentenceIndex="${annotation.sentenceIndex}" origin="${escapeXml(annotation.origin)}">
+      <annotation${renderAttrs({
+                entryId: annotation.entryId,
+                datasetId: annotation.datasetId,
+                userId: annotation.userId,
+                sentenceIndex: annotation.sentenceIndex,
+                origin: annotation.origin
+            })}>
         <sentence>${escapeXml(annotation.sentence)}</sentence>
         ${annotation.rejectionReason ? `<rejectionReason>${escapeXml(annotation.rejectionReason)}</rejectionReason>` : ''}
       </annotation>`).join('');
 
         const decisions = entry.alertDecisions.map((/** @type {*} */ decision) => `
-      <alertDecision id="${decision.id}" userId="${decision.userId}" sentenceIndex="${decision.sentenceIndex}" code="${escapeXml(decision.alertCode)}" type="${escapeXml(decision.alertType)}" decision="${escapeXml(decision.decision)}">
+      <alertDecision${renderAttrs({
+                id: decision.id,
+                userId: decision.userId,
+                sentenceIndex: decision.sentenceIndex,
+                code: decision.alertCode,
+                type: decision.alertType,
+                decision: decision.decision
+            })}>
         ${decision.reason ? `<reason>${escapeXml(decision.reason)}</reason>` : ''}
         ${decision.suggestion ? `<suggestion>${escapeXml(decision.suggestion)}</suggestion>` : ''}
       </alertDecision>`).join('');
 
         return `
-    <entry id="${entry.id}" eid="${entry.eid}" status="${escapeXml(entry.status)}">
+    <entry${renderAttrs({ id: entry.id, eid: entry.eid, status: entry.status })}>
       <annotations>${annotations}
       </annotations>
       <alertDecisions>${decisions}
@@ -444,8 +446,12 @@ function buildExportXml(payload) {
     }).join('');
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<lanbenchExport exportedAt="${escapeXml(payload.exportedAt)}">
-  <dataset id="${payload.dataset.id}" name="${escapeXml(payload.dataset.name)}" totalEntries="${payload.dataset.totalEntries}" />
+<lanbenchExport${renderAttrs({ exportedAt: payload.exportedAt })}>
+  <dataset${renderAttrs({
+        id: payload.dataset.id,
+        name: payload.dataset.name,
+        totalEntries: payload.dataset.totalEntries
+    })} />
   <entries>${entries}
   </entries>
 </lanbenchExport>
@@ -453,11 +459,11 @@ function buildExportXml(payload) {
 }
 
 /**
- * Construye el nombre del fichero de exportacion saneando el nombre del
- * dataset y reemplazando `:`/`.` del timestamp por `-`.
+ * Builds the export file name by sanitizing the dataset name and replacing
+ * `:`/`.` in the timestamp with `-`.
  *
  * @param {string} datasetName
- * @param {string} exportedAt - Marca temporal en formato ISO.
+ * @param {string} exportedAt - Timestamp in ISO format.
  * @param {string} format
  * @returns {string}
  */
@@ -471,9 +477,9 @@ function buildExportFilename(datasetName, exportedAt, format) {
 }
 
 /**
- * Quita guiones iniciales y finales sin expresiones regulares.
- * @param {string} value - Texto de entrada.
- * @returns {string} Texto sin guiones externos.
+ * Removes leading and trailing dashes without regular expressions.
+ * @param {string} value - Input text.
+ * @returns {string} Text without outer dashes.
  */
 function trimDashes(value) {
     let startIndex = 0;
@@ -488,18 +494,7 @@ function trimDashes(value) {
 }
 
 /**
- * Convierte a entero >= 0 o devuelve 0.
- *
- * @param {unknown} value
- * @returns {number}
- */
-function toNonNegativeInteger(value) {
-    const parsed = Number(value);
-    return Number.isInteger(parsed) && parsed >= 0 ? parsed : 0;
-}
-
-/**
- * Convierte a entero o devuelve `fallback`.
+ * Converts to an integer, or returns `fallback`.
  *
  * @param {unknown} value
  * @param {number} fallback
@@ -511,8 +506,8 @@ function toInteger(value, fallback) {
 }
 
 /**
- * Convierte cualquier valor aceptado por `Date` en cadena ISO; si la fecha
- * es invalida devuelve la epoch.
+ * Converts any value accepted by `Date` into an ISO string; if the date is
+ * invalid, returns the epoch.
  *
  * @param {unknown} value
  * @returns {string}

@@ -3,9 +3,9 @@
 /**
  * @file Repository for the `User` table.
  *
- * Expone busquedas seguras por email y operaciones de actualizacion
- * (password, `isModerator`). Las consultas devuelven solo los campos
- * necesarios para que tests/servicios no se acoplen al esquema interno.
+ * Exposes safe lookups by email and update operations (password,
+ * `isModerator`). The queries return only the necessary fields so that
+ * tests/services do not couple to the internal schema.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  *
@@ -18,9 +18,10 @@
  */
 
 const defaultPrisma = require('../prisma/client');
+const { normalizeEmail } = require('../utils/validators');
 
 /**
- * Construye el repositorio de usuarios.
+ * Builds the users repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  */
@@ -30,7 +31,7 @@ function createUsersRepository({ prisma } = {}) {
     };
 
     /**
-     * Recupera un usuario por email (incluyendo `password`, para login).
+     * Retrieves a user by email (including `password`, for login).
      *
      * @param {string} email
      * @returns {Promise<UserRowWithPassword|null>}
@@ -48,25 +49,20 @@ function createUsersRepository({ prisma } = {}) {
     }
 
     /**
-     * Busca un usuario por email exacto. Acepta el email tal cual o en
-     * minusculas, para tolerar BDs con mezcla de mayusculas. No devuelve
-     * la `password` (uso administrativo, no login).
+     * Finds a user by exact email. Accepts the email as-is or in lowercase,
+     * to tolerate DBs with mixed casing. Does not return the `password`
+     * (administrative use, not login).
      *
      * @param {string} email
      * @returns {Promise<UserRow|null>}
      */
     async function findByExactEmail(email) {
-        const normalizedEmail = normalizeExactEmail(email);
+        const normalizedEmail = normalizeEmail(email);
         if (!normalizedEmail)
             return null;
 
         return deps.prisma.user.findFirst({
-            where: {
-                OR: [
-                    { email: normalizedEmail },
-                    { email: String(email).trim() }
-                ]
-            },
+            where: { email: normalizedEmail },
             select: {
                 id: true,
                 email: true,
@@ -76,8 +72,8 @@ function createUsersRepository({ prisma } = {}) {
     }
 
     /**
-     * Crea un usuario. `isModerator` solo se persiste si llega como
-     * booleano (asi el caller decide el default explicitamente).
+     * Creates a user. `isModerator` is only persisted if it arrives as a
+     * boolean (so the caller decides the default explicitly).
      *
      * @param {{ email:string, password:string, isModerator?: boolean }} input
      * @returns {Promise<UserRow>}
@@ -92,7 +88,7 @@ function createUsersRepository({ prisma } = {}) {
     }
 
     /**
-     * Actualiza el hash de contraseña de un usuario.
+     * Updates a user's password hash.
      *
      * @param {number} userId
      * @param {string} password
@@ -106,7 +102,7 @@ function createUsersRepository({ prisma } = {}) {
     }
 
     /**
-     * Actualiza el flag global `isModerator` de un usuario.
+     * Updates a user's global `isModerator` flag.
      *
      * @param {number} userId
      * @param {boolean} isModerator
@@ -128,22 +124,6 @@ function createUsersRepository({ prisma } = {}) {
     };
 }
 
-/**
- * Normaliza un email para busquedas exactas: `trim()` + `toLowerCase()`.
- * Devuelve `null` si el valor no es una cadena util.
- *
- * @param {unknown} value
- * @returns {string|null}
- */
-function normalizeExactEmail(value) {
-    if (typeof value !== 'string')
-        return null;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed.toLowerCase() : null;
-}
-
 module.exports = {
-    createUsersRepository,
-    normalizeExactEmail
+    createUsersRepository
 };

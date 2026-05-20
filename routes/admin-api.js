@@ -1,21 +1,21 @@
 'use strict';
 
 /**
- * @file Router `/api/admin` — endpoints JSON de administracion.
+ * @file Router `/api/admin` — JSON administration endpoints.
  *
- * Protege todas las rutas con `requireApiAuth` + `requireApiModerator()`:
- * solo usuarios autenticados con rol global `moderator` pueden alcanzarlas.
+ * Protects all routes with `requireApiAuth` + `requireApiModerator()`: only
+ * authenticated users with the global `moderator` role can reach them.
  */
 
 const express = require('express');
 const { requireApiAuth, requireApiModerator } = require('../middlewares/auth');
 
 /**
- * Construye el router `/api/admin`.
+ * Builds the `/api/admin` router.
  *
  * @param {{ adminController?: Record<string, any> }} [options]
  * @returns {import('express').Router}
- * @throws {Error} Si no se proporciona `adminController`.
+ * @throws {Error} If `adminController` is not provided.
  */
 function createAdminApiRouter({ adminController } = {}) {
     if (!adminController)

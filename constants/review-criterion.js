@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Catalogo de criterios usados en el proceso de revision de anotaciones.
+ * @file Catalogue of criteria used in the annotation review process.
  *
- * Cada criterio incluye un codigo estable (para BD y APIs), un `label`
- * visible y una `description` mostrada al revisor.
+ * Each criterion includes a stable code (for DB and APIs), a visible `label`
+ * and a `description` shown to the reviewer.
  *
  * @typedef {import('../types/typedefs').ReviewCriterionCode} ReviewCriterionCode
  *
@@ -24,7 +24,7 @@ const CRITERION_DIVERSITY = 'criterion_diversity';
 const CRITERION_SEMANTIC_FIDELITY = 'criterion_semantic_fidelity';
 
 /**
- * Lista ordenada e inmutable de criterios.
+ * Ordered, immutable list of criteria.
  * @type {ReadonlyArray<ReviewCriterion>}
  */
 const ORDERED_CRITERIA = Object.freeze([
@@ -51,14 +51,14 @@ const ORDERED_CRITERIA = Object.freeze([
 ]);
 
 /**
- * Lista de codigos en el mismo orden que {@link ORDERED_CRITERIA}.
+ * List of codes in the same order as {@link ORDERED_CRITERIA}.
  * @type {ReadonlyArray<ReviewCriterionCode>}
  */
 const ALL_CRITERION_CODES = Object.freeze(ORDERED_CRITERIA.map(c => c.code));
 
 /**
- * Devuelve una copia mutable de la lista ordenada de criterios.
- * Cada criterio es a su vez una copia (no compartida con el catalogo).
+ * Returns a mutable copy of the ordered list of criteria.
+ * Each criterion is itself a copy (not shared with the catalogue).
  *
  * @returns {ReviewCriterion[]}
  */
@@ -67,7 +67,7 @@ function getOrderedCriteria() {
 }
 
 /**
- * Devuelve una copia mutable de la lista de codigos.
+ * Returns a mutable copy of the list of codes.
  *
  * @returns {ReviewCriterionCode[]}
  */
@@ -76,8 +76,7 @@ function getOrderedCriterionCodes() {
 }
 
 /**
- * Type-guard: comprueba si un valor coincide con un codigo de criterio
- * conocido.
+ * Type-guard: checks whether a value matches a known criterion code.
  *
  * @param {unknown} code
  * @returns {code is ReviewCriterionCode}
@@ -88,7 +87,7 @@ function isValidCriterionCode(code) {
 }
 
 /**
- * Posicion del criterio en la lista ordenada (o -1 si no existe).
+ * Position of the criterion in the ordered list (or -1 if it does not exist).
  *
  * @param {string} code
  * @returns {number}

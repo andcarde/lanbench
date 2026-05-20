@@ -85,10 +85,10 @@ describe('annotations-service', () => {
         const service = createAnnotationsService({
             spanishService: {
                 /**
-                 * Comprueba check y devuelve el resultado de la validacion.
-                 * @param {*} sentence - Valor de sentence usado por la funcion.
-                 * @param {*} context - Valor de context usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check and returns the validation result.
+                 * @param {*} sentence - Value of sentence used by the function.
+                 * @param {*} context - Value of context used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async check(sentence, context) {
                     checkCalls.push({ sentence, context });
@@ -99,8 +99,8 @@ describe('annotations-service', () => {
                     return null;
                 },
                 /**
-                 * Ejecuta de forma asincrona save contra la capa de persistencia o API correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save against the corresponding persistence layer or API.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async save() {
                     throw new Error('save should not be called');
@@ -122,7 +122,7 @@ describe('annotations-service', () => {
             {
                 sentence: 'Primera',
                 context: {
-                    eid: 21,
+                    entryId: 21,
                     category: 'Airport',
                     triples: [{ subject: 'A', predicate: 'B', object: 'C' }],
                     referenceSentence: 'First source'
@@ -131,7 +131,7 @@ describe('annotations-service', () => {
             {
                 sentence: 'Segunda',
                 context: {
-                    eid: 21,
+                    entryId: 21,
                     category: 'Airport',
                     triples: [{ subject: 'A', predicate: 'B', object: 'C' }],
                     referenceSentence: 'Second source'
@@ -203,16 +203,16 @@ describe('annotations-service', () => {
         const service = createAnnotationsService({
             spanishService: {
                 /**
-                 * Comprueba check y devuelve el resultado de la validacion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check and returns the validation result.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async check() {
                     return { valid: true, reason: null, suggestion: null };
                 },
                 /**
-                 * Ejecuta de forma asincrona save contra la capa de persistencia o API correspondiente.
-                 * @param {*} payload - Valor de payload usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save against the corresponding persistence layer or API.
+                 * @param {*} payload - Value of payload used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async save(payload) {
                     capturedPayloads.push(payload);
@@ -225,8 +225,10 @@ describe('annotations-service', () => {
             userId: 5,
             datasetId: 9,
             rdfId: 17,
-            sentences: ['Uno.', 'Dos.'],
-            rejectionReasons: ['', 'Motivo']
+            sentences: [
+                { sentence: 'Uno.', rejectionReason: null },
+                { sentence: 'Dos.', rejectionReason: 'Motivo' }
+            ]
         });
 
         assert.equal(result.entryId, 17);
@@ -237,8 +239,10 @@ describe('annotations-service', () => {
             userId: 5,
             datasetId: 9,
             rdfId: 17,
-            sentences: ['Uno.', 'Dos.'],
-            rejectionReasons: ['', 'Motivo']
+            sentences: [
+                { sentence: 'Uno.', rejectionReason: null },
+                { sentence: 'Dos.', rejectionReason: 'Motivo' }
+            ]
         }]);
     });
 
@@ -247,15 +251,15 @@ describe('annotations-service', () => {
         const service = createAnnotationsService({
             spanishService: {
                 /**
-                 * Comprueba check y devuelve el resultado de la validacion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Checks check and returns the validation result.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async check() {
                     return { valid: true, reason: null, suggestion: null };
                 },
                 /**
-                 * Ejecuta de forma asincrona save contra la capa de persistencia o API correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs save against the corresponding persistence layer or API.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async save() {
                     return { error: failure };
@@ -268,8 +272,7 @@ describe('annotations-service', () => {
                 userId: 5,
                 datasetId: 9,
                 rdfId: 17,
-                sentences: ['Uno.'],
-                rejectionReasons: [null]
+                sentences: [{ sentence: 'Uno.', rejectionReason: null }]
             }),
             failure
         );

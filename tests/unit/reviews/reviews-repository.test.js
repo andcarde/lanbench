@@ -16,77 +16,77 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye prisma a partir de los datos recibidos.
- * @param {Object<string, *>} [overrides] - Valor de overrides usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds prisma from the received data.
+ * @param {Object<string, *>} [overrides] - Value of overrides used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildPrisma(overrides = {}) {
     return {
         review: {
             /**
-             * Obtiene first desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets first from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findFirst() { return null; },
             /**
-             * Obtiene unique desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets unique from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findUnique() { return null; },
             /**
-             * Obtiene many desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findMany() { return []; },
             /**
-             * Crea create con la configuracion recibida.
-             * @param {*} args - Valor de args usado por la funcion.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Creates create with the received configuration.
+             * @param {*} args - Value of args used by the function.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async create(args) { return { reviewId: 100, ...args.data }; },
             /**
-             * Actualiza update con los datos indicados.
-             * @param {*} args - Valor de args usado por la funcion.
+             * Updates update with the given data.
+             * @param {*} args - Value of args used by the function.
              */
             async update(args) { return { reviewId: args.where.reviewId, ...args.data }; },
             /**
-             * Actualiza many con los datos indicados.
+             * Updates many with the given data.
              */
             async updateMany() { return { count: 0 }; },
             ...(overrides.review || {})
         },
         reviewDecision: {
             /**
-             * Ejecuta de forma asincrona la logica de upsert.
-             * @param {*} args - Valor de args usado por la funcion.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Asynchronously runs the logic of upsert.
+             * @param {*} args - Value of args used by the function.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async upsert(args) { return { id: 1, ...args.create, ...args.update }; },
             /**
-             * Obtiene many desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findMany() { return []; },
             ...(overrides.reviewDecision || {})
         },
         reviewComment: {
             /**
-             * Crea create con la configuracion recibida.
-             * @param {*} args - Valor de args usado por la funcion.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Creates create with the received configuration.
+             * @param {*} args - Value of args used by the function.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async create(args) { return { id: 1, ...args.data }; },
             /**
-             * Obtiene many desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findMany() { return []; },
             ...(overrides.reviewComment || {})
         },
         entry: {
             /**
-             * Obtiene many desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findMany() { return []; },
             ...(overrides.entry || {})
@@ -103,9 +103,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Obtiene first desde la fuente correspondiente.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Gets first from the corresponding source.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async findFirst(args) {
                             captured.push(args);
@@ -131,9 +131,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     entry: {
                         /**
-                         * Obtiene many desde la fuente correspondiente.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Gets many from the corresponding source.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async findMany(args) {
                             captured.push(args);
@@ -166,9 +166,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Crea create con la configuracion recibida.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Creates create with the received configuration.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async create(args) {
                             captured.push(args);
@@ -204,8 +204,8 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Actualiza many con los datos indicados.
-                         * @param {*} args - Valor de args usado por la funcion.
+                         * Updates many with the given data.
+                         * @param {*} args - Value of args used by the function.
                          */
                         async updateMany(args) {
                             captured.push(args);
@@ -233,9 +233,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     reviewDecision: {
                         /**
-                         * Ejecuta de forma asincrona la logica de upsert.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Asynchronously runs the logic of upsert.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async upsert(args) {
                             captured.push(args);
@@ -268,9 +268,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     reviewComment: {
                         /**
-                         * Crea create con la configuracion recibida.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Creates create with the received configuration.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async create(args) {
                             captured.push(args);
@@ -303,9 +303,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Obtiene many desde la fuente correspondiente.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Gets many from the corresponding source.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async findMany(args) {
                             captured.push(args);
@@ -330,9 +330,9 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Obtiene many desde la fuente correspondiente.
-                         * @param {*} args - Valor de args usado por la funcion.
-                         * @returns {Promise<*>} Resultado producido por la funcion.
+                         * Gets many from the corresponding source.
+                         * @param {*} args - Value of args used by the function.
+                         * @returns {Promise<*>} Result produced by the function.
                          */
                         async findMany(args) {
                             captured.push(args);
@@ -355,8 +355,8 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Actualiza update con los datos indicados.
-                         * @param {*} args - Valor de args usado por la funcion.
+                         * Updates update with the given data.
+                         * @param {*} args - Value of args used by the function.
                          */
                         async update(args) {
                             captured.push(args);
@@ -386,8 +386,8 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Actualiza update con los datos indicados.
-                         * @param {*} args - Valor de args usado por la funcion.
+                         * Updates update with the given data.
+                         * @param {*} args - Value of args used by the function.
                          */
                         async update(args) {
                             captured.push(args);
@@ -411,8 +411,8 @@ describe('reviews-repository (T4.2)', () => {
                 prisma: buildPrisma({
                     review: {
                         /**
-                         * Actualiza update con los datos indicados.
-                         * @param {*} args - Valor de args usado por la funcion.
+                         * Updates update with the given data.
+                         * @param {*} args - Value of args used by the function.
                          */
                         async update(args) {
                             captured.push(args);

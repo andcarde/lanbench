@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/login.html`.
+ * @file Frontend for `public/login.html`.
  *
- * Adjunta un handler al formulario de login que envia `email`/`password`
- * al endpoint `/api/session` y, si responde con `redirectUrl`, redirige al
- * usuario. Errores se muestran en un toast Bootstrap.
+ * Attaches a handler to the login form that sends `email`/`password` to the
+ * `/api/session` endpoint and, if it responds with `redirectUrl`, redirects
+ * the user. Errors are shown in a Bootstrap toast.
  */
 $(document).ready(function () {
     const loginForm = $('#loginForm');
@@ -32,9 +32,7 @@ $(document).ready(function () {
         })
             .done(function (response) {
                 showToast('Login successful!', 'success');
-                /**
-                 * Actualiza timeout con los datos indicados.
-                 */
+                // Brief delay so the success toast is visible before redirecting.
                 setTimeout(function () {
                     window.location.href = (response && response.redirectUrl) || '/tasks';
                 }, 400);
@@ -54,9 +52,9 @@ $(document).ready(function () {
     });
 
     /**
-     * Actualiza toast con los datos indicados.
-     * @param {string} message - Valor de message usado por la funcion.
-     * @param {string} type - Valor de type usado por la funcion.
+     * Shows a Bootstrap toast with the given message and style.
+     * @param {string} message - Message to display in the toast.
+     * @param {string} type - Bootstrap contextual style (e.g. 'success', 'danger').
      */
     function showToast(message, type) {
         toastMessage.text(message);

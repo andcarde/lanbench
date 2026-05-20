@@ -10,6 +10,7 @@ const { createApp } = require('../../../app');
 const { warnIfDatabaseInactive } = require('../../../utils/database-health');
 const { createRegisterCodesRepository } = require('../../../repositories/register-codes-repository');
 const { generateRegisterCodes } = require('../../../scripts/generate-register-codes');
+const { normalizeBigInts } = require('../_helpers/bigint');
 
 const app = createApp();
 
@@ -127,11 +128,11 @@ describe('register-moderator integration', function () {
 });
 
 /**
- * Ejecuta una query SQL contra Prisma y devuelve el resultado.
- * Para SELECT devuelve las filas; para INSERT/UPDATE/DELETE devuelve {affectedRows}.
- * @param {string} sql - Sentencia SQL.
- * @param {Array<*>} [params] - Parametros posicionales.
- * @returns {Promise<*>} Filas resultado o resumen de filas afectadas.
+ * Runs a SQL query against Prisma and returns the result.
+ * For SELECT it returns the rows; for INSERT/UPDATE/DELETE it returns {affectedRows}.
+ * @param {string} sql - SQL statement.
+ * @param {Array<*>} [params] - Positional parameters.
+ * @returns {Promise<*>} Result rows, or affected-rows summary.
  */
 async function dbQuery(sql, params = []) {
     if (/^\s*SELECT\b/i.test(sql)) {
@@ -143,26 +144,8 @@ async function dbQuery(sql, params = []) {
 }
 
 /**
- * Convierte recursivamente los BigInt devueltos por Prisma a Number.
- * @param {*} value - Valor a normalizar.
- * @returns {*} Valor sin BigInt.
- */
-function normalizeBigInts(value) {
-    if (typeof value === 'bigint') return Number(value);
-    if (Array.isArray(value)) return value.map(normalizeBigInts);
-    if (value && typeof value === 'object') {
-        /** @type {Record<string, *>} */
-        const result = {};
-        for (const key of Object.keys(value))
-            result[key] = normalizeBigInts(value[key]);
-        return result;
-    }
-    return value;
-}
-
-/**
- * Obtiene un puerto libre del SO.
- * @returns {Promise<number>} Puerto disponible.
+ * Returns a free OS port.
+ * @returns {Promise<number>} Available port.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

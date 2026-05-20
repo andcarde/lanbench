@@ -33,10 +33,10 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye repo stub a partir de los datos recibidos.
- * @param {Array<*>} initialReviews - Valor de initialReviews usado por la funcion.
- * @param {*} options - Valor de options usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds repo stub from the received data.
+ * @param {Array<*>} initialReviews - Value of initialReviews used by the function.
+ * @param {*} options - Value of options used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildRepoStub(initialReviews = [], options = {}) {
     const reviews = new Map(initialReviews.map(r => [r.id, { ...r }]));
@@ -46,14 +46,14 @@ function buildRepoStub(initialReviews = [], options = {}) {
 
     const repo = {
         /**
-         * Ejecuta de forma asincrona la logica de expire stale reviews.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs the logic of expire stale reviews.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async expireStaleReviews() { return { count: 0 }; },
         /**
-         * Obtiene active review by reviewer desde la fuente correspondiente.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets active review by reviewer from the corresponding source.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findActiveReviewByReviewer({ reviewerId }) {
             for (const r of reviews.values())
@@ -62,25 +62,25 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return null;
         },
         /**
-         * Obtiene review by id desde la fuente correspondiente.
-         * @param {number} reviewId - Valor de reviewId usado por la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets review by id from the corresponding source.
+         * @param {number} reviewId - Value of reviewId used by the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findReviewById(reviewId) {
             return reviews.has(reviewId) ? { ...reviews.get(reviewId) } : null;
         },
         /**
-         * Obtiene reviewable entries desde la fuente correspondiente.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets reviewable entries from the corresponding source.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findReviewableEntries({ reviewerId: _idReviewer, limit: _limit = 1 }) {
             return options.reviewableEntries || [];
         },
         /**
-         * Crea review con la configuracion recibida.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Creates review with the received configuration.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async createReview({ entryId, reviewerId, annotatorId, expiresAt }) {
             const reviewId = nextId++;
@@ -99,8 +99,8 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return { ...created };
         },
         /**
-         * Actualiza review status con los datos indicados.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
+         * Updates review status with the given data.
+         * @param {*} options - Options object used to configure the function.
          */
         async updateReviewStatus({ reviewId, status, completedAt = null }) {
             const r = reviews.get(reviewId);
@@ -109,8 +109,8 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return { ...r };
         },
         /**
-         * Actualiza review progress con los datos indicados.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
+         * Updates review progress with the given data.
+         * @param {*} options - Options object used to configure the function.
          */
         async updateReviewProgress({ reviewId, currentCriterionIndex, status }) {
             const r = reviews.get(reviewId);
@@ -119,9 +119,9 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return { ...r };
         },
         /**
-         * Ejecuta de forma asincrona la logica de upsert decision.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs the logic of upsert decision.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async upsertDecision({ reviewId, criterionCode, decision, comment }) {
             const list = decisionsByReview.get(reviewId) || [];
@@ -137,17 +137,17 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return list[list.length - 1];
         },
         /**
-         * Obtiene decisions by review desde la fuente correspondiente.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets decisions by review from the corresponding source.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findDecisionsByReview({ reviewId }) {
             return (decisionsByReview.get(reviewId) || []).map((/** @type {*} */ d) => ({ ...d }));
         },
         /**
-         * Crea comment con la configuracion recibida.
-         * @param {*} payload - Valor de payload usado por la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Creates comment with the received configuration.
+         * @param {*} payload - Value of payload used by the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async createComment(payload) {
             const list = commentsByReview.get(payload.reviewId) || [];
@@ -156,16 +156,16 @@ function buildRepoStub(initialReviews = [], options = {}) {
             return list[list.length - 1];
         },
         /**
-         * Obtiene comments by review desde la fuente correspondiente.
-         * @param {*} options - Objeto de opciones usado para configurar la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets comments by review from the corresponding source.
+         * @param {*} options - Options object used to configure the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findCommentsByReview({ reviewId }) {
             return (commentsByReview.get(reviewId) || []).map((/** @type {*} */ c) => ({ ...c }));
         },
         /**
-         * Obtiene completed reviews for annotator desde la fuente correspondiente.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets completed reviews for annotator from the corresponding source.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async findCompletedReviewsForAnnotator() { return []; }
     };
@@ -174,16 +174,16 @@ function buildRepoStub(initialReviews = [], options = {}) {
 }
 
 /**
- * Construye prisma stub a partir de los datos recibidos.
- * @param {*} [transactionImpl] - Valor de transactionImpl usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds prisma stub from the received data.
+ * @param {*} [transactionImpl] - Value of transactionImpl used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildPrismaStub(transactionImpl) {
     return {
         /**
-         * Ejecuta de forma asincrona la logica de $transaction.
-         * @param {*} fn - Valor de fn usado por la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs the logic of $transaction.
+         * @param {*} fn - Value of fn used by the function.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async $transaction(fn) {
             const tx = transactionImpl || {
@@ -304,8 +304,8 @@ describe('reviews-service (T4.3)', () => {
 
     describe('submitDecision', () => {
         /**
-         * Construye pending service a partir de los datos recibidos.
-         * @returns {*} Resultado producido por la funcion.
+         * Builds pending service from the received data.
+         * @returns {*} Result produced by the function.
          */
         function buildPendingService() {
             const initial = [{
@@ -433,7 +433,7 @@ describe('reviews-service (T4.3)', () => {
 
     describe('finalizeReview', () => {
         /**
-         * Actualiza setup all accepted con los datos indicados.
+         * Updates setup all accepted with the given data.
          */
         function setupAllAccepted() {
             const initial = [{ id: 1, reviewerId: 7, entryId: 5, annotatorId: 9, status: REVIEW_IN_PROGRESS, currentCriterionIndex: 4, expiresAt: new Date(Date.now() + 1000), assignedAt: new Date() }];
@@ -460,9 +460,9 @@ describe('reviews-service (T4.3)', () => {
             const updates = { entryStatus: null, reviewStatus: null };
             const prisma = {
                 /**
-                 * Ejecuta de forma asincrona la logica de $transaction.
-                 * @param {*} fn - Valor de fn usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of $transaction.
+                 * @param {*} fn - Value of fn used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async $transaction(fn) {
                     return fn({
@@ -493,9 +493,9 @@ describe('reviews-service (T4.3)', () => {
             const updates = { entryStatus: null, reviewStatus: null };
             const prisma = {
                 /**
-                 * Ejecuta de forma asincrona la logica de $transaction.
-                 * @param {*} fn - Valor de fn usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of $transaction.
+                 * @param {*} fn - Value of fn used by the function.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async $transaction(fn) {
                     return fn({

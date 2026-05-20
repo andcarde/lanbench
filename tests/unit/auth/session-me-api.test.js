@@ -25,9 +25,9 @@ function getFreePort() {
 }
 
 /**
- * Construye una app Express minima que inyecta `request.session` antes del router.
- * @param {*} sessionUser - Payload de usuario en sesion, o null para sesion sin usuario.
- * @returns {*} Aplicacion Express lista para escuchar.
+ * Builds a minimal Express app that injects `request.session` before the router.
+ * @param {*} sessionUser - Session user payload, or null for a session without a user.
+ * @returns {*} Express app ready to listen.
  */
 function buildApp(sessionUser) {
     const app = express();
@@ -40,9 +40,9 @@ function buildApp(sessionUser) {
 }
 
 /**
- * Pone una app Express a escuchar en un puerto libre y devuelve el handle.
- * @param {*} app - Aplicacion Express.
- * @returns {Promise<{server:*, baseUrl:string}>} Servidor y base URL.
+ * Starts an Express app listening on a free port and returns the handle.
+ * @param {*} app - Express application.
+ * @returns {Promise<{server:*, baseUrl:string}>} Server and base URL.
  */
 async function listen(app) {
     const port = await getFreePort();

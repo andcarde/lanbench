@@ -3,9 +3,9 @@
 /**
  * @file Repository for the `EvaluationCriterion` table.
  *
- * Cada criterio describe un eje de calidad (gramatica, cobertura, etc.) que
- * los revisores pueden evaluar. La actualizacion incrementa siempre la
- * columna `version` para detectar cambios optimistas.
+ * Each criterion describes a quality axis (grammar, coverage, etc.) that
+ * reviewers can evaluate. The update always increments the `version` column
+ * to detect optimistic changes.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  *
@@ -25,7 +25,7 @@
 const defaultPrisma = require('../prisma/client');
 
 /**
- * Construye el repositorio de `EvaluationCriterion`.
+ * Builds the `EvaluationCriterion` repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  */
@@ -35,8 +35,8 @@ function createEvaluationCriteriaRepository({ prisma } = {}) {
     };
 
     /**
-     * Lista los criterios disponibles, opcionalmente filtrando los inactivos.
-     * Resultados ordenados por `sortOrder`, luego por `id`.
+     * Lists the available criteria, optionally filtering out inactive ones.
+     * Results ordered by `sortOrder`, then by `id`.
      *
      * @param {{ includeInactive?: boolean }} [options]
      * @returns {Promise<EvaluationCriterionRow[]>}
@@ -52,7 +52,7 @@ function createEvaluationCriteriaRepository({ prisma } = {}) {
     }
 
     /**
-     * Crea un nuevo criterio. El `version` lo gestiona Prisma (default 1).
+     * Creates a new criterion. The `version` is managed by Prisma (default 1).
      *
      * @param {EvaluationCriterionCreateInput} data
      * @returns {Promise<EvaluationCriterionRow>}
@@ -62,8 +62,8 @@ function createEvaluationCriteriaRepository({ prisma } = {}) {
     }
 
     /**
-     * Actualiza el criterio identificado por `id` y aumenta la `version`
-     * (control optimista de cambios desde la UI).
+     * Updates the criterion identified by `id` and increments the `version`
+     * (optimistic control of changes from the UI).
      *
      * @param {number} id
      * @param {EvaluationCriterionUpdateInput} data

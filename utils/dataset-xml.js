@@ -1,18 +1,18 @@
 'use strict';
 
 /**
- * @file Serializador XML del benchmark WebNLG.
+ * @file WebNLG benchmark XML serializer.
  *
- * Genera la representacion textual `<benchmark>...</benchmark>` a partir
- * del grafo de entries (con sus triplesets, lexes y links). Mantener este
- * serializador escrito a mano evita la dependencia de librerias XML
- * pesadas y conserva el formato exacto que esperan los datasets de prueba.
+ * Generates the textual representation `<benchmark>...</benchmark>` from the
+ * entry graph (with its triplesets, lexes and links). Keeping this serializer
+ * hand-written avoids a dependency on heavy XML libraries and preserves the
+ * exact format the test datasets expect.
  */
 
-const { toArray, escapeAttr } = require('./xml-format');
+const { toArray, renderAttrs } = require('./xml-format');
 
 /**
- * Construye el XML completo del benchmark a partir de las entries dadas.
+ * Builds the complete benchmark XML from the given entries.
  *
  * @param {Array<Record<string, any>>|Record<string, any>} entries
  * @returns {string}
@@ -37,33 +37,99 @@ function buildDatasetXml(entries) {
 }
 
 /**
- * Construye la etiqueta de apertura de un `<entry>` con sus atributos.
- * @param {*} entry - Entry con category, eid, size y shape opcionales.
- * @returns {string} Linea XML con la etiqueta de apertura.
+ * Builds the extended benchmark XML, adding, per entry, a `<lex lang="es">`
+ * for each persisted `Annotation`. The pairing rule (paired vs free) is
+ * documented in `documentation/TECHNICAL-DESIGN.md` (section 8.5).
+ *
+ * @param {Array<Record<string, any>>|Record<string, any>} entries
+ * @returns {string}
  */
-function renderEntryOpenTag(entry) {
-    const parts = [
-        `category="${escapeAttr(entry.category)}"`,
-        `eid="${entry.eid}"`
-    ];
+function buildAnnotatedDatasetXml(entries) {
+    const augmentedEntries = toArray(entries).map(entry => ({
+        ...entry,
+        lexes: mergeSpanishAnnotationsIntoLexes(toArray(entry.lexes), toArray(entry.annotations))
+    }));
 
-    if (entry.shape != null)
-        parts.push(`shape="${escapeAttr(entry.shape)}"`);
-
-    if (entry.shapeType != null)
-        parts.push(`shape_type="${escapeAttr(entry.shapeType)}"`);
-
-    parts.push(`size="${entry.size}"`);
-
-    return `    <entry ${parts.join(' ')}>`;
+    return buildDatasetXml(augmentedEntries);
 }
 
 /**
- * Serializa una coleccion de triplesets (originales o modificados) en XML.
- * @param {*} containerTag - Etiqueta envoltorio (p.ej. "originaltripleset").
- * @param {*} tripleTag - Etiqueta para cada triple (p.ej. "otriple").
- * @param {*} triplesets - Lista o tripleset unico a serializar.
- * @returns {Array<string>} Lineas XML.
+ * Merges the `Annotation`s into an entry's lex list following the pairing
+ * rule: paired (lid of the corresponding English lex) or free
+ * (`id<sentenceIndex+1>`). Paired Spanish lexes are inserted immediately after
+ * the last existing lex with the same lid; free Spanish lexes are appended at
+ * the end.
+ *
+ * @param {Array<Record<string, any>>} lexes - Original lexes.
+ * @param {Array<Record<string, any>>} annotations - Annotations to merge.
+ * @returns {Array<Record<string, any>>} Lexes with the Spanish entries merged in.
+ */
+function mergeSpanishAnnotationsIntoLexes(lexes, annotations) {
+    if (annotations.length === 0)
+        return lexes;
+
+    const englishLexes = lexes.filter(lex => lex && lex.lang === 'en');
+    const sortedAnnotations = [...annotations].sort(
+        (a, b) => (a.sentenceIndex || 0) - (b.sentenceIndex || 0)
+    );
+
+    const result = [...lexes];
+
+    for (const annotation of sortedAnnotations) {
+        const sentenceIndex = Number(annotation.sentenceIndex) || 0;
+        const isPaired = sentenceIndex < englishLexes.length;
+        const lid = isPaired
+            ? englishLexes[sentenceIndex].lid
+            : `id${sentenceIndex + 1}`;
+
+        const spanishLex = {
+            lid,
+            lang: 'es',
+            comment: '',
+            text: String(annotation.sentence || '')
+        };
+
+        if (!isPaired) {
+            result.push(spanishLex);
+            continue;
+        }
+
+        let insertAfter = -1;
+        for (let i = 0; i < result.length; i++) {
+            if (result[i] && result[i].lid === lid)
+                insertAfter = i;
+        }
+
+        if (insertAfter === -1)
+            result.push(spanishLex);
+        else
+            result.splice(insertAfter + 1, 0, spanishLex);
+    }
+
+    return result;
+}
+
+/**
+ * Builds the opening tag of an `<entry>` with its attributes.
+ * @param {*} entry - Entry with category, eid, size and optional shape.
+ * @returns {string} XML line with the opening tag.
+ */
+function renderEntryOpenTag(entry) {
+    return `    <entry${renderAttrs({
+        category: entry.category,
+        eid: entry.eid,
+        shape: entry.shape,
+        shape_type: entry.shapeType,
+        size: entry.size
+    })}>`;
+}
+
+/**
+ * Serializes a collection of triplesets (original or modified) into XML.
+ * @param {*} containerTag - Wrapper tag (e.g. "originaltripleset").
+ * @param {*} tripleTag - Tag for each triple (e.g. "otriple").
+ * @param {*} triplesets - List or single tripleset to serialize.
+ * @returns {Array<string>} XML lines.
  */
 function renderTriplesets(containerTag, tripleTag, triplesets) {
     /** @type {any[]} */
@@ -83,30 +149,24 @@ function renderTriplesets(containerTag, tripleTag, triplesets) {
 }
 
 /**
- * Serializa las lexicalizaciones (`<lex>`) de una entry.
- * @param {*} lexes - Lista o lex unico a serializar.
- * @returns {Array<string>} Lineas XML.
+ * Serializes an entry's lexicalizations (`<lex>`).
+ * @param {*} lexes - List or single lex to serialize.
+ * @returns {Array<string>} XML lines.
  */
 function renderLexes(lexes) {
-    return toArray(lexes).map((/** @type {*} */ lex) => {
-        const attributes = [
-            `lid="${escapeAttr(lex.lid)}"`,
-            `lang="${escapeAttr(lex.lang)}"`
-        ];
-
-        if (lex.comment !== null && lex.comment !== undefined)
-            attributes.push(`comment="${escapeAttr(lex.comment)}"`);
-
-        return `      <lex ${attributes.join(' ')}>${lex.text}</lex>`;
-    });
+    return toArray(lexes).map((/** @type {*} */ lex) => `      <lex${renderAttrs({
+        lid: lex.lid,
+        lang: lex.lang,
+        comment: lex.comment
+    })}>${lex.text}</lex>`);
 }
 
 /**
- * Serializa un grupo de enlaces (DBpedia o internos) usando las etiquetas dadas.
- * @param {*} groupTag - Etiqueta envoltorio (p.ej. "links").
- * @param {*} itemTag - Etiqueta para cada enlace (p.ej. "link").
- * @param {*} links - Lista o link unico a serializar.
- * @returns {Array<string>} Lineas XML (vacio si no hay enlaces).
+ * Serializes a group of links (DBpedia or internal) using the given tags.
+ * @param {*} groupTag - Wrapper tag (e.g. "links").
+ * @param {*} itemTag - Tag for each link (e.g. "link").
+ * @param {*} links - List or single link to serialize.
+ * @returns {Array<string>} XML lines (empty if there are no links).
  */
 function renderLinksGroup(groupTag, itemTag, links) {
     const normalizedLinks = toArray(links);
@@ -117,7 +177,7 @@ function renderLinksGroup(groupTag, itemTag, links) {
 
     for (const link of normalizedLinks) {
         lines.push(
-            `        <${itemTag} direction="${escapeAttr(link.direction)}">${link.subject} | ${link.predicate} | ${link.object}</${itemTag}>`
+            `        <${itemTag}${renderAttrs({ direction: link.direction })}>${link.subject} | ${link.predicate} | ${link.object}</${itemTag}>`
         );
     }
 
@@ -126,5 +186,6 @@ function renderLinksGroup(groupTag, itemTag, links) {
 }
 
 module.exports = {
-    buildDatasetXml
+    buildDatasetXml,
+    buildAnnotatedDatasetXml
 };

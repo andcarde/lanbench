@@ -14,6 +14,7 @@ const app = createApp();
 const { createPasswordHasher } = require('../../../services/password-hasher');
 const { warnIfDatabaseInactive } = require('../../../utils/database-health');
 const { TEST_DATA_PATH } = require('../../../constants/paths');
+const { normalizeBigInts } = require('../_helpers/bigint');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
@@ -63,7 +64,7 @@ describe('dataset lifecycle integration', function () {
             [testUserId, testEmail, passwordHash, 1]
         );
 
-        const loginResponse = await fetch(`${baseUrl}/create-session`, {
+        const loginResponse = await fetch(`${baseUrl}/api/session`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ email: testEmail, password: 'TestPass99!' })
@@ -75,7 +76,7 @@ describe('dataset lifecycle integration', function () {
     });
 
     after(async () => {
-        // Borrar el dataset vía API mientras el servidor sigue levantado
+        // Delete the dataset via API while the server is still running
         if (createdDatasetId && sessionCookie) {
             try {
                 await fetch(`${baseUrl}/api/datasets/${createdDatasetId}`, {
@@ -88,11 +89,11 @@ describe('dataset lifecycle integration', function () {
             createdDatasetId = null;
         }
 
-        // Cerrar el servidor antes de las queries de limpieza final
+        // Close the server before the final cleanup queries
         if (httpServer)
             await new Promise(resolve => httpServer.close(() => resolve(undefined)));
 
-        // Borrar permits antes que users para evitar la FK fk_permits_user
+        // Delete permits before users to avoid the FK fk_permits_user
         if (testUserId)
             await dbQuery('DELETE FROM `permits` WHERE `user_id` = ?', [testUserId]);
 
@@ -104,7 +105,7 @@ describe('dataset lifecycle integration', function () {
         if (this && typeof this.timeout === 'function')
             this.timeout(60000);
 
-        // ── 1. Subir el fichero XML ───────────────────────────────────────────
+        // ── 1. Upload the XML file ────────────────────────────────────────────
         const xmlContent = fs.readFileSync(XML_FILE_PATH);
         const formData = new FormData();
         formData.append('xmlFile', new Blob([xmlContent], { type: 'application/xml' }), 'ru_dev.xml');
@@ -124,7 +125,7 @@ describe('dataset lifecycle integration', function () {
 
         createdDatasetId = createPayload.datasetId;
 
-        // ── 2. Verificar en BD que el dataset existe con sus dependencias ─────
+        // ── 2. Verify in the DB that the dataset exists with its dependencies ─
         const [datasetRows] = await dbQuery(
             'SELECT `id` AS datasetId, name FROM `datasets` WHERE `id` = ?',
             [createdDatasetId]
@@ -175,7 +176,7 @@ describe('dataset lifecycle integration', function () {
         );
         assert.ok(lexCount.total > 0, 'Deberían existir lexicalizaciones para las entries del dataset.');
 
-        // ── 3. Borrar el dataset a través de la API ───────────────────────────
+        // ── 3. Delete the dataset through the API ─────────────────────────────
         const deleteResponse = await fetch(`${baseUrl}/api/datasets/${createdDatasetId}`, {
             method: 'DELETE',
             headers: { cookie: sessionCookie }
@@ -188,13 +189,13 @@ describe('dataset lifecycle integration', function () {
 
         createdDatasetId = null;
 
-        // ── 4. Verificar via API que el dataset ya no existe ─────────────────
+        // ── 4. Verify via API that the dataset no longer exists ──────────────
         const getResponse = await fetch(`${baseUrl}/api/datasets/${createPayload.datasetId}`, {
             headers: { cookie: sessionCookie }
         });
         assert.equal(getResponse.status, 404, 'El dataset borrado debería devolver 404 al consultarlo.');
 
-        // ── 5. Verificar en BD el borrado en cascada ──────────────────────────
+        // ── 5. Verify the cascade deletion in the DB ──────────────────────────
         const datasetId = createPayload.datasetId;
 
         const [deletedDataset] = await dbQuery(
@@ -266,18 +267,18 @@ describe('dataset lifecycle integration', function () {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Genera los placeholders ? para una lista de valores en SQL.
- * @param {Array<*>} list - Lista de valores.
- * @returns {string} Placeholders separados por coma.
+ * Generates the ? placeholders for a list of values in SQL.
+ * @param {Array<*>} list - List of values.
+ * @returns {string} Comma-separated placeholders.
  */
 function placeholders(list) {
     return list.map(() => '?').join(',');
 }
 
 /**
- * Extrae la cookie de sesión de la cabecera Set-Cookie.
- * @param {Response} response - Respuesta HTTP.
- * @returns {string|null} Valor de la cookie.
+ * Extracts the session cookie from the Set-Cookie header.
+ * @param {Response} response - HTTP response.
+ * @returns {string|null} Cookie value.
  */
 function extractSessionCookie(response) {
     if (typeof response.headers.getSetCookie === 'function') {
@@ -295,11 +296,11 @@ function extractSessionCookie(response) {
 }
 
 /**
- * Ejecuta una query SQL contra Prisma y devuelve el resultado.
- * Para SELECT devuelve las filas; para INSERT/UPDATE/DELETE devuelve {affectedRows}.
- * @param {string} sql - Sentencia SQL.
- * @param {Array<*>} [params] - Parametros posicionales.
- * @returns {Promise<*>} Filas resultado o resumen de filas afectadas.
+ * Runs a SQL query against Prisma and returns the result.
+ * For SELECT it returns the rows; for INSERT/UPDATE/DELETE it returns {affectedRows}.
+ * @param {string} sql - SQL statement.
+ * @param {Array<*>} [params] - Positional parameters.
+ * @returns {Promise<*>} Result rows, or affected-rows summary.
  */
 async function dbQuery(sql, params = []) {
     if (/^\s*SELECT\b/i.test(sql)) {
@@ -311,26 +312,8 @@ async function dbQuery(sql, params = []) {
 }
 
 /**
- * Convierte recursivamente los BigInt devueltos por Prisma a Number.
- * @param {*} value - Valor a normalizar.
- * @returns {*} Valor sin BigInt.
- */
-function normalizeBigInts(value) {
-    if (typeof value === 'bigint') return Number(value);
-    if (Array.isArray(value)) return value.map(normalizeBigInts);
-    if (value && typeof value === 'object') {
-        /** @type {Record<string, *>} */
-        const result = {};
-        for (const key of Object.keys(value))
-            result[key] = normalizeBigInts(value[key]);
-        return result;
-    }
-    return value;
-}
-
-/**
- * Devuelve un puerto TCP libre.
- * @returns {Promise<number>} Puerto disponible.
+ * Returns a free TCP port.
+ * @returns {Promise<number>} Available port.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

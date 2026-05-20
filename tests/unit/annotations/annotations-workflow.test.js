@@ -9,25 +9,40 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye spanish service a partir de los datos recibidos.
- * @param {Object<string, *>} [overrides] - Valor de overrides usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds spanish service from the received data.
+ * @param {Object<string, *>} [overrides] - Value of overrides used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildSpanishService(overrides = {}) {
     return {
         /**
-         * Comprueba check y devuelve el resultado de la validacion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Checks check and returns the validation result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async check() { return { valid: true, reason: null, suggestion: null }; },
         /**
-         * Ejecuta de forma asincrona save contra la capa de persistencia o API correspondiente.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs save against the corresponding persistence layer or API.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async save() { return { ok: true }; },
         ...overrides
     };
 }
+
+/**
+ * Test Prisma client that runs the `$transaction` callback with a
+ * fake `tx`. The section-closing writes are stubbed at the
+ * service/repository level, so the `tx` does not need real behavior.
+ */
+const passthroughPrisma = {
+    /**
+     * @param {(tx: any) => Promise<*>} run - Transactional callback.
+     * @returns {Promise<*>}
+     */
+    async $transaction(run) {
+        return run({});
+    }
+};
 
 describe('annotations-workflow (integración de asignación de sección)', () => {
     describe('saveSentences con sectionAssignmentsRepository inyectado', () => {
@@ -36,8 +51,8 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentsRepository: {
                     /**
-                     * Obtiene active assignment desde la fuente correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets active assignment from the corresponding source.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async findActiveAssignment() { return null; }
                 }
@@ -48,8 +63,7 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                     userId: 1,
                     datasetId: 5,
                     rdfId: 10,
-                    sentences: ['Hola.'],
-                    rejectionReasons: [null],
+                    sentences: [{ sentence: 'Hola.', rejectionReason: null }],
                     sectionNumber: 2
                 }),
                 { message: 'Seccion no asignada al usuario.' }
@@ -61,8 +75,8 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentsRepository: {
                     /**
-                     * Obtiene active assignment desde la fuente correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets active assignment from the corresponding source.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async findActiveAssignment() {
                         return { id: 1, sectionIndex: 3, status: 'active' };
@@ -75,8 +89,7 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                     userId: 1,
                     datasetId: 5,
                     rdfId: 10,
-                    sentences: ['Hola.'],
-                    rejectionReasons: [null],
+                    sentences: [{ sentence: 'Hola.', rejectionReason: null }],
                     sectionNumber: 2
                 }),
                 { message: 'Seccion no asignada al usuario.' }
@@ -88,21 +101,21 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentsRepository: {
                     /**
-                     * Obtiene active assignment desde la fuente correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets active assignment from the corresponding source.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async findActiveAssignment() {
                         return { id: 1, sectionIndex: 2, status: 'active' };
                     }
-                }
+                },
+                prismaClient: passthroughPrisma
             });
 
             const result = await service.saveSentences({
                 userId: 1,
                 datasetId: 5,
                 rdfId: 10,
-                sentences: ['Hola.'],
-                rejectionReasons: [null],
+                sentences: [{ sentence: 'Hola.', rejectionReason: null }],
                 sectionNumber: 2
             });
 
@@ -116,8 +129,8 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentsRepository: {
                     /**
-                     * Obtiene active assignment desde la fuente correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets active assignment from the corresponding source.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async findActiveAssignment() { return null; }
                 }
@@ -127,8 +140,7 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 userId: 1,
                 datasetId: 5,
                 rdfId: 10,
-                sentences: ['Hola.'],
-                rejectionReasons: [null]
+                sentences: [{ sentence: 'Hola.', rejectionReason: null }]
             });
 
             assert.equal(result.entryId, 10);
@@ -141,19 +153,19 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentService: {
                     /**
-                     * Ejecuta de forma asincrona la logica de complete assignment if section done.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs the logic of complete assignment if section done.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async completeAssignmentIfSectionDone() { return true; }
-                }
+                },
+                prismaClient: passthroughPrisma
             });
 
             const result = await service.saveSentences({
                 userId: 1,
                 datasetId: 5,
                 rdfId: 10,
-                sentences: ['Hola.'],
-                rejectionReasons: [null],
+                sentences: [{ sentence: 'Hola.', rejectionReason: null }],
                 sectionNumber: 1
             });
 
@@ -165,49 +177,51 @@ describe('annotations-workflow (integración de asignación de sección)', () =>
                 spanishService: buildSpanishService(),
                 sectionAssignmentService: {
                     /**
-                     * Ejecuta de forma asincrona la logica de complete assignment if section done.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs the logic of complete assignment if section done.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async completeAssignmentIfSectionDone() { return false; }
-                }
+                },
+                prismaClient: passthroughPrisma
             });
 
             const result = await service.saveSentences({
                 userId: 1,
                 datasetId: 5,
                 rdfId: 10,
-                sentences: ['Hola.'],
-                rejectionReasons: [null],
+                sentences: [{ sentence: 'Hola.', rejectionReason: null }],
                 sectionNumber: 1
             });
 
             assert.equal(result.sectionCompleted, false);
         });
 
-        it('trata errores del sectionAssignmentService como sectionCompleted=false', async () => {
+        it('propaga el error del sectionAssignmentService y revierte la transacción de cierre', async () => {
+            const failure = new Error('Error inesperado');
             const service = createAnnotationsService({
                 spanishService: buildSpanishService(),
                 sectionAssignmentService: {
                     /**
-                     * Ejecuta de forma asincrona la logica de complete assignment if section done.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Asynchronously runs the logic of complete assignment if section done.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async completeAssignmentIfSectionDone() {
-                        throw new Error('Error inesperado');
+                        throw failure;
                     }
-                }
+                },
+                prismaClient: passthroughPrisma
             });
 
-            const result = await service.saveSentences({
-                userId: 1,
-                datasetId: 5,
-                rdfId: 10,
-                sentences: ['Hola.'],
-                rejectionReasons: [null],
-                sectionNumber: 1
-            });
-
-            assert.equal(result.sectionCompleted, false);
+            await assert.rejects(
+                () => service.saveSentences({
+                    userId: 1,
+                    datasetId: 5,
+                    rdfId: 10,
+                    sentences: [{ sentence: 'Hola.', rejectionReason: null }],
+                    sectionNumber: 1
+                }),
+                failure
+            );
         });
     });
 });

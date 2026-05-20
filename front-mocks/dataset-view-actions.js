@@ -1,13 +1,13 @@
 // @ts-nocheck
 /**
- * @file Mock de `fetchDatasetText` para el modo `front-debug`.
+ * @file Mock of `fetchDatasetText` for `front-debug` mode.
  *
- * Devuelve siempre el mismo XML sintetico con una unica entry, suficiente
- * para que la pagina `dataset-view.html` renderice algo sin backend.
+ * Always returns the same synthetic XML with a single entry, enough for the
+ * `dataset-view.html` page to render something without a backend.
  */
 
 /**
- * Mock: devuelve un XML sintetico de un dataset (ignora `datasetId`).
+ * Mock: returns a synthetic dataset XML (ignores `datasetId`).
  *
  * @param {number} _datasetId
  * @returns {Promise<string>}

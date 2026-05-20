@@ -28,8 +28,8 @@ describe('ollama-client', () => {
             return {
                 ok: true,
                 /**
-                 * Ejecuta de forma asincrona la logica de json.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Asynchronously runs the logic of json.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async json() {
                     return {
@@ -69,8 +69,8 @@ describe('ollama-client', () => {
             status: 503,
             statusText: 'Service Unavailable',
             /**
-             * Ejecuta de forma asincrona la logica de text.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Asynchronously runs the logic of text.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async text() {
                 return 'upstream down';
@@ -91,8 +91,8 @@ describe('ollama-client', () => {
         globalThis.fetch = /** @type {any} */ (async () => ({
             ok: true,
             /**
-             * Ejecuta de forma asincrona la logica de json.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Asynchronously runs the logic of json.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async json() {
                 return { done: true };

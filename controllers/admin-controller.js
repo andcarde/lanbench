@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Admin controller — endpoints HTTP de la zona de administracion.
+ * @file Admin controller — HTTP endpoints of the administration area.
  *
- * Mapea las funciones de `adminService` a respuestas HTTP, valida ids con
- * `toPositiveInteger`, y delega la serializacion de errores a
+ * Maps the `adminService` functions to HTTP responses, validates ids with
+ * `toPositiveInteger`, and delegates error serialization to
  * `utils/api-error-payload`.
  *
  * @typedef {import('express').Request}  ExpressRequest
@@ -22,7 +22,7 @@ const {
 } = require('../utils/api-error-payload');
 
 /**
- * Construye el controlador de administracion.
+ * Builds the admin controller.
  *
  * @param {AdminControllerDeps} [options]
  */
@@ -30,8 +30,8 @@ function createAdminController({ adminService } = {}) {
     const service = adminService || createAdminService();
 
     /**
-     * `GET /api/admin/datasets` — Devuelve el resumen administrativo de
-     * todos los datasets.
+     * `GET /api/admin/datasets` — Returns the administrative summary of all
+     * datasets.
      *
      * @param {ExpressRequest} _request
      * @param {ExpressResponse} response
@@ -49,8 +49,8 @@ function createAdminController({ adminService } = {}) {
     }
 
     /**
-     * `GET /api/admin/datasets/:id/export` — Devuelve el progreso exportado
-     * en `json` o `xml` segun `request.query.format`.
+     * `GET /api/admin/datasets/:id/export` — Returns the exported progress in
+     * `json` or `xml` according to `request.query.format`.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -79,8 +79,8 @@ function createAdminController({ adminService } = {}) {
     }
 
     /**
-     * `GET /api/admin/criteria` — Lista los criterios de evaluacion.
-     * Acepta `?includeInactive=false` para ocultar los inactivos.
+     * `GET /api/admin/criteria` — Lists the evaluation criteria. Accepts
+     * `?includeInactive=false` to hide the inactive ones.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -99,7 +99,7 @@ function createAdminController({ adminService } = {}) {
     }
 
     /**
-     * `POST /api/admin/criteria` — Crea un nuevo criterio.
+     * `POST /api/admin/criteria` — Creates a new criterion.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -117,7 +117,7 @@ function createAdminController({ adminService } = {}) {
     }
 
     /**
-     * `PUT /api/admin/criteria/:id` — Actualiza un criterio existente.
+     * `PUT /api/admin/criteria/:id` — Updates an existing criterion.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response

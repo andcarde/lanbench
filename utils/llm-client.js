@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file LLM dispatcher — elige cliente segun `config.model`.
+ * @file LLM dispatcher — picks the client based on `config.model`.
  *
- * Mantiene una API homogenea (`generateJson`) sobre dos backends:
- *   - `local` -> Ollama (servidor local).
- *   - `cloud` -> Groq (API OpenAI-compatible).
+ * Keeps a homogeneous API (`generateJson`) over two backends:
+ *   - `local` -> Ollama (local server).
+ *   - `cloud` -> Groq (OpenAI-compatible API).
  */
 
 const config = require('../config');
@@ -13,10 +13,10 @@ const ollamaClient = require('./ollama-client');
 const groqClient = require('./groq-client');
 
 /**
- * Despacha la peticion al cliente LLM segun `config.model`.
+ * Dispatches the request to the LLM client based on `config.model`.
  *
  * @param {{ system?: string, prompt?: string, [k: string]: any }} options
- * @returns {Promise<any>} JSON parseado de la respuesta.
+ * @returns {Promise<any>} Parsed JSON of the response.
  */
 async function generateJson(options) {
     if (config.model === 'cloud')

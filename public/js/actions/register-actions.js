@@ -1,9 +1,9 @@
 // @ts-nocheck
 /**
- * @file Acciones (AJAX) del formulario de registro.
+ * @file Registration form actions (AJAX).
  *
- * Envia `POST /register` para usuarios normales y
- * `POST /register/moderator` cuando hay codigo de invitacion.
+ * Sends `POST /register` for normal users and `POST /register/moderator` when
+ * there is an invitation code.
  */
 'use strict';
 
@@ -16,11 +16,11 @@
         root.RegisterActions = api;
 })(typeof self !== 'undefined' ? self : this, function () {
     /**
-     * Ejecuta una llamada JSON contra el servidor y devuelve { ok, status, data }.
-     * El caller decide como mapear errores a UI.
-     * @param {string} url - URL absoluta o relativa a invocar.
-     * @param {*} options - Opciones de fetch (method, body, headers).
-     * @returns {Promise<*>} Resultado normalizado de la llamada.
+     * Performs a JSON call against the server and returns { ok, status, data }.
+     * The caller decides how to map errors to the UI.
+     * @param {string} url - Absolute or relative URL to call.
+     * @param {*} options - Fetch options (method, body, headers).
+     * @returns {Promise<*>} Normalized result of the call.
      */
     async function callJson(url, options = {}) {
         const fetchImpl = typeof fetch === 'function' ? fetch : null;
@@ -41,15 +41,15 @@
         let data = null;
         if (text) {
             try { data = JSON.parse(text); }
-            catch (_e) { data = text; }
+            catch { data = text; }
         }
         return { ok: response.ok, status: response.status, data };
     }
 
     /**
-     * Envia la peticion de registro estandar (usuario normal).
-     * @param {*} payload - Cuerpo del formulario de registro.
-     * @returns {Promise<*>} Resultado normalizado de la llamada.
+     * Sends the standard registration request (normal user).
+     * @param {*} payload - Registration form body.
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function submitRegister(payload) {
         return callJson('/register', {
@@ -59,9 +59,9 @@
     }
 
     /**
-     * Envia la peticion de registro como moderador con el codigo de un solo uso.
-     * @param {*} payload - Cuerpo del formulario de registro mas el campo code.
-     * @returns {Promise<*>} Resultado normalizado de la llamada.
+     * Sends the moderator registration request with the single-use code.
+     * @param {*} payload - Registration form body plus the `code` field.
+     * @returns {Promise<*>} Normalized result of the call.
      */
     function submitModeratorRegister(payload) {
         return callJson('/register/moderator', {

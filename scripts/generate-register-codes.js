@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file `node scripts/generate-register-codes.js` — genera codigos de
- * registro de moderador unicos y los persiste en `register_codes`.
+ * @file `node scripts/generate-register-codes.js` — generates unique
+ * moderator register codes and persists them in `register_codes`.
  *
- * Lee `N` de stdin, escribe el prompt en stderr (para no contaminar
- * stdout, que se reserva a los codigos generados, uno por linea).
+ * Reads `N` from stdin, writes the prompt to stderr (to avoid polluting
+ * stdout, which is reserved for the generated codes, one per line).
  */
 
 const crypto = require('node:crypto');
@@ -13,16 +13,16 @@ const readline = require('node:readline');
 
 const { createRegisterCodesRepository } = require('../repositories/register-codes-repository');
 
-/** Alfabeto admitido en los codigos. */
+/** Alphabet allowed in the codes. */
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-/** Longitud de cada codigo. */
+/** Length of each code. */
 const CODE_LENGTH = 16;
 
 /**
- * Construye un codigo aleatorio de longitud fija usando la fuente recibida.
+ * Builds a random fixed-length code using the received source.
  *
- * @param {(max: number) => number} random - Aleatorio uniforme en `[0, max)`.
- * @returns {string} Codigo de longitud {@link CODE_LENGTH}.
+ * @param {(max: number) => number} random - Uniform random in `[0, max)`.
+ * @returns {string} Code of length {@link CODE_LENGTH}.
  */
 function generateOneCode(random) {
     let out = '';
@@ -33,16 +33,16 @@ function generateOneCode(random) {
 }
 
 /**
- * Genera `count` codigos unicos de 16 caracteres y los persiste en
- * `register_codes`. Si la insercion falla, no se imprime ningun codigo
- * (el llamador propaga el error).
+ * Generates `count` unique 16-character codes and persists them in
+ * `register_codes`. If the insertion fails, no code is printed (the caller
+ * propagates the error).
  *
  * @param {{
  *   count?: number,
  *   deps?: { registerCodesRepository?: Record<string, any>, random?: (max:number)=>number }
  * }} [options]
  * @returns {Promise<string[]>}
- * @throws {Error} Si `count` no es entero positivo.
+ * @throws {Error} If `count` is not a positive integer.
  */
 async function generateRegisterCodes({ count, deps } = {}) {
     if (!Number.isInteger(count) || count === undefined || count <= 0)
@@ -69,8 +69,8 @@ async function generateRegisterCodes({ count, deps } = {}) {
 }
 
 /**
- * Lee una linea de `stdin` escribiendo el prompt en `stderr` (asi `stdout`
- * queda reservado a los codigos generados).
+ * Reads a line from `stdin`, writing the prompt to `stderr` (so `stdout`
+ * stays reserved for the generated codes).
  *
  * @param {{ stdin: NodeJS.ReadableStream, stderr: NodeJS.WritableStream }} streams
  * @returns {Promise<string>}
@@ -97,9 +97,8 @@ function readCountFromStdin({ stdin, stderr }) {
 }
 
 /**
- * Punto de entrada CLI. Orquesta `stdin`/`stdout`/`stderr` y la generacion.
- * Imprime cada codigo en una linea de `stdout` solo si la persistencia ha
- * tenido exito.
+ * CLI entry point. Orchestrates `stdin`/`stdout`/`stderr` and the generation.
+ * Prints each code on a line of `stdout` only if persistence succeeded.
  *
  * @param {{
  *   stdin?: NodeJS.ReadableStream,

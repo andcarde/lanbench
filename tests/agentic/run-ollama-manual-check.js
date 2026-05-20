@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * @file Smoke-test manual contra una instalacion real de Ollama.
+ * @file Manual smoke test against a real Ollama installation.
  *
- * Itera los casos definidos en `ollama-check-cases.js`, lanza la validacion
- * via `annotationsService.checkSentences` y vuelca el resultado en
- * `tests/agentic/results/`. No es parte de la suite automatica — se ejecuta
- * a mano cuando se cambia el prompt o el modelo.
+ * Iterates the cases defined in `ollama-check-cases.js`, runs validation
+ * via `annotationsService.checkSentences` and dumps the result into
+ * `tests/agentic/results/`. It is not part of the automated suite — it is run
+ * by hand when the prompt or the model changes.
  */
 
 process.env.OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:3b';
@@ -21,8 +21,8 @@ const { createAnnotationsService } = require('../../services/annotations-service
 const OUTPUT_DIR = path.join(__dirname, 'results');
 
 /**
- * Ejecuta el banco manual contra el flujo real de validacion.
- * @returns {Promise<void>} Promesa de finalizacion.
+ * Runs the manual bench against the real validation flow.
+ * @returns {Promise<void>} Completion promise.
  */
 async function main() {
     const args = parseArgs(process.argv.slice(2));
@@ -86,9 +86,9 @@ async function main() {
 }
 
 /**
- * Convierte argumentos CLI sencillos.
- * @param {Array<string>} args - Argumentos recibidos.
- * @returns {*} Argumentos normalizados.
+ * Parses simple CLI arguments.
+ * @param {Array<string>} args - Received arguments.
+ * @returns {*} Normalized arguments.
  */
 function parseArgs(args) {
     /** @type {Record<string, any>} */
@@ -106,8 +106,8 @@ function parseArgs(args) {
 }
 
 /**
- * Renderiza el resumen humano para revision manual.
- * @param {*} payload - Resultado completo.
+ * Renders the human-readable summary for manual review.
+ * @param {*} payload - Full result.
  * @returns {string} Markdown.
  */
 function renderMarkdown(payload) {
@@ -141,9 +141,9 @@ function renderMarkdown(payload) {
 }
 
 /**
- * Convierte fecha a sello de fichero.
+ * Converts a date to a file-name timestamp.
  * @param {Date} date - Fecha.
- * @returns {string} Sello.
+ * @returns {string} File-name timestamp.
  */
 function toFileStamp(date) {
     return date.toISOString()

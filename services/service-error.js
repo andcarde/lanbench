@@ -1,21 +1,21 @@
 'use strict';
 
 /**
- * @file `ServiceError` — error semantico de la capa de servicios.
+ * @file `ServiceError` — semantic error of the service layer.
  *
- * Los servicios lanzan instancias de esta clase cuando una pre/post-condicion
- * de negocio no se cumple. Los controllers mapean `status`/`code` a la
- * respuesta HTTP final, y `message` se reenvia al usuario tal cual.
+ * Services throw instances of this class when a business pre/post-condition is
+ * not met. Controllers map `status`/`code` to the final HTTP response, and
+ * `message` is forwarded to the user as-is.
  */
 
 /**
  * @typedef {Object} ServiceErrorOptions
- * @property {number} [status]  - Codigo HTTP asociado (por defecto `500`).
- * @property {string} [code]    - Codigo estable consumible por la UI (por defecto `'service_error'`).
+ * @property {number} [status]  - Associated HTTP code (default `500`).
+ * @property {string} [code]    - Stable code consumable by the UI (default `'service_error'`).
  */
 
 /**
- * Error semantico de servicio con `status` HTTP y `code` legibles.
+ * Semantic service error with readable HTTP `status` and `code`.
  */
 class ServiceError extends Error {
     /**
@@ -30,6 +30,32 @@ class ServiceError extends Error {
         this.status = status;
         /** @type {string} */
         this.code = code;
+    }
+
+    /**
+     * Canonical factory for `404 dataset_not_found`. Also covers the case of a
+     * dataset that exists but is not accessible (same code, no information
+     * about existence is leaked).
+     *
+     * @returns {ServiceError}
+     */
+    static datasetNotFound() {
+        return new ServiceError('Dataset no encontrado.', {
+            status: 404,
+            code: 'dataset_not_found'
+        });
+    }
+
+    /**
+     * Canonical factory for `409 email_taken`.
+     *
+     * @returns {ServiceError}
+     */
+    static emailTaken() {
+        return new ServiceError('Email already registered.', {
+            status: 409,
+            code: 'email_taken'
+        });
     }
 }
 

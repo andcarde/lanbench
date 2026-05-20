@@ -3,9 +3,9 @@
 /**
  * @file Repository for the `SectionAssignment` table.
  *
- * Cada fila representa que un `userId` tiene asignada (o tuvo) una seccion
- * concreta de un dataset. El estado evoluciona segun `AssignmentStatus`
- * (`active` -> `completed` | `released` | `expired`).
+ * Each row represents that a `userId` is assigned (or was assigned) a
+ * specific section of a dataset. The state evolves according to
+ * `AssignmentStatus` (`active` -> `completed` | `released` | `expired`).
  *
  * @typedef {import('../types/typedefs').PrismaClientLike}    PrismaClientLike
  * @typedef {import('../types/typedefs').AssignmentStatus}    AssignmentStatus
@@ -22,12 +22,11 @@
 const defaultPrisma = require('../prisma/client');
 const {
     ASSIGNMENT_ACTIVE,
-    ASSIGNMENT_COMPLETED,
     ASSIGNMENT_EXPIRED
 } = require('../constants/assignment-status');
 
 /**
- * Construye el repositorio de asignaciones de seccion.
+ * Builds the section-assignments repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  */
@@ -37,7 +36,7 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     };
 
     /**
-     * Recupera la asignacion activa de `userId` sobre `datasetId`, o `null`.
+     * Retrieves the active assignment of `userId` over `datasetId`, or `null`.
      *
      * @param {{ userId:number, datasetId:number }} input
      * @returns {Promise<SectionAssignmentRow|null>}
@@ -53,7 +52,7 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
-     * Recupera la asignacion activa que ocupa una seccion concreta.
+     * Retrieves the active assignment occupying a specific section.
      *
      * @param {{ datasetId:number, sectionIndex:number }} input
      * @returns {Promise<SectionAssignmentRow|null>}
@@ -69,45 +68,10 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
-     * Devuelve los indices de seccion actualmente activos en un dataset
-     * (asignados a algun usuario).
+     * Gets the maximum assigned section index in a dataset.
      *
      * @param {number} datasetId
-     * @returns {Promise<Set<number>>}
-     */
-    async function findActiveSectionIndexes(datasetId) {
-        const rows = await deps.prisma.sectionAssignment.findMany({
-            where: {
-                datasetId,
-                status: ASSIGNMENT_ACTIVE
-            },
-            select: { sectionIndex: true }
-        });
-        return new Set(rows.map((/** @type {{ sectionIndex:number }} */ r) => r.sectionIndex));
-    }
-
-    /**
-     * Devuelve los indices de seccion ya completados en un dataset.
-     *
-     * @param {number} datasetId
-     * @returns {Promise<Set<number>>}
-     */
-    async function findCompletedSectionIndexes(datasetId) {
-        const rows = await deps.prisma.sectionAssignment.findMany({
-            where: {
-                datasetId,
-                status: ASSIGNMENT_COMPLETED
-            },
-            select: { sectionIndex: true }
-        });
-        return new Set(rows.map((/** @type {{ sectionIndex:number }} */ r) => r.sectionIndex));
-    }
-
-    /**
-     * Obtiene el indice maximo de seccion asignada en un dataset.
-     *
-     * @param {number} datasetId
-     * @returns {Promise<number>} Indice maximo o `0` si no hay asignaciones.
+     * @returns {Promise<number>} Maximum index, or `0` if there are no assignments.
      */
     async function findMaxSectionIndex(datasetId) {
         const result = await deps.prisma.sectionAssignment.aggregate({
@@ -125,7 +89,7 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
-     * Crea una asignacion en estado `active` con la fecha de expiracion dada.
+     * Creates an assignment in `active` state with the given expiration date.
      *
      * @param {{ userId:number, datasetId:number, sectionIndex:number, expiresAt:Date }} input
      * @returns {Promise<SectionAssignmentRow>}
@@ -143,22 +107,24 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
-     * Cambia el `status` de una asignacion concreta.
+     * Changes the `status` of a specific assignment. Accepts an optional
+     * transactional `client` to participate in an already-open transaction.
      *
      * @param {{ assignmentId:number, status:AssignmentStatus }} input
+     * @param {PrismaClientLike} [client] - Optional transactional client.
      * @returns {Promise<SectionAssignmentRow>}
      */
-    async function updateAssignmentStatus({ assignmentId, status }) {
-        return deps.prisma.sectionAssignment.update({
+    async function updateAssignmentStatus({ assignmentId, status }, client) {
+        return (client || deps.prisma).sectionAssignment.update({
             where: { id: assignmentId },
             data: { status }
         });
     }
 
     /**
-     * Actualiza el `status` de TODAS las asignaciones de `userId` sobre
-     * `datasetId` que esten en `currentStatus`. Util para liberar las
-     * asignaciones activas de un usuario en bloque.
+     * Updates the `status` of ALL of `userId`'s assignments over `datasetId`
+     * that are in `currentStatus`. Useful to release a user's active
+     * assignments in bulk.
      *
      * @param {{ userId:number, datasetId:number, currentStatus:AssignmentStatus, newStatus:AssignmentStatus }} input
      * @returns {Promise<{ count:number }>}
@@ -171,8 +137,8 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
-     * Marca como `expired` toda asignacion activa cuyo `expiresAt` sea
-     * estrictamente anterior a `cutoffDate`.
+     * Marks as `expired` every active assignment whose `expiresAt` is strictly
+     * earlier than `cutoffDate`.
      *
      * @param {Date} cutoffDate
      * @returns {Promise<{ count:number }>}
@@ -190,8 +156,6 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     return {
         findActiveAssignment,
         findActiveAssignmentForSection,
-        findActiveSectionIndexes,
-        findCompletedSectionIndexes,
         findMaxSectionIndex,
         createAssignment,
         updateAssignmentStatus,

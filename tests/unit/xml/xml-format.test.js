@@ -8,7 +8,8 @@ const {
     createBenchmarkXmlParser,
     toArray,
     nodeText,
-    parsePipeTriple
+    parsePipeTriple,
+    renderAttrs
 } = require('../../../utils/xml-format');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
@@ -60,6 +61,16 @@ describe('xml-format shared helpers', () => {
         assert.equal(nodeText('plain'), 'plain');
         assert.equal(nodeText({ '#text': 'from-node', '@_lang': 'en' }), 'from-node');
         assert.equal(nodeText(42), '42');
+    });
+
+    it('renderAttrs formatea pares atributo/valor escapando todos los reservados XML', () => {
+        assert.equal(renderAttrs({ a: '1', b: '2' }), ' a="1" b="2"');
+        assert.equal(renderAttrs({}), '');
+        assert.equal(renderAttrs(null), '');
+        assert.equal(renderAttrs({ a: '1', b: null, c: undefined, d: 'x' }), ' a="1" d="x"');
+        assert.equal(renderAttrs({ q: 'a"b' }), ' q="a&quot;b"');
+        assert.equal(renderAttrs({ q: 'a&b<c>d' }), ' q="a&amp;b&lt;c&gt;d"');
+        assert.equal(renderAttrs({ size: 42 }), ' size="42"');
     });
 
     it('parsea triples separados por pipes conservando pipes adicionales en el objeto', () => {

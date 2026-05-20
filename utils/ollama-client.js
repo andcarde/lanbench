@@ -1,21 +1,20 @@
 'use strict';
 
 /**
- * @file Cliente Ollama (modo `local`).
+ * @file Ollama client (`local` mode).
  *
- * Implementa `generateJson` contra el endpoint `/api/generate` de un
- * servidor Ollama local. Comparte primitivas con `groq-client` via
- * `llm-http`.
+ * Implements `generateJson` against the `/api/generate` endpoint of a local
+ * Ollama server. Shares primitives with `groq-client` via `llm-http`.
  */
 
 const config = require('../config');
 const { removeTrailingSlashes, extractJsonPayload, fetchWithTimeout } = require('./llm-http');
 
-/** Nombre del proveedor (para mensajes de error y logs). */
+/** Provider name (for error messages and logs). */
 const PROVIDER_NAME = 'Ollama';
 
 /**
- * Llama a Ollama (`/api/generate`) y devuelve un JSON ya parseado.
+ * Calls Ollama (`/api/generate`) and returns already-parsed JSON.
  *
  * @param {{ system?: string, prompt?: string, model?: string, host?: string, timeoutMs?: number }} input
  * @returns {Promise<any>}

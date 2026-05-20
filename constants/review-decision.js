@@ -1,20 +1,20 @@
 'use strict';
 
 /**
- * @file Decisiones validas sobre una review (resolucion del revisor).
+ * @file Valid decisions on a review (the reviewer's resolution).
  *
  * @typedef {import('../types/typedefs').ReviewDecision} ReviewDecision
  */
 
-/** @type {'accepted'} El revisor acepta la anotacion sin cambios. */
+/** @type {'accepted'} The reviewer accepts the annotation without changes. */
 const REVIEW_DECISION_ACCEPTED = 'accepted';
-/** @type {'rejected'} El revisor rechaza la anotacion. Requiere comentario. */
+/** @type {'rejected'} The reviewer rejects the annotation. Requires a comment. */
 const REVIEW_DECISION_REJECTED = 'rejected';
-/** @type {'needs_fix'} El revisor pide correcciones. Requiere comentario. */
+/** @type {'needs_fix'} The reviewer requests corrections. Requires a comment. */
 const REVIEW_DECISION_NEEDS_FIX = 'needs_fix';
 
 /**
- * Lista canonica con todas las decisiones.
+ * Canonical list with all decisions.
  * @type {ReviewDecision[]}
  */
 const ALL_REVIEW_DECISIONS = [
@@ -24,7 +24,7 @@ const ALL_REVIEW_DECISIONS = [
 ];
 
 /**
- * Type-guard: devuelve true si el valor es una decision de revision valida.
+ * Type-guard: returns true if the value is a valid review decision.
  *
  * @param {unknown} value
  * @returns {value is ReviewDecision}
@@ -35,7 +35,7 @@ function isValidReviewDecision(value) {
 }
 
 /**
- * Indica si una decision requiere comentario obligatorio.
+ * Indicates whether a decision requires a mandatory comment.
  *
  * @param {ReviewDecision|string} value
  * @returns {boolean}

@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/dataset-view.html` — vista detalle de un dataset.
+ * @file Frontend for `public/dataset-view.html` — dataset detail view.
  *
- * Muestra el resumen del dataset (entries, progreso, idiomas, permisos del
- * usuario actual) y enlaces a flujos de anotacion/revision/admin segun los
- * permisos devueltos por el backend.
+ * Shows the dataset summary (entries, progress, languages, current user's
+ * permissions) and links to annotation/review/admin flows according to the
+ * permissions returned by the backend.
  */
 (function () {
   "use strict";
@@ -16,18 +16,20 @@
   const $datasetModeLabel = $("#datasetModeLabel");
   const $datasetXmlViewer = $("#datasetXmlViewer");
   const $openAnnotationsLink = $("#openAnnotationsLink");
+  const $downloadOriginalBtn = $("#downloadOriginalBtn");
+  const $downloadAnnotatedBtn = $("#downloadAnnotatedBtn");
 
   /**
-   * Obtiene search params desde la fuente correspondiente.
-   * @returns {*} Resultado producido por la funcion.
+   * Gets the URL search params.
+   * @returns {URLSearchParams} The current query parameters.
    */
   function getSearchParams() {
     return new URLSearchParams(globalThis.location.search);
   }
 
   /**
-   * Obtiene dataset context desde la fuente correspondiente.
-   * @returns {*} Resultado producido por la funcion.
+   * Resolves the dataset context (id, section, name) from the URL.
+   * @returns {*} Dataset context object.
    */
   function getDatasetContext() {
     const params = getSearchParams();
@@ -47,9 +49,9 @@
   }
 
   /**
-   * Obtiene dataset id from path desde la fuente correspondiente.
-   * @param {string} pathname - Valor de pathname usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Extracts the dataset id from a `/datasets/:id/view` pathname.
+   * @param {string} pathname - URL pathname.
+   * @returns {?number} Dataset id, or null.
    */
   function getDatasetIdFromPath(pathname) {
     const match = String(pathname || "").match(/\/datasets\/(\d+)\/view(?:\/)?$/);
@@ -61,18 +63,18 @@
   }
 
   /**
-   * Obtiene fallback name desde la fuente correspondiente.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Builds a fallback display name from the dataset id.
+   * @param {*} datasetId - Dataset id.
+   * @returns {string} Fallback name.
    */
   function getFallbackName(datasetId) {
     return datasetId ? `DATASET ${datasetId}` : "Dataset sin identificar";
   }
 
   /**
-   * Actualiza viewer state con los datos indicados.
-   * @param {string} text - Valor de text usado por la funcion.
-   * @param {Array} stateClass - Valor de stateClass usado por la funcion.
+   * Updates the XML viewer's text and state class.
+   * @param {string} text - Text to show in the viewer.
+   * @param {string} stateClass - CSS state class (e.g. 'is-loading', 'is-error').
    */
   function setViewerState(text, stateClass) {
     $datasetXmlViewer
@@ -82,8 +84,8 @@
   }
 
   /**
-   * Actualiza header con los datos indicados.
-   * @param {*} context - Valor de context usado por la funcion.
+   * Updates the page header (title, identifier, subtitle) from the context.
+   * @param {*} context - Dataset context.
    */
   function setHeader(context) {
     const datasetName = context.datasetName || getFallbackName(context.datasetId);
@@ -98,7 +100,7 @@
   }
 
   /**
-   * Actualiza mode badge con los datos indicados.
+   * Sets the "server mode" badge as live.
    */
   function setModeBadge() {
     $datasetModePill.addClass("is-live");
@@ -106,8 +108,8 @@
   }
 
   /**
-   * Actualiza navigation links con los datos indicados.
-   * @param {*} context - Valor de context usado por la funcion.
+   * Sets the navigation links (e.g. the "open annotations" link) from the context.
+   * @param {*} context - Dataset context.
    */
   function setNavigationLinks(context) {
     const searchParams = new URLSearchParams();
@@ -124,8 +126,8 @@
   }
 
   /**
-   * Construye missing id message a partir de los datos recibidos.
-   * @returns {*} Resultado producido por la funcion.
+   * Builds the message shown when no valid dataset id is present in the URL.
+   * @returns {string} The message text.
    */
   function buildMissingIdMessage() {
     return [
@@ -137,9 +139,9 @@
   }
 
   /**
-   * Obtiene dataset text desde la fuente correspondiente.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {Promise<*>} Resultado producido por la funcion.
+   * Loads the dataset text into the viewer, handling missing-id and errors.
+   * @param {*} datasetId - Dataset id to load.
+   * @returns {Promise<*>}
    */
   function loadDatasetText(datasetId) {
     if (!datasetId) {
@@ -147,7 +149,7 @@
       return;
     }
 
-    fetchDatasetText(datasetId)
+    window.fetchDatasetText(datasetId)
       .done(function (datasetText) {
         const safeText =
           typeof datasetText === "string" && datasetText.length > 0
@@ -170,11 +172,71 @@
       });
   }
 
+  /**
+   * Binds the download buttons to the loaded dataset context.
+   * @param {*} context - Context with the resolved datasetId.
+   */
+  function bindDownloadButtons(context) {
+    if (!context.datasetId) {
+      $downloadOriginalBtn.prop("disabled", true).addClass("is-disabled");
+      $downloadAnnotatedBtn.prop("disabled", true).addClass("is-disabled");
+      return;
+    }
+
+    $downloadOriginalBtn.on("click", function () {
+      globalThis.downloadDatasetXml(context.datasetId);
+    });
+
+    $downloadAnnotatedBtn.on("click", function () {
+      if ($downloadAnnotatedBtn.prop("disabled"))
+        return;
+      globalThis.downloadAnnotatedDatasetXml(context.datasetId);
+    });
+
+    refreshAnnotatedButtonState(context.datasetId);
+  }
+
+  /**
+   * Adjusts the controls that depend on the dataset's completion state:
+   *   - Enables the extended-download button if the dataset is at 100%.
+   *   - Disables the entry to annotation ("Open annotation") when there are no
+   *     entries left to annotate.
+   * If the query fails, the buttons stay in their default state.
+   *
+   * @param {number} datasetId
+   */
+  function refreshAnnotatedButtonState(datasetId) {
+    globalThis.fetchDatasetSummary(datasetId)
+      .done(function (dataset) {
+        const completedPercent = Number(dataset && dataset.completedPercent);
+        const isCompleted = Number.isFinite(completedPercent) && completedPercent >= 100;
+        if (!isCompleted)
+          return;
+
+        $downloadAnnotatedBtn
+          .prop("disabled", false)
+          .removeAttr("aria-disabled")
+          .removeClass("is-disabled")
+          .attr("title", "Descargar el XML extendido con las anotaciones en español");
+
+        $openAnnotationsLink
+          .addClass("disabled")
+          .attr("aria-disabled", "true")
+          .attr("tabindex", "-1")
+          .attr(
+            "title",
+            "El dataset está completado al 100%; no quedan entries por anotar."
+          )
+          .removeAttr("href");
+      });
+  }
+
   $(document).ready(function () {
     const context = getDatasetContext();
     setHeader(context);
     setModeBadge();
     setNavigationLinks(context);
+    bindDownloadButtons(context);
     loadDatasetText(context.datasetId);
   });
 })();

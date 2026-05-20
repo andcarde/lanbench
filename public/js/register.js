@@ -1,11 +1,10 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/register.html`.
+ * @file Frontend for `public/register.html`.
  *
- * Maneja la validacion del formulario (incluido el codigo de moderador de
- * 16 caracteres, con autofocus por celda) y dispara dos rutas distintas:
- * `/register` para usuarios normales y `/register/moderator` cuando se
- * informa un codigo valido.
+ * Handles form validation (including the 16-character moderator code, with
+ * per-cell autofocus) and triggers two distinct routes: `/register` for normal
+ * users and `/register/moderator` when a valid code is provided.
  */
 $(document).ready(function () {
     const CODE_LENGTH = 16;
@@ -128,9 +127,9 @@ $(document).ready(function () {
     });
 
     /**
-     * Comprueba validate payload y devuelve el resultado de la validacion.
-     * @param {*} payload - Valor de payload usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Validates the registration payload and returns an error message, or null if valid.
+     * @param {*} payload - Form payload to validate.
+     * @returns {?string} Error message, or null if the payload is valid.
      */
     function validatePayload(payload) {
         const alphaRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ]+$/;
@@ -155,9 +154,9 @@ $(document).ready(function () {
     }
 
     /**
-     * Valida el codigo de moderador y devuelve el mensaje de error correspondiente.
-     * @param {string} code - Codigo introducido por el usuario.
-     * @returns {?string} Mensaje de error o null si es valido.
+     * Validates the moderator code and returns the corresponding error message.
+     * @param {string} code - Code entered by the user.
+     * @returns {?string} Error message, or null if valid.
      */
     function validateCode(code) {
         if (typeof code !== 'string' || code.length !== CODE_LENGTH)
@@ -170,10 +169,10 @@ $(document).ready(function () {
     }
 
     /**
-     * Comprueba is valid alphabetic field y devuelve el resultado de la validacion.
-     * @param {*} value - Valor de value usado por la funcion.
-     * @param {*} alphaRegex - Valor de alphaRegex usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Checks whether `value` is an alphabetic string of 1..64 characters.
+     * @param {*} value - Value to check.
+     * @param {*} alphaRegex - Regex of allowed alphabetic characters.
+     * @returns {boolean} True if the value is valid.
      */
     function isValidAlphabeticField(value, alphaRegex) {
         return (
@@ -185,17 +184,17 @@ $(document).ready(function () {
     }
 
     /**
-     * Comprueba is valid password y devuelve el resultado de la validacion.
-     * @param {*} value - Valor de value usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Checks whether `value` is a valid password (9..64 characters).
+     * @param {*} value - Value to check.
+     * @returns {boolean} True if the password is valid.
      */
     function isValidPassword(value) {
         return typeof value === 'string' && value.length > 8 && value.length <= 64;
     }
 
     /**
-     * Actualiza error con los datos indicados.
-     * @param {string} message - Valor de message usado por la funcion.
+     * Shows the form-level error message.
+     * @param {string} message - Message to display.
      */
     function showError(message) {
         registerError.text(message);
@@ -203,7 +202,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Actualiza error con los datos indicados.
+     * Hides and clears the form-level error message.
      */
     function hideError() {
         registerError.addClass('d-none');
@@ -211,8 +210,8 @@ $(document).ready(function () {
     }
 
     /**
-     * Muestra el error inline asociado al campo del codigo de moderador.
-     * @param {string} message - Mensaje a mostrar.
+     * Shows the inline error associated with the moderator code field.
+     * @param {string} message - Message to display.
      */
     function showModeratorCodeError(message) {
         moderatorCodeError.text(message);
@@ -220,7 +219,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Oculta y limpia el error inline del codigo de moderador.
+     * Hides and clears the moderator code inline error.
      */
     function hideModeratorCodeError() {
         moderatorCodeError.addClass('d-none');
@@ -228,9 +227,9 @@ $(document).ready(function () {
     }
 
     /**
-     * Actualiza toast con los datos indicados.
-     * @param {string} message - Valor de message usado por la funcion.
-     * @param {string} type - Valor de type usado por la funcion.
+     * Shows a Bootstrap toast with the given message and style.
+     * @param {string} message - Message to display in the toast.
+     * @param {string} type - Bootstrap contextual style (e.g. 'success', 'danger').
      */
     function showToast(message, type) {
         toastMessage.text(message);

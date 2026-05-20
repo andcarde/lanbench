@@ -1,17 +1,17 @@
 // @ts-nocheck
 /**
- * @file Acciones (AJAX) consumidas por la pagina de anotacion.
+ * @file Actions (AJAX) consumed by the annotation page.
  *
- * Centraliza las llamadas a `/api/annotations/*` para que la pagina trate
- * la red como una API local; en modo `front-debug` estos modulos se
- * intercambian por mocks (ver `scripts/front-debug.js`).
+ * Centralizes the calls to `/api/annotations/*` so the page treats the
+ * network as a local API; in `front-debug` mode these modules are swapped for
+ * mocks (see `scripts/front-debug.js`).
  */
 
 /**
- * Comprueba check annotations contra el backend y devuelve la validacion semantica.
- * @param {Array} sentences - Oraciones en espanol introducidas por el anotador.
- * @param {*} entryContext - Contexto de la entry (triples, oracion en ingles, etc.).
- * @returns {Promise<*>} Promesa con el array de validaciones devuelto por el backend.
+ * Checks annotations against the backend and returns the semantic validation.
+ * @param {Array} sentences - Spanish sentences entered by the annotator.
+ * @param {*} entryContext - Entry context (triples, English sentence, etc.).
+ * @returns {Promise<*>} Promise with the array of validations returned by the backend.
  */
 function checkAnnotations(sentences, entryContext) {
     return $.ajax({
@@ -24,15 +24,25 @@ function checkAnnotations(sentences, entryContext) {
 }
 
 /**
- * Ejecuta post annotations contra el backend para persistir las anotaciones aceptadas.
- * @param {number} datasetId - Identificador del dataset al que pertenece la entry.
- * @param {number} rdfId - Identificador de la entry RDF dentro del dataset.
- * @param {Array} sentences - Oraciones definitivas a guardar.
- * @param {Array} rejectionReasons - Motivos de rechazo asociados a cada oracion.
- * @param {*} options - Opciones adicionales (ej: sectionNumber, isLastEntry).
- * @returns {Promise<*>} Promesa con la respuesta de persistencia.
+ * Posts annotations to the backend to persist the accepted annotations.
+ *
+ * It packs each sentence with its optional rejection reason into a single
+ * array of `{ sentence, rejectionReason }` objects to avoid the risk of broken
+ * positional pairing between two parallel arrays (AUDIT-2 §22).
+ *
+ * @param {number} datasetId - Identifier of the dataset the entry belongs to.
+ * @param {number} rdfId - Identifier of the RDF entry within the dataset.
+ * @param {Array<string>} sentences - Final sentences to save.
+ * @param {Array<string|null>} rejectionReasons - Rejection reasons associated with each sentence.
+ * @param {*} options - Additional options (e.g. sectionNumber, isLastEntry).
+ * @returns {Promise<*>} Promise with the persistence response.
  */
 function postAnnotations(datasetId, rdfId, sentences, rejectionReasons, options = {}) {
+    const items = sentences.map((sentence, index) => ({
+        sentence,
+        rejectionReason: rejectionReasons[index] || null
+    }));
+
     return $.ajax({
         url: '/api/annotations/send',
         type: 'POST',
@@ -41,8 +51,7 @@ function postAnnotations(datasetId, rdfId, sentences, rejectionReasons, options 
         data: JSON.stringify({
             datasetId,
             rdfId,
-            sentences,
-            rejectionReason: rejectionReasons.map(reason => reason || ''),
+            sentences: items,
             sectionNumber: options.sectionNumber,
             isLastEntry: options.isLastEntry
         })
@@ -50,9 +59,9 @@ function postAnnotations(datasetId, rdfId, sentences, rejectionReasons, options 
 }
 
 /**
- * Solicita al backend continuar con la siguiente sesion de anotacion.
- * @param {number} datasetId - Identificador del dataset.
- * @returns {Promise<*>} Promesa con el resultado de continuacion.
+ * Asks the backend to continue with the next annotation session.
+ * @param {number} datasetId - Dataset identifier.
+ * @returns {Promise<*>} Promise with the continuation result.
  */
 function fetchContinueAnnotation(datasetId) {
     const safeDatasetId = encodeURIComponent(String(datasetId));
@@ -65,9 +74,9 @@ function fetchContinueAnnotation(datasetId) {
 }
 
 /**
- * Obtiene la entry actual apuntada por la sesion activa del usuario.
- * @param {number} datasetId - Identificador del dataset.
- * @returns {Promise<*>} Promesa con el payload de la entry actual.
+ * Gets the current entry pointed to by the user's active session.
+ * @param {number} datasetId - Dataset identifier.
+ * @returns {Promise<*>} Promise with the current entry payload.
  */
 function fetchNextEntry(datasetId) {
     const safeDatasetId = encodeURIComponent(String(datasetId));
@@ -80,9 +89,9 @@ function fetchNextEntry(datasetId) {
 }
 
 /**
- * Obtiene las opciones de un dataset desde el backend.
- * @param {number} datasetId - Identificador del dataset.
- * @returns {Promise<*>} Promesa con las opciones del dataset.
+ * Gets a dataset's options from the backend.
+ * @param {number} datasetId - Dataset identifier.
+ * @returns {Promise<*>} Promise with the dataset options.
  */
 function fetchDatasetOptions(datasetId) {
     const safeDatasetId = encodeURIComponent(String(datasetId));
@@ -99,9 +108,9 @@ function fetchDatasetOptions(datasetId) {
 }
 
 /**
- * Obtiene debug params. En modo servidor no hay defaults: la vista debe tomar
- * los parametros de la URL.
- * @returns {*} Siempre null en modo servidor.
+ * Gets debug params. In server mode there are no defaults: the view must take
+ * the parameters from the URL.
+ * @returns {*} Always null in server mode.
  */
 function getDebugParams() {
     return null;

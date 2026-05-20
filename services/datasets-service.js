@@ -1,24 +1,26 @@
 'use strict';
 
 /**
- * @file Datasets service — orquestacion de alto nivel sobre datasets.
+ * @file Datasets service — high-level orchestration over datasets.
  *
- * Cubre: alta (parse XML + persistencia transaccional via repo), listado con
- * permisos del usuario, lectura de seccion para anotacion, exportacion XML,
- * gestion de permisos por dataset y baja recursiva.
+ * Covers: creation (XML parse + transactional persistence via repo), listing
+ * with the user's permissions, reading a section for annotation, XML export,
+ * per-dataset permission management and recursive deletion.
  *
- * Inyecta utilidades de parsing/serializacion XML para que los tests
- * puedan reemplazarlas sin tocar disco.
+ * Injects XML parsing/serialization utilities so tests can replace them
+ * without touching disk.
  *
  * @typedef {import('../types/typedefs').DatasetListDTO}    DatasetListDTO
  * @typedef {import('../types/typedefs').DatasetSectionDTO} DatasetSectionDTO
  *
  * @typedef {Object} DatasetsServiceDeps
  * @property {Record<string, any>} [datasetsRepository]
+ * @property {Record<string, any>} [datasetsPermissionsRepository]
  * @property {Record<string, any>} [usersRepository]
  * @property {(filePath:string)=>any} [readDataset]
  * @property {(input:any, filename?:any)=>any} [parseDatasetImport]
  * @property {(dataset:any)=>string} [buildDatasetXml]
+ * @property {(dataset:any)=>string} [buildAnnotatedDatasetXml]
  * @property {(filePath:string)=>Buffer} [readFileAsBuffer]
  */
 
@@ -27,13 +29,18 @@ const {
     readDataset: defaultReadDataset,
     parseDatasetImport: defaultParseDatasetImport
 } = require('../utils/xml-reader');
-const { buildDatasetXml: defaultBuildDatasetXml } = require('../utils/dataset-xml');
-const { DATASET_COLORS, SECTION_SIZE, DEFAULT_LANGUAGES } = require('../constants/datasets');
+const {
+    buildDatasetXml: defaultBuildDatasetXml,
+    buildAnnotatedDatasetXml: defaultBuildAnnotatedDatasetXml
+} = require('../utils/dataset-xml');
+const { DATASET_COLORS, DEFAULT_DATASET_COLOR, SECTION_SIZE, DEFAULT_LANGUAGES } = require('../constants/datasets');
 const { createDatasetsRepository } = require('../repositories/datasets-repository');
+const { createDatasetsPermissionsRepository } = require('../repositories/datasets-permissions-repository');
 const { createUsersRepository } = require('../repositories/users-repository');
 const { ServiceError } = require('./service-error');
-const { TERMINAL_REVIEW_STATUSES } = require('../constants/review-status');
 const { resolveExistingTempFilePath } = require('../utils/temp-storage');
+const { toIntegerNormalized, toBoolean } = require('../utils/validators');
+const { assertDatasetAdminPermission } = require('./datasets-permissions-service');
 const { calculatePercentagesFromSectionCounters } = require('../utils/dataset-progress');
 const {
     mapDatasetListDTO,
@@ -42,31 +49,35 @@ const {
 } = require('../contracts/dto-mappers');
 
 /**
- * Construye el servicio de datasets.
+ * Builds the datasets service.
  *
  * @param {DatasetsServiceDeps} [dependencies]
  */
 function createDatasetsService({
     datasetsRepository,
+    datasetsPermissionsRepository,
     readDataset,
     parseDatasetImport,
     buildDatasetXml,
+    buildAnnotatedDatasetXml,
     readFileAsBuffer,
     usersRepository
 } = {}) {
     const deps = {
         datasetsRepository: datasetsRepository || createDatasetsRepository(),
+        datasetsPermissionsRepository: datasetsPermissionsRepository || createDatasetsPermissionsRepository(),
         usersRepository: usersRepository || createUsersRepository(),
         readDataset: readDataset || defaultReadDataset,
         parseDatasetImport: parseDatasetImport || defaultParseDatasetImport,
         buildDatasetXml: buildDatasetXml || defaultBuildDatasetXml,
+        buildAnnotatedDatasetXml: buildAnnotatedDatasetXml || defaultBuildAnnotatedDatasetXml,
         readFileAsBuffer: readFileAsBuffer || defaultReadFileAsBuffer
     };
 
     /**
-     * Lista los datasets accesibles para el usuario y enriquece cada fila con conteos.
-     * @param {*} userId - Identificador del usuario.
-     * @returns {Promise<Array<*>>} Datasets accesibles enriquecidos.
+     * Lists the datasets accessible to the user and enriches each row with counts.
+     * @param {*} userId - User identifier.
+     * @returns {Promise<Array<*>>} Enriched accessible datasets.
      */
     async function listAccessibleDatasets(userId) {
         const datasetRows = await deps.datasetsRepository.findAccessibleMany(userId);
@@ -81,9 +92,9 @@ function createDatasetsService({
     }
 
     /**
-     * Obtiene numero de entries anotadas por dataset.
-     * @param {Array<*>} datasetRows - Datasets accesibles.
-     * @returns {Promise<Map<number, number>>} Conteos por dataset.
+     * Gets the number of annotated entries per dataset.
+     * @param {Array<*>} datasetRows - Accessible datasets.
+     * @returns {Promise<Map<number, number>>} Counts per dataset.
      */
     async function getAnnotatedEntryCountsForDatasets(datasetRows) {
         if (typeof deps.datasetsRepository.countAnnotatedEntriesByDataset !== 'function')
@@ -114,10 +125,10 @@ function createDatasetsService({
     }
 
     /**
-     * Obtiene numero de entries pendientes de revision para los datasets listados.
-     * @param {number} userId - Usuario actual.
-     * @param {Array<*>} datasetRows - Datasets accesibles.
-     * @returns {Promise<Map<number, number>>} Conteos por dataset.
+     * Gets the number of entries pending review for the listed datasets.
+     * @param {number} userId - Current user.
+     * @param {Array<*>} datasetRows - Accessible datasets.
+     * @returns {Promise<Map<number, number>>} Counts per dataset.
      */
     async function getReviewableCountsForDatasets(userId, datasetRows) {
         if (typeof deps.datasetsRepository.findReviewableEntryDatasetIds !== 'function')
@@ -140,23 +151,21 @@ function createDatasetsService({
             counts.set(datasetId, (counts.get(datasetId) || 0) + 1);
         }
 
-        if (typeof deps.datasetsRepository.findActiveReviewDatasetIdsForReviewer === 'function') {
-            const activeReviews = await deps.datasetsRepository.findActiveReviewDatasetIdsForReviewer({ userId, datasetIds });
-            for (const row of activeReviews || []) {
-                const datasetId = Number(row?.entry?.datasetId ?? row?.datasetId);
-                if (!Number.isInteger(datasetId) || datasetId <= 0)
-                    continue;
-                counts.set(datasetId, (counts.get(datasetId) || 0) + 1);
-            }
+        const activeReviews = await deps.datasetsRepository.findActiveReviewDatasetIdsForReviewer({ userId, datasetIds });
+        for (const row of activeReviews || []) {
+            const datasetId = Number(row?.entry?.datasetId ?? row?.datasetId);
+            if (!Number.isInteger(datasetId) || datasetId <= 0)
+                continue;
+            counts.set(datasetId, (counts.get(datasetId) || 0) + 1);
         }
 
         return counts;
     }
 
     /**
-     * Lista los datasets accesibles ya mapeados a DTO listo para el cliente.
-     * @param {*} userId - Identificador del usuario.
-     * @returns {Promise<Array<*>>} Lista de DTOs.
+     * Lists the accessible datasets already mapped to a client-ready DTO.
+     * @param {*} userId - User identifier.
+     * @returns {Promise<Array<*>>} List of DTOs.
      */
     async function listAccessibleDatasetItems(userId) {
         const datasets = await listAccessibleDatasets(userId);
@@ -164,15 +173,15 @@ function createDatasetsService({
     }
 
     /**
-     * Recupera un dataset accesible por el usuario y lo enriquece con metadatos de progreso.
-     * @param {*} userId - Identificador del usuario.
-     * @param {*} datasetId - Identificador del dataset.
-     * @returns {Promise<*>} DTO del dataset.
+     * Retrieves a user-accessible dataset and enriches it with progress metadata.
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<*>} Dataset DTO.
      */
     async function getAccessibleDatasetItem(userId, datasetId) {
         const datasetRow = await deps.datasetsRepository.findAccessibleById({ userId, datasetId });
         if (!datasetRow)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
+            throw ServiceError.datasetNotFound();
 
         const annotatedEntryCounts = await getAnnotatedEntryCountsForDatasets([datasetRow]);
         return mapDatasetListDTO(
@@ -186,11 +195,11 @@ function createDatasetsService({
     }
 
     /**
-     * Devuelve la seccion de un dataset solicitada por el usuario.
-     * @param {*} userId - Identificador del usuario.
-     * @param {*} datasetId - Identificador del dataset.
-     * @param {*} sectionNumber - Numero de seccion (1-indexed).
-     * @returns {Promise<*>} DTO con dataset, seccion y entries.
+     * Returns the dataset section requested by the user.
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @param {*} sectionNumber - Section number (1-indexed).
+     * @returns {Promise<*>} DTO with dataset, section and entries.
      */
     async function getAccessibleDatasetSection(userId, datasetId, sectionNumber) {
         const datasetRow = await getAccessibleDatasetGraph(userId, datasetId);
@@ -215,29 +224,24 @@ function createDatasetsService({
         const sectionEntries = annotationEntries.slice(startIndex, startIndex + SECTION_SIZE);
 
         return mapDatasetSectionDTO({
-            dataset: {
-                id: datasetRow.id,
-                name: datasetRow.name,
-                totalEntries: annotationEntries.length,
-                totalSections
-            },
-            section: {
-                number: sectionNumber,
-                size: SECTION_SIZE,
-                totalEntries: sectionEntries.length,
-                startEntry: startIndex + 1,
-                endEntry: startIndex + sectionEntries.length,
-                isLastSection: sectionNumber === totalSections
-            },
+            datasetId: datasetRow.id,
+            datasetName: datasetRow.name,
+            totalSections,
+            sectionIndex: sectionNumber,
+            sectionSize: SECTION_SIZE,
+            totalEntries: sectionEntries.length,
+            startEntry: startIndex + 1,
+            endEntry: startIndex + sectionEntries.length,
+            isLastSection: sectionNumber === totalSections,
             entries: sectionEntries
         });
     }
 
     /**
-     * Reconstruye el XML del dataset a partir de las entries persistidas.
-     * @param {*} userId - Identificador del usuario.
-     * @param {*} datasetId - Identificador del dataset.
-     * @returns {Promise<string>} Texto XML del dataset.
+     * Rebuilds the dataset XML from the persisted entries.
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<string>} Dataset XML text.
      */
     async function getAccessibleDatasetText(userId, datasetId) {
         const datasetRow = await getAccessibleDatasetGraph(userId, datasetId);
@@ -253,11 +257,72 @@ function createDatasetsService({
     }
 
     /**
-     * Crea un dataset propiedad del usuario a partir de un fichero XML subido.
-     * @param {*} userId - Identificador del usuario propietario.
-     * @param {*} file - Fichero subido (multer): { filename, originalname }.
-     * @param {*} [options] - Opciones de creacion del dataset.
-     * @returns {Promise<*>} DTO del dataset creado.
+     * Rebuilds the dataset XML and wraps it as a named download.
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<{filename:string, body:string, contentType:string}>} Download-ready payload.
+     */
+    async function getAccessibleDatasetXmlDownload(userId, datasetId) {
+        const datasetRow = await getAccessibleDatasetGraph(userId, datasetId);
+
+        if (!hasPersistedEntries(datasetRow)) {
+            throw new ServiceError('El dataset no contiene entries.', {
+                status: 404,
+                code: 'dataset_without_entries'
+            });
+        }
+
+        return {
+            filename: `${datasetRow.name}.xml`,
+            body: deps.buildDatasetXml(datasetRow.entries.map(mapPersistedEntryToXmlEntry)),
+            contentType: 'application/xml; charset=utf-8'
+        };
+    }
+
+    /**
+     * Downloads the extended XML (original + Spanish annotations) when the
+     * dataset is 100% complete. The canonical completion condition is verified
+     * on the backend even though the UI already disables the button.
+     *
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<{filename:string, body:string, contentType:string}>} Download-ready payload.
+     */
+    async function getAccessibleDatasetAnnotatedXmlDownload(userId, datasetId) {
+        const datasetRow = await getAccessibleDatasetGraphWithAnnotations(userId, datasetId);
+
+        if (!hasPersistedEntries(datasetRow)) {
+            throw new ServiceError('El dataset no contiene entries.', {
+                status: 404,
+                code: 'dataset_without_entries'
+            });
+        }
+
+        const totalSections = Math.ceil(Number(datasetRow.totalEntries || 0) / SECTION_SIZE);
+        const sectionsCompleted = Number(datasetRow.sectionsCompleted || 0);
+        const sectionsPending = Number(datasetRow.sectionsPending || 0);
+        if (sectionsCompleted !== totalSections || sectionsPending !== 0) {
+            throw new ServiceError('El dataset todavía no está completado al 100%.', {
+                status: 409,
+                code: 'dataset_not_completed'
+            });
+        }
+
+        return {
+            filename: `${datasetRow.name}-extended.xml`,
+            body: deps.buildAnnotatedDatasetXml(
+                datasetRow.entries.map(mapPersistedEntryToAnnotatedXmlEntry)
+            ),
+            contentType: 'application/xml; charset=utf-8'
+        };
+    }
+
+    /**
+     * Creates a dataset owned by the user from an uploaded XML file.
+     * @param {*} userId - Owning user identifier.
+     * @param {*} file - Uploaded file (multer): { filename, originalname }.
+     * @param {*} [options] - Dataset creation options.
+     * @returns {Promise<*>} DTO of the created dataset.
      */
     async function createDataset(userId, file, options = {}) {
         /** @type {any} */
@@ -301,9 +366,9 @@ function createDatasetsService({
             },
             entryRecords: datasetImport.entries,
             /**
-             * Resuelve la clase CSS de color para un dataset segun su id.
-             * @param {*} datasetId - Identificador del dataset persistido.
-             * @returns {string} Clase CSS de color.
+             * Resolves the color CSS class for a dataset based on its id.
+             * @param {*} datasetId - Identifier of the persisted dataset.
+             * @returns {string} Color CSS class.
              */
             resolveColorClass(datasetId) {
                 if (!Number.isInteger(datasetId) || datasetId <= 0)
@@ -322,124 +387,13 @@ function createDatasetsService({
     }
 
     /**
-     * Lista permisos de usuarios de un dataset administrable por el actor.
-     * @param {number} actorId - Usuario actual.
+     * Fully deletes a dataset administrable by the actor.
+     * @param {number} actorId - Current user.
      * @param {number} datasetId - Dataset.
-     * @returns {Promise<*>} Permisos.
-     */
-    async function listDatasetPermissions(actorId, datasetId) {
-        const adminPermit = await requireDatasetAdminPermission(actorId, datasetId);
-        const rows = await deps.datasetsRepository.findPermissionRowsByDataset({ datasetId });
-
-        return {
-            dataset: {
-                datasetId: adminPermit.dataset.id,
-                name: adminPermit.dataset.name
-            },
-            options: {
-                llmMode: adminPermit.dataset.llmMode || 'none',
-                isReviewEnabled: Boolean(adminPermit.dataset.isReviewEnabled),
-                hasAdditionalReviews: Boolean(adminPermit.dataset.hasAdditionalReviews)
-            },
-            users: rows
-                .map(mapPermitRowToPermissionDTO)
-                .sort((/** @type {*} */ a, /** @type {*} */ b) => a.email.localeCompare(b.email))
-        };
-    }
-
-    /**
-     * Anade un usuario a los permisos del dataset.
-     * @param {number} actorId - Usuario actual.
-     * @param {number} datasetId - Dataset.
-     * @param {string} email - Email exacto del usuario a anadir.
-     * @param {*} [requestedPermissions] - Permisos solicitados; por defecto annotator.
-     * @returns {Promise<*>} Fila de permiso.
-     */
-    async function addDatasetPermissionByEmail(actorId, datasetId, email, requestedPermissions) {
-        const adminPermit = await requireDatasetAdminPermission(actorId, datasetId);
-
-        const normalizedEmail = normalizeUserEmail(email);
-        if (!normalizedEmail) {
-            throw new ServiceError('Introduce un email de usuario válido.', {
-                status: 400,
-                code: 'invalid_user_email'
-            });
-        }
-
-        const user = await deps.usersRepository.findByExactEmail(normalizedEmail);
-        if (!user) {
-            throw new ServiceError('No existe ningún usuario con ese email.', {
-                status: 404,
-                code: 'user_not_found'
-            });
-        }
-
-        const permissions = requestedPermissions === undefined || requestedPermissions === null
-            ? { isAnnotator: true, isReviewer: false, isAdmin: false }
-            : normalizePermissionInput(requestedPermissions);
-
-        if (!Boolean(adminPermit?.dataset?.isReviewEnabled))
-            permissions.isReviewer = false;
-
-        if (!hasAnyDatasetRole(permissions)) {
-            throw new ServiceError('Se requiere al menos un rol activo.', {
-                status: 400,
-                code: 'no_role_selected'
-            });
-        }
-
-        const row = await deps.datasetsRepository.upsertDatasetPermission({
-            datasetId,
-            userId: user.id,
-            ...permissions
-        });
-
-        return mapPermitRowToPermissionDTO(row);
-    }
-
-    /**
-     * Actualiza permisos de un usuario sobre un dataset.
-     * @param {number} actorId - Usuario actual.
-     * @param {number} datasetId - Dataset.
-     * @param {number} userId - Usuario objetivo.
-     * @param {*} permissions - Permisos solicitados.
-     * @returns {Promise<*>} Resultado.
-     */
-    async function updateDatasetPermission(actorId, datasetId, userId, permissions) {
-        const adminPermit = await requireDatasetAdminPermission(actorId, datasetId);
-
-        const normalizedPermissions = normalizePermissionInput(permissions);
-        if (!Boolean(adminPermit?.dataset?.isReviewEnabled))
-            normalizedPermissions.isReviewer = false;
-
-        if (!hasAnyDatasetRole(normalizedPermissions)) {
-            await deps.datasetsRepository.deleteDatasetPermission({ datasetId, userId });
-            return {
-                removed: true,
-                userId
-            };
-        }
-
-        const row = await deps.datasetsRepository.upsertDatasetPermission({
-            datasetId,
-            userId,
-            ...normalizedPermissions
-        });
-
-        return {
-            removed: false,
-            user: mapPermitRowToPermissionDTO(row)
-        };
-    }
-
-    /**
-     * Borra por completo un dataset administrable por el actor.
-     * @param {number} actorId - Usuario actual.
-     * @param {number} datasetId - Dataset.
-     * @returns {Promise<*>} Resultado de borrado.
+     * @returns {Promise<*>} Deletion result.
      */
     async function deleteDataset(actorId, datasetId) {
-        await requireDatasetAdminPermission(actorId, datasetId);
+        await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         await deps.datasetsRepository.deleteDatasetRecursively({ datasetId });
 
         return {
@@ -448,55 +402,41 @@ function createDatasetsService({
         };
     }
 
-    // (deleteDataset)
-
     /**
-     * Calcula estadisticas de anotacion y revision para un dataset accesible.
-     * @param {number} userId - Usuario actual.
-     * @param {number} datasetId - Dataset.
-     * @returns {Promise<*>} Estadisticas.
-     */
-    async function getDatasetStatistics(userId, datasetId) {
-        await getAccessibleDatasetItem(userId, datasetId);
-
-        const dataset = await deps.datasetsRepository.findDatasetStatisticsGraph({ datasetId });
-        if (!dataset)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
-
-        return buildDatasetStatisticsDTO(dataset);
-    }
-
-    /**
-     * Recupera el grafo completo del dataset si es accesible para el usuario.
-     * @param {*} userId - Identificador del usuario.
-     * @param {*} datasetId - Identificador del dataset.
-     * @returns {Promise<*>} Dataset con sus entries y relaciones.
+     * Retrieves the dataset's full graph if it is accessible to the user.
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<*>} Dataset with its entries and relations.
      */
     async function getAccessibleDatasetGraph(userId, datasetId) {
-        const datasetRow = typeof deps.datasetsRepository.findAccessibleDatasetGraphById === 'function'
-            ? await deps.datasetsRepository.findAccessibleDatasetGraphById({ userId, datasetId })
-            : await deps.datasetsRepository.findAccessibleById({ userId, datasetId });
+        const datasetRow = await deps.datasetsRepository.findAccessibleDatasetGraphById({ userId, datasetId });
 
         if (!datasetRow)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
+            throw ServiceError.datasetNotFound();
 
         return datasetRow;
     }
 
     /**
-     * Exige permiso admin sobre el dataset.
-     * @param {number} actorId - Usuario actual.
-     * @param {number} datasetId - Dataset.
-     * @returns {Promise<*>} Permiso del usuario actual.
+     * Retrieves the dataset's full graph with its annotations per entry.
+     *
+     * @param {*} userId - User identifier.
+     * @param {*} datasetId - Dataset identifier.
+     * @returns {Promise<*>} Dataset with its entries, relations and annotations.
      */
-    async function requireDatasetAdminPermission(actorId, datasetId) {
-        return requireDatasetAdminPermissionFactory(deps, actorId, datasetId);
+    async function getAccessibleDatasetGraphWithAnnotations(userId, datasetId) {
+        const datasetRow = await deps.datasetsRepository.findAccessibleDatasetGraphWithAnnotationsById({ userId, datasetId });
+
+        if (!datasetRow)
+            throw ServiceError.datasetNotFound();
+
+        return datasetRow;
     }
 
     /**
-     * Obtiene annotation entries desde las entries persistidas del dataset.
-     * @param {*} datasetRow - Fila de dataset con entries persistidas.
-     * @returns {Array<*>} Annotation entries listas para el cliente.
+     * Gets annotation entries from the dataset's persisted entries.
+     * @param {*} datasetRow - Dataset row with persisted entries.
+     * @returns {Array<*>} Annotation entries ready for the client.
      */
     function getAnnotationEntries(datasetRow) {
         if (!hasPersistedEntries(datasetRow))
@@ -506,49 +446,21 @@ function createDatasetsService({
     }
 
     return {
-        listAccessibleDatasets,
         listAccessibleDatasetItems,
         getAccessibleDatasetItem,
         getAccessibleDatasetSection,
         getAccessibleDatasetText,
+        getAccessibleDatasetXmlDownload,
+        getAccessibleDatasetAnnotatedXmlDownload,
         createDataset,
-        listDatasetPermissions,
-        addDatasetPermissionByEmail,
-        updateDatasetPermission,
-        deleteDataset,
-        getDatasetStatistics
+        deleteDataset
     };
 }
 
 /**
- * Exige permiso admin sobre el dataset.
- * @param {number} actorId - Usuario actual.
- * @param {number} datasetId - Dataset.
- * @returns {Promise<*>} Permiso del usuario actual.
- */
-async function requireDatasetAdminPermissionFactory(/** @type {*} */ deps, actorId, datasetId) {
-    const permit = await deps.datasetsRepository.findPermitForUser({ datasetId, userId: actorId });
-    if (!permit) {
-        throw new ServiceError('Dataset no encontrado o no accesible.', {
-            status: 404,
-            code: 'dataset_not_found'
-        });
-    }
-
-    if (!hasDatasetAdminPermission(permit)) {
-        throw new ServiceError('No tienes permisos de administración sobre este dataset.', {
-            status: 403,
-            code: 'dataset_admin_required'
-        });
-    }
-
-    return permit;
-}
-
-/**
- * Indica si el dataset tiene al menos una entry persistida.
- * @param {*} datasetRow - Fila de dataset cargada con sus entries.
- * @returns {boolean} True si hay entries.
+ * Indicates whether the dataset has at least one persisted entry.
+ * @param {*} datasetRow - Dataset row loaded with its entries.
+ * @returns {boolean} True if there are entries.
  */
 function hasPersistedEntries(datasetRow) {
     return Array.isArray(datasetRow && datasetRow.entries)
@@ -556,305 +468,43 @@ function hasPersistedEntries(datasetRow) {
 }
 
 /**
- * Mapea una fila de Permit al DTO de permisos.
- * @param {*} row - Fila de permiso.
- * @returns {*} DTO.
+ * Extracts the common header of a persisted entry (eid, category, shape,
+ * shapeType, size). Used as a base by the mappers that derive into
+ * annotation/XML/annotated forms.
+ *
+ * @param {*} entryRecord - Entry as Prisma returns it.
+ * @returns {{eid:*, category:string, shape:*, shapeType:*, size:*}}
  */
-function mapPermitRowToPermissionDTO(row) {
-    const user = row && row.user ? row.user : {};
-
-    return {
-        userId: Number(row?.userId ?? user.id ?? 0),
-        email: user.email || '',
-        globalIsModerator: Boolean(user?.isModerator),
-        permissions: {
-            annotator: Boolean(row?.isAnnotator),
-            reviewer: Boolean(row?.isReviewer),
-            admin: Boolean(row?.isAdmin || row?.isOwned),
-            owner: Boolean(row?.isOwned)
-        }
-    };
-}
-
-/**
- * Construye DTO de estadisticas de dataset.
- * @param {*} dataset - Dataset con relaciones minimas.
- * @returns {*} Estadisticas.
- */
-function buildDatasetStatisticsDTO(dataset) {
-    const totalEntries = normalizePositiveCount(dataset?.totalEntries);
-    const annotationRowsByUser = new Map();
-    const reviewRowsByUser = new Map();
-    const annotationTimeByUser = sumAssignmentTimeByUser(dataset?.sectionAssignments);
-
-    for (const entry of dataset?.entries || []) {
-        collectAnnotationEntryStats(annotationRowsByUser, entry);
-        collectReviewEntryStats(reviewRowsByUser, entry);
-    }
-
-    return {
-        dataset: {
-            datasetId: Number(dataset?.id || 0),
-            name: dataset?.name || '',
-            totalEntries
-        },
-        annotation: buildStatsRows(annotationRowsByUser, totalEntries, annotationTimeByUser),
-        review: buildStatsRows(reviewRowsByUser, totalEntries)
-    };
-}
-
-/**
- * Acumula estadisticas de anotacion por entry.
- * @param {Map<*, *>} rowsByUser - Acumulador.
- * @param {*} entry - Entry.
- */
-function collectAnnotationEntryStats(rowsByUser, entry) {
-    const byUserForEntry = new Map();
-
-    for (const annotation of entry?.annotations || []) {
-        const userId = Number(annotation.userId);
-        if (!Number.isInteger(userId) || userId <= 0)
-            continue;
-
-        const current = byUserForEntry.get(userId) || {
-            userId,
-            email: annotation.user?.email || '',
-            isAcceptedFirstTry: true
-        };
-        current.isAcceptedFirstTry = current.isAcceptedFirstTry && annotation.isAcceptedFirstTry !== false;
-        if (!current.email && annotation.user?.email)
-            current.email = annotation.user.email;
-        byUserForEntry.set(userId, current);
-    }
-
-    for (const item of byUserForEntry.values())
-        incrementStatsRow(rowsByUser, item);
-}
-
-/**
- * Acumula estadisticas de revision por entry.
- * @param {Map<*, *>} rowsByUser - Acumulador.
- * @param {*} entry - Entry.
- */
-function collectReviewEntryStats(rowsByUser, entry) {
-    for (const review of entry?.reviews || []) {
-        if (!TERMINAL_REVIEW_STATUSES.includes(review.status))
-            continue;
-
-        const userId = Number(review.reviewerId);
-        if (!Number.isInteger(userId) || userId <= 0)
-            continue;
-
-        const comments = Array.isArray(review.comments) ? review.comments : [];
-        incrementStatsRow(rowsByUser, {
-            userId,
-            email: review.reviewer?.email || '',
-            isAcceptedFirstTry: comments.every((/** @type {*} */ comment) => comment.isAcceptedFirstTry !== false),
-            timeSpentSeconds: normalizeNonNegativeInteger(review.timeSpentSeconds)
-        });
-    }
-}
-
-/**
- * Incrementa una fila de estadisticas.
- * @param {Map<*, *>} rowsByUser - Acumulador.
- * @param {*} item - Item.
- */
-function incrementStatsRow(rowsByUser, item) {
-    const row = rowsByUser.get(item.userId) || {
-        userId: item.userId,
-        email: item.email || '',
-        totalEntries: 0,
-        acceptedFirstTryEntries: 0,
-        timeSpentSeconds: 0
-    };
-
-    row.totalEntries += 1;
-    if (item.isAcceptedFirstTry)
-        row.acceptedFirstTryEntries += 1;
-    row.timeSpentSeconds += normalizeNonNegativeInteger(item.timeSpentSeconds);
-    if (!row.email && item.email)
-        row.email = item.email;
-
-    rowsByUser.set(item.userId, row);
-}
-
-/**
- * Suma tiempos de asignaciones por usuario.
- * @param {Array<*>} assignments - Asignaciones.
- * @returns {Map<number, number>} Tiempo por usuario.
- */
-function sumAssignmentTimeByUser(assignments) {
-    const result = new Map();
-
-    for (const assignment of assignments || []) {
-        const userId = Number(assignment.userId);
-        if (!Number.isInteger(userId) || userId <= 0)
-            continue;
-
-        result.set(
-            userId,
-            (result.get(userId) || 0) + normalizeNonNegativeInteger(assignment.timeSpentSeconds)
-        );
-    }
-
-    return result;
-}
-
-/**
- * Construye filas finales ordenadas.
- * @param {Map<*, *>} rowsByUser - Acumulador.
- * @param {number} totalDatasetEntries - Total de entries.
- * @param {Map<*, *>|null} [timeByUser] - Tiempo por usuario opcional.
- * @returns {Array<*>} Filas.
- */
-function buildStatsRows(rowsByUser, totalDatasetEntries, timeByUser = null) {
-    return [...rowsByUser.values()]
-        .map(row => {
-            const totalTime = timeByUser instanceof Map
-                ? (timeByUser.get(row.userId) || 0)
-                : row.timeSpentSeconds;
-
-            return {
-                userId: row.userId,
-                email: row.email,
-                totalEntries: row.totalEntries,
-                datasetPercent: formatFloorPercent(row.totalEntries, totalDatasetEntries),
-                averageTime: formatAverageTime(totalTime, row.totalEntries),
-                precision: formatFloorPercent(row.acceptedFirstTryEntries, row.totalEntries)
-            };
-        })
-        .sort((a, b) => (
-            b.totalEntries - a.totalEntries
-            || a.email.localeCompare(b.email)
-        ));
-}
-
-/**
- * Formatea porcentaje con dos decimales aproximando hacia abajo.
- * @param {number} numerator - Numerador.
- * @param {number} denominator - Denominador.
- * @returns {string} Porcentaje.
- */
-function formatFloorPercent(numerator, denominator) {
-    const safeNumerator = normalizeNonNegativeInteger(numerator);
-    const safeDenominator = normalizePositiveCount(denominator);
-
-    if (safeDenominator <= 0)
-        return '0.00%';
-
-    const cents = Math.floor((safeNumerator * 10000) / safeDenominator);
-    return `${(cents / 100).toFixed(2)}%`;
-}
-
-/**
- * Formatea tiempo medio por entry.
- * @param {number} totalSeconds - Segundos totales.
- * @param {number} totalEntries - Entries.
- * @returns {string} Tiempo legible.
- */
-function formatAverageTime(totalSeconds, totalEntries) {
-    const seconds = normalizeNonNegativeInteger(totalSeconds);
-    const entries = normalizePositiveCount(totalEntries);
-
-    if (seconds <= 0 || entries <= 0)
-        return '-';
-
-    const average = Math.floor(seconds / entries);
-    const minutes = Math.floor(average / 60);
-    const remainingSeconds = average % 60;
-
-    if (minutes <= 0)
-        return `${remainingSeconds}s`;
-
-    return `${minutes}m ${String(remainingSeconds).padStart(2, '0')}s`;
-}
-
-/**
- * Normaliza entero no negativo.
- * @param {*} value - Valor.
- * @returns {number} Entero.
- */
-function normalizeNonNegativeInteger(value) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed) || parsed <= 0)
-        return 0;
-    return Math.floor(parsed);
-}
-
-/**
- * Normaliza conteo positivo o cero.
- * @param {*} value - Valor.
- * @returns {number} Conteo.
- */
-function normalizePositiveCount(value) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed) || parsed <= 0)
-        return 0;
-    return Math.floor(parsed);
-}
-
-/**
- * Normaliza email recibido desde la UI.
- * @param {*} value - Email.
- * @returns {?string} Email normalizado.
- */
-function normalizeUserEmail(value) {
-    if (typeof value !== 'string')
-        return null;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed.toLowerCase() : null;
-}
-
-/**
- * Normaliza permisos recibidos.
- * @param {*} permissions - Payload.
- * @returns {*} Permisos.
- */
-function normalizePermissionInput(permissions) {
-    const source = permissions && typeof permissions === 'object' ? permissions : {};
-
-    return {
-        isAnnotator: Boolean(source.isAnnotator ?? source.annotator),
-        isReviewer: Boolean(source.isReviewer ?? source.reviewer),
-        isAdmin: Boolean(source.isAdmin ?? source.admin)
-    };
-}
-
-/**
- * Comprueba si hay algun rol de dataset activo.
- * @param {*} permissions - Permisos normalizados.
- * @returns {boolean} True si alguno esta activo.
- */
-function hasAnyDatasetRole(permissions) {
-    return Boolean(permissions?.isAnnotator || permissions?.isReviewer || permissions?.isAdmin);
-}
-
-/**
- * Comprueba si una fila permite administrar el dataset.
- * @param {*} permit - Permiso.
- * @returns {boolean} True si administra.
- */
-function hasDatasetAdminPermission(permit) {
-    return Boolean(permit && (permit.isAdmin || permit.isOwned));
-}
-
-/**
- * Adapta una entry persistida al modelo consumido por la pantalla de anotacion.
- * @param {*} entryRecord - Entry tal como la devuelve Prisma.
- * @returns {*} Annotation entry preparada para el cliente.
- */
-function mapPersistedEntryToAnnotationEntry(entryRecord) {
+function extractEntryHead(entryRecord) {
     return {
         eid: entryRecord.eid,
         category: entryRecord.category || '',
         shape: entryRecord.shape ?? null,
         shapeType: entryRecord.shapeType ?? null,
+        size: entryRecord.size
+    };
+}
+
+/**
+ * Adapts a persisted entry to the canonical model consumed by the annotation
+ * screen (`EntryContextDTO`).
+ *
+ * Contract decision: the annotator always sees the dataset's *original*
+ * triples; `modified` triplesets are reserved for future flows and are not
+ * exposed here.
+ *
+ * @param {*} entryRecord - Entry as Prisma returns it.
+ * @returns {*} Annotation entry prepared for the client.
+ */
+function mapPersistedEntryToAnnotationEntry(entryRecord) {
+    return {
+        entryId: entryRecord.eid,
+        category: entryRecord.category || '',
+        shape: entryRecord.shape ?? null,
+        shapeType: entryRecord.shapeType ?? null,
         size: entryRecord.size,
-        originalTriples: flattenPersistedTriplesets(entryRecord.triplesets, 'original'),
-        modifiedTriples: flattenPersistedTriplesets(entryRecord.triplesets, 'modified'),
-        sourceSentences: entryRecord.lexes
+        triples: flattenPersistedTriplesets(entryRecord.triplesets, 'original'),
+        englishSentences: entryRecord.lexes
             .filter((/** @type {*} */ lex) => lex.lang === 'en')
             .map((/** @type {*} */ lex) => lex.text.trim())
             .filter(Boolean)
@@ -862,17 +512,13 @@ function mapPersistedEntryToAnnotationEntry(entryRecord) {
 }
 
 /**
- * Adapta una entry persistida al modelo que entiende `buildDatasetXml`.
- * @param {*} entryRecord - Entry tal como la devuelve Prisma.
- * @returns {*} Estructura compatible con el serializador XML.
+ * Adapts a persisted entry to the model understood by `buildDatasetXml`.
+ * @param {*} entryRecord - Entry as Prisma returns it.
+ * @returns {*} Structure compatible with the XML serializer.
  */
 function mapPersistedEntryToXmlEntry(entryRecord) {
     return {
-        eid: entryRecord.eid,
-        category: entryRecord.category || '',
-        shape: entryRecord.shape ?? null,
-        shapeType: entryRecord.shapeType ?? null,
-        size: entryRecord.size,
+        ...extractEntryHead(entryRecord),
         originalTriplesets: filterPersistedTriplesets(entryRecord.triplesets, 'original'),
         modifiedTriplesets: filterPersistedTriplesets(entryRecord.triplesets, 'modified'),
         lexes: entryRecord.lexes.map((/** @type {*} */ lex) => ({
@@ -883,58 +529,79 @@ function mapPersistedEntryToXmlEntry(entryRecord) {
         })),
         dbpediaLinks: entryRecord.dbpediaLinks.map((/** @type {*} */ link) => ({
             direction: link.direction,
-            subject: link.subject,
-            predicate: link.predicate,
-            object: link.object
+            ...pickTripleFields(link)
         })),
         links: entryRecord.links.map((/** @type {*} */ link) => ({
             direction: link.direction,
-            subject: link.subject,
-            predicate: link.predicate,
-            object: link.object
+            ...pickTripleFields(link)
         }))
     };
 }
 
 /**
- * Filtra triplesets persistidos por tipo y los normaliza para XML.
- * @param {*} triplesets - Coleccion persistida.
- * @param {*} type - Tipo de tripleset ("original" | "modified").
- * @returns {Array<*>} Triplesets filtrados con sus triples.
+ * Adapts a persisted entry (with `annotations`) to the model understood by
+ * `buildAnnotatedDatasetXml`.
+ *
+ * @param {*} entryRecord - Entry as Prisma returns it.
+ * @returns {*} Structure compatible with the extended XML serializer.
+ */
+function mapPersistedEntryToAnnotatedXmlEntry(entryRecord) {
+    return {
+        ...mapPersistedEntryToXmlEntry(entryRecord),
+        annotations: (entryRecord.annotations || []).map((/** @type {*} */ annotation) => ({
+            sentenceIndex: Number(annotation.sentenceIndex) || 0,
+            sentence: typeof annotation.sentence === 'string' ? annotation.sentence : ''
+        }))
+    };
+}
+
+/**
+ * Extracts the three canonical fields of a persisted triple (subject,
+ * predicate, object). Also used as a base for mapping `dbpediaLinks` and
+ * `links`, which add `direction`.
+ *
+ * @param {*} triple - Persisted row with subject/predicate/object.
+ * @returns {{subject:*, predicate:*, object:*}}
+ */
+function pickTripleFields(triple) {
+    return {
+        subject: triple.subject,
+        predicate: triple.predicate,
+        object: triple.object
+    };
+}
+
+/**
+ * Filters persisted triplesets by type and normalizes them for XML.
+ * @param {*} triplesets - Persisted collection.
+ * @param {*} type - Tripleset type ("original" | "modified").
+ * @returns {Array<*>} Filtered triplesets with their triples.
  */
 function filterPersistedTriplesets(triplesets, type) {
     return triplesets
         .filter((/** @type {*} */ tripleset) => tripleset.type === type)
         .map((/** @type {*} */ tripleset) => ({
-            triples: tripleset.triples.map((/** @type {*} */ triple) => ({
-                subject: triple.subject,
-                predicate: triple.predicate,
-                object: triple.object
-            }))
+            triples: tripleset.triples.map(pickTripleFields)
         }));
 }
 
 /**
- * Aplana triplesets persistidos por tipo en una lista plana de triples.
- * @param {*} triplesets - Coleccion persistida.
- * @param {*} type - Tipo de tripleset ("original" | "modified").
- * @returns {Array<*>} Triples planos.
+ * Flattens persisted triplesets by type into a flat list of triples.
+ * @param {*} triplesets - Persisted collection.
+ * @param {*} type - Tripleset type ("original" | "modified").
+ * @returns {Array<*>} Flat triples.
  */
 function flattenPersistedTriplesets(triplesets, type) {
     return triplesets
         .filter((/** @type {*} */ tripleset) => tripleset.type === type)
-        .flatMap((/** @type {*} */ tripleset) => tripleset.triples.map((/** @type {*} */ triple) => ({
-            subject: triple.subject,
-            predicate: triple.predicate,
-            object: triple.object
-        })));
+        .flatMap((/** @type {*} */ tripleset) => tripleset.triples.map(pickTripleFields));
 }
 
 /**
- * Aplana una fila de dataset enriquecida al objeto base usado por los mappers de DTO.
- * @param {*} datasetRow - Fila de dataset persistida.
- * @param {*} [options] - Conteos adicionales calculados aparte (reviewableCount, annotatedEntries).
- * @returns {*} Objeto base para construir DTOs.
+ * Flattens an enriched dataset row into the base object used by the DTO mappers.
+ * @param {*} datasetRow - Persisted dataset row.
+ * @param {*} [options] - Additional counts computed separately (reviewableCount, annotatedEntries).
+ * @returns {*} Base object for building DTOs.
  */
 function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEntries = /** @type {*} */ (null) } = {}) {
     const isReviewEnabled = Boolean(datasetRow.isReviewEnabled);
@@ -950,7 +617,6 @@ function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEn
     return {
         id: datasetRow.id,
         name: datasetRow.name,
-        triplesRDF: datasetRow.totalEntries,
         totalEntries: datasetRow.totalEntries,
         languages: parseLanguages(datasetRow.languages),
         completedPercent: percentages.completed,
@@ -965,14 +631,14 @@ function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEn
         },
         colorClass: typeof datasetRow.colorClass === 'string' && datasetRow.colorClass.trim().length > 0
             ? datasetRow.colorClass
-            : 'dataset-purple'
+            : DEFAULT_DATASET_COLOR
     };
 }
 
 /**
- * Normaliza opciones recibidas durante la creacion de un dataset.
- * @param {*} options - Opciones crudas.
- * @returns {*} Opciones listas para persistir.
+ * Normalizes options received during dataset creation.
+ * @param {*} options - Raw options.
+ * @returns {*} Options ready to persist.
  */
 function normalizeDatasetCreationOptions(options) {
     const source = options && typeof options === 'object' ? options : {};
@@ -985,38 +651,21 @@ function normalizeDatasetCreationOptions(options) {
 
     return {
         llmMode,
-        isReviewEnabled: normalizeBooleanOption(source.isReviewEnabled ?? source.reviewEnabled),
-        hasAdditionalReviews: normalizeBooleanOption(source.hasAdditionalReviews ?? source.additionalReviews)
+        isReviewEnabled: toBoolean(source.isReviewEnabled ?? source.reviewEnabled, false),
+        hasAdditionalReviews: toBoolean(source.hasAdditionalReviews ?? source.additionalReviews, false)
     };
 }
 
 /**
- * Normaliza booleanos enviados por multipart o JSON.
- * @param {*} value - Valor crudo.
- * @returns {boolean} Booleano normalizado.
- */
-function normalizeBooleanOption(value) {
-    if (typeof value === 'boolean')
-        return value;
-
-    if (typeof value === 'string') {
-        const normalized = value.trim().toLowerCase();
-        return ['true', '1', 'yes', 'on', 'si', 'sí'].includes(normalized);
-    }
-
-    return value === 1;
-}
-
-/**
- * Mapea estado de revision del usuario actual para pintar acciones.
- * @param {*} datasetRow - Dataset persistido.
- * @param {*} percentages - Porcentajes calculados.
- * @param {number} reviewableCount - Entries pendientes de revision.
- * @returns {*} Estado de revision.
+ * Maps the current user's review state for rendering actions.
+ * @param {*} datasetRow - Persisted dataset.
+ * @param {*} percentages - Computed percentages.
+ * @param {number} reviewableCount - Entries pending review.
+ * @returns {*} Review state.
  */
 function mapCurrentUserReviewState(datasetRow, percentages, reviewableCount) {
     const permissions = mapCurrentUserDatasetPermissions(datasetRow);
-    const safeCount = normalizeNonNegativeInteger(reviewableCount);
+    const safeCount = toIntegerNormalized(reviewableCount);
     const canReview = Boolean(permissions && permissions.reviewer);
     const completed = Number(percentages?.completed || 0) >= 100;
 
@@ -1029,9 +678,9 @@ function mapCurrentUserReviewState(datasetRow, percentages, reviewableCount) {
 }
 
 /**
- * Mapea permisos del usuario actual incluidos con el dataset.
- * @param {*} datasetRow - Dataset persistido.
- * @returns {*} Permisos o null.
+ * Maps the current user's permissions included with the dataset.
+ * @param {*} datasetRow - Persisted dataset.
+ * @returns {*} Permissions, or null.
  */
 function mapCurrentUserDatasetPermissions(datasetRow) {
     const permit = Array.isArray(datasetRow?.permits) && datasetRow.permits.length > 0
@@ -1051,9 +700,9 @@ function mapCurrentUserDatasetPermissions(datasetRow) {
 }
 
 /**
- * Parsea la columna `languages` de un dataset (texto JSON o array) a una lista de idiomas.
- * @param {*} value - Valor crudo persistido.
- * @returns {Array<string>} Idiomas normalizados o el default.
+ * Parses a dataset's `languages` column (JSON text or array) into a list of languages.
+ * @param {*} value - Raw persisted value.
+ * @returns {Array<string>} Normalized languages, or the default.
  */
 function parseLanguages(value) {
     if (Array.isArray(value))
@@ -1078,18 +727,18 @@ function parseLanguages(value) {
 }
 
 /**
- * Lee desde disco el contenido binario de un fichero temporal subido.
- * @param {*} filename - Nombre del fichero temporal.
- * @returns {Buffer} Contenido binario.
+ * Reads the binary content of an uploaded temporary file from disk.
+ * @param {*} filename - Temporary file name.
+ * @returns {Buffer} Binary content.
  */
 function defaultReadFileAsBuffer(filename) {
     return readFileSync(resolveExistingTempFilePath(filename));
 }
 
 /**
- * Deriva un nombre canonico para un dataset a partir de su filename original.
- * @param {*} originalname - Nombre original del fichero subido.
- * @returns {string} Nombre normalizado.
+ * Derives a canonical name for a dataset from its original filename.
+ * @param {*} originalname - Original name of the uploaded file.
+ * @returns {string} Normalized name.
  */
 function nameFromFilename(originalname) {
     const name = (originalname || '').replace(/\.xml$/i, '').trim();

@@ -1,20 +1,20 @@
 'use strict';
 
 /**
- * @file Router `/api/annotations` — endpoints JSON del flujo de anotacion.
+ * @file Router `/api/annotations` — JSON endpoints of the annotation flow.
  *
- * Protege todas las rutas con `requireApiAuth` (usuario autenticado).
+ * Protects all routes with `requireApiAuth` (authenticated user).
  */
 
 const express = require('express');
 const { requireApiAuth } = require('../middlewares/auth');
 
 /**
- * Construye el router `/api/annotations`.
+ * Builds the `/api/annotations` router.
  *
  * @param {{ annotationsController?: Record<string, any> }} [options]
  * @returns {import('express').Router}
- * @throws {Error} Si no se proporciona `annotationsController`.
+ * @throws {Error} If `annotationsController` is not provided.
  */
 function createAnnotationsRouter({ annotationsController } = {}) {
     if (!annotationsController)

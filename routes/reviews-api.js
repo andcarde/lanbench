@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * @file Router `/api/reviews` — endpoints JSON del flujo de revision.
+ * @file Router `/api/reviews` — JSON endpoints of the review flow.
  *
- * `requireApiAuth` protege todas las rutas. `POST /request` ademas exige
- * que el usuario sea moderador global o que su peticion venga acotada a un
- * dataset concreto (validado por {@link requireReviewRequestAccess}). Los
- * permisos por dataset se verifican aguas abajo en el controlador.
+ * `requireApiAuth` protects all routes. `POST /request` additionally requires
+ * that the user be a global moderator or that their request be scoped to a
+ * specific dataset (validated by {@link requireReviewRequestAccess}). The
+ * per-dataset permissions are verified downstream in the controller.
  *
  * @typedef {import('express').Request}      ExpressRequest
  * @typedef {import('express').Response}     ExpressResponse
@@ -17,11 +17,11 @@ const express = require('express');
 const { requireApiAuth } = require('../middlewares/auth');
 
 /**
- * Construye el router `/api/reviews`.
+ * Builds the `/api/reviews` router.
  *
  * @param {{ reviewsController?: Record<string, any> }} [options]
  * @returns {import('express').Router}
- * @throws {Error} Si no se proporciona `reviewsController`.
+ * @throws {Error} If `reviewsController` is not provided.
  */
 function createReviewsRouter({ reviewsController } = {}) {
     if (!reviewsController)
@@ -43,8 +43,8 @@ function createReviewsRouter({ reviewsController } = {}) {
 }
 
 /**
- * Middleware que permite `POST /request` solo a moderadores globales o a
- * peticiones que vengan acotadas a un dataset concreto.
+ * Middleware that allows `POST /request` only for global moderators or for
+ * requests scoped to a specific dataset.
  *
  * @param {ExpressRequest & { user?: { isModerator?: boolean } }} request
  * @param {ExpressResponse} response
@@ -67,7 +67,7 @@ function requireReviewRequestAccess(request, response, next) {
 }
 
 /**
- * Comprueba si la peticion viene acotada a un dataset (via body o query).
+ * Checks whether the request is scoped to a dataset (via body or query).
  *
  * @param {ExpressRequest} request
  * @returns {boolean}

@@ -46,8 +46,8 @@ describe('canonical routes', () => {
 
     it('datasets api router concentra los endpoints de datos bajo /api/datasets', () => {
         /**
-         * Ejecuta la logica de noop.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of noop.
+         * @returns {*} Result produced by the function.
          */
         const noop = () => {};
         const datasetsApiRouter = createDatasetsApiRouter({
@@ -56,6 +56,8 @@ describe('canonical routes', () => {
                 createDataset: noop,
                 getDatasetById: noop,
                 getDatasetText: noop,
+                downloadDatasetXml: noop,
+                downloadDatasetAnnotatedXml: noop,
                 getDatasetSection: noop,
                 listDatasetPermissions: noop,
                 addDatasetPermission: noop,
@@ -65,8 +67,8 @@ describe('canonical routes', () => {
             },
             uploadMiddleware: /** @type {any} */ ({
                 /**
-                 * Ejecuta la logica de single.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Runs the logic of single.
+                 * @returns {*} Result produced by the function.
                  */
                 single() {
                     return (/** @type {*} */ _request, /** @type {*} */ _response, /** @type {*} */ next) => next();
@@ -90,6 +92,8 @@ describe('canonical routes', () => {
             { path: '/:id/statistics', methods: ['get'] },
             { path: '/:id', methods: ['get'] },
             { path: '/:id/text', methods: ['get'] },
+            { path: '/:id/download', methods: ['get'] },
+            { path: '/:id/download/annotated', methods: ['get'] },
             { path: '/:id/sections/:section', methods: ['get'] },
             { path: '/:id', methods: ['delete'] }
         ]);
@@ -97,8 +101,8 @@ describe('canonical routes', () => {
 
     it('annotations separa la vista HTML de la API canónica bajo /api/annotations', () => {
         /**
-         * Ejecuta la logica de noop.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of noop.
+         * @returns {*} Result produced by the function.
          */
         const noop = () => {};
         const annotationsApiRouter = createAnnotationsRouter({
@@ -137,8 +141,8 @@ describe('canonical routes', () => {
 
     it('session-api expone el recurso REST de sesion bajo /api/session', () => {
         /**
-         * Ejecuta la logica de noop.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of noop.
+         * @returns {*} Result produced by the function.
          */
         const noop = () => {};
         const sessionRouter = createSessionApiRouter({

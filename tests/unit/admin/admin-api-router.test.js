@@ -33,20 +33,20 @@ describe('admin api router (E5)', function () {
         const calls = [];
         const server = await startServerWithIsModerator(true, {
             /**
-             * Ejecuta la logica de list dataset summaries.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of list dataset summaries.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             listDatasetSummaries(_request, response) {
                 calls.push('summary');
                 return response.status(200).json([{ datasetId: 1, name: 'Dataset' }]);
             },
             /**
-             * Ejecuta la logica de export dataset.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of export dataset.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             exportDataset(_request, response) {
                 calls.push('export');
@@ -56,29 +56,29 @@ describe('admin api router (E5)', function () {
                     .send('{"ok":true}');
             },
             /**
-             * Ejecuta la logica de list evaluation criteria.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of list evaluation criteria.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             listEvaluationCriteria(_request, response) {
                 calls.push('criteria-list');
                 return response.status(200).json([]);
             },
             /**
-             * Crea evaluation criterion con la configuracion recibida.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Creates evaluation criterion with the received configuration.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             createEvaluationCriterion(_request, response) {
                 calls.push('criteria-create');
                 return response.status(201).json({ id: 1 });
             },
             /**
-             * Actualiza evaluation criterion con los datos indicados.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+             * Updates evaluation criterion with the given data.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
              */
             updateEvaluationCriterion(_request, response) {
                 calls.push('criteria-update');
@@ -115,10 +115,10 @@ describe('admin api router (E5)', function () {
 });
 
 /**
- * Levanta un servidor con un usuario de sesion segun isModerator.
- * @param {boolean} isModerator - Indica si el usuario es moderador.
- * @param {*} adminController - Controlador admin a inyectar (opcional).
- * @returns {Promise<*>} Servidor con baseUrl y close().
+ * Starts a server with a session user based on isModerator.
+ * @param {boolean} isModerator - Whether the user is a moderator.
+ * @param {*} adminController - Admin controller to inject (optional).
+ * @returns {Promise<*>} Server with baseUrl and close().
  */
 async function startServerWithIsModerator(isModerator, adminController = null) {
     const port = await getFreePort();
@@ -138,45 +138,45 @@ async function startServerWithIsModerator(isModerator, adminController = null) {
     app.use('/api/admin', createAdminApiRouter({
         adminController: adminController || {
             /**
-             * Ejecuta la logica de list dataset summaries.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of list dataset summaries.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             listDatasetSummaries(_request, response) {
                 return response.status(200).json([]);
             },
             /**
-             * Ejecuta la logica de export dataset.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of export dataset.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             exportDataset(_request, response) {
                 return response.status(200).send('');
             },
             /**
-             * Ejecuta la logica de list evaluation criteria.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of list evaluation criteria.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             listEvaluationCriteria(_request, response) {
                 return response.status(200).json([]);
             },
             /**
-             * Crea evaluation criterion con la configuracion recibida.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-             * @returns {*} Resultado producido por la funcion.
+             * Creates evaluation criterion with the received configuration.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             * @returns {*} Result produced by the function.
              */
             createEvaluationCriterion(_request, response) {
                 return response.status(201).json({});
             },
             /**
-             * Actualiza evaluation criterion con los datos indicados.
-             * @param {*} _request - Valor de _request usado por la funcion.
-             * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+             * Updates evaluation criterion with the given data.
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
              */
             updateEvaluationCriterion(_request, response) {
                 return response.status(200).json({});
@@ -195,8 +195,8 @@ async function startServerWithIsModerator(isModerator, adminController = null) {
     return {
         baseUrl: `http://127.0.0.1:${port}`,
         /**
-         * Ejecuta la logica de close.
-         * @returns {*} Resultado producido por la funcion.
+         * Runs the logic of close.
+         * @returns {*} Result produced by the function.
          */
         close() {
             return new Promise(resolve => httpServer.close(() => resolve(undefined)));
@@ -205,8 +205,8 @@ async function startServerWithIsModerator(isModerator, adminController = null) {
 }
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets free port from the corresponding source.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

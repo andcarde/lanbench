@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file `PrismaSessionStore` — `express-session.Store` respaldado por Prisma.
+ * @file `PrismaSessionStore` — `express-session.Store` backed by Prisma.
  *
- * Persiste sesiones en la tabla `Session`, deserializa lazy, y mantiene un
- * temporizador interno que limpia sesiones caducadas cada
- * `cleanupIntervalMs` (por defecto 15 min).
+ * Persists sessions in the `Session` table, deserializes lazily, and keeps an
+ * internal timer that cleans up expired sessions every `cleanupIntervalMs`
+ * (default 15 min).
  */
 
 const session = require('express-session');
@@ -16,7 +16,7 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
 /**
- * Express-session Store respaldado por Prisma sobre el modelo Session.
+ * Express-session Store backed by Prisma over the Session model.
  */
 class PrismaSessionStore extends Store {
     /**
@@ -38,7 +38,7 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Obtiene una sesion por sid.
+     * Gets a session by sid.
      * @param {string} sid
      * @param {Function} callback
      */
@@ -60,7 +60,7 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Guarda o reemplaza una sesion.
+     * Saves or replaces a session.
      * @param {string} sid
      * @param {*} sessionData
      * @param {((err?: any) => void) | undefined} [callback]
@@ -79,7 +79,7 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Borra una sesion por sid.
+     * Deletes a session by sid.
      * @param {string} sid
      * @param {((err?: any) => void) | undefined} [callback]
      */
@@ -90,7 +90,7 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Renueva la fecha de expiracion de una sesion.
+     * Renews a session's expiration date.
      * @param {string} sid
      * @param {*} sessionData
      * @param {(() => void) | undefined} [callback]
@@ -111,8 +111,8 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Elimina las sesiones expiradas.
-     * @returns {Promise<number>} Sesiones borradas.
+     * Removes the expired sessions.
+     * @returns {Promise<number>} Number of deleted sessions.
      */
     async purgeExpired() {
         const result = await this.prisma.session.deleteMany({
@@ -122,7 +122,7 @@ class PrismaSessionStore extends Store {
     }
 
     /**
-     * Libera el timer interno.
+     * Releases the internal timer.
      */
     close() {
         if (this.cleanupTimer) {
@@ -133,10 +133,10 @@ class PrismaSessionStore extends Store {
 }
 
 /**
- * Calcula la fecha de expiracion del registro de sesion.
- * @param {*} sessionData - Datos de sesion enviados por express-session.
- * @param {number} defaultTtlMs - TTL por defecto si la cookie no marca expiracion.
- * @returns {Date} Fecha de expiracion.
+ * Computes the expiration date of the session record.
+ * @param {*} sessionData - Session data sent by express-session.
+ * @param {number} defaultTtlMs - Default TTL if the cookie does not set an expiration.
+ * @returns {Date} Expiration date.
  */
 function resolveExpiry(sessionData, defaultTtlMs) {
     const expires = sessionData?.cookie?.expires;

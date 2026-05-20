@@ -1,25 +1,25 @@
 'use strict';
 
 /**
- * @file Estados validos de una asignacion de seccion a un anotador/revisor.
+ * @file Valid states of a section assignment to an annotator/reviewer.
  *
- * El ciclo de vida es:
+ * The lifecycle is:
  *   `active` -> `completed` | `released` | `expired`
  *
  * @typedef {import('../types/typedefs').AssignmentStatus} AssignmentStatus
  */
 
-/** @type {'active'} La asignacion sigue abierta. */
+/** @type {'active'} The assignment is still open. */
 const ASSIGNMENT_ACTIVE = 'active';
-/** @type {'completed'} El anotador termino la seccion. */
+/** @type {'completed'} The annotator finished the section. */
 const ASSIGNMENT_COMPLETED = 'completed';
-/** @type {'expired'} La asignacion expiro por inactividad. */
+/** @type {'expired'} The assignment expired due to inactivity. */
 const ASSIGNMENT_EXPIRED = 'expired';
-/** @type {'released'} El anotador devolvio la asignacion sin completarla. */
+/** @type {'released'} The annotator returned the assignment without completing it. */
 const ASSIGNMENT_RELEASED = 'released';
 
 /**
- * Lista canonica con todos los estados de asignacion.
+ * Canonical list with all assignment states.
  * @type {AssignmentStatus[]}
  */
 const ALL_ASSIGNMENT_STATUSES = [

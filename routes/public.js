@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * @file Router publico (`/`, `/register`, `/login`) — paginas accesibles
- * sin sesion.
+ * @file Public router (`/`, `/register`, `/login`) — pages accessible without
+ * a session.
  *
- *   - `GET /`         redirige a `/tasks` o `/login` segun haya sesion.
- *   - `GET /register` sirve `public/register.html`.
- *   - `GET /login`    sirve `public/login.html`.
+ *   - `GET /`         redirects to `/tasks` or `/login` depending on whether there is a session.
+ *   - `GET /register` serves `public/register.html`.
+ *   - `GET /login`    serves `public/login.html`.
  */
 
 const express = require('express');

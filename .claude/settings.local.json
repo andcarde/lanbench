@@ -38,7 +38,10 @@
       "Bash(node -e \"const fs=require\\('fs'\\); const lines=fs.readFileSync\\('tsc-wide.txt','utf8'\\).split\\(/\\\\r?\\\\n/\\).filter\\(l=>l.includes\\('tests/unit/reviews/reviews-service.test.js'\\)\\); lines.forEach\\(l=>console.log\\('  '+l.slice\\(0,300\\)\\)\\);\")",
       "Bash(node -e \"const fs=require\\('fs'\\); const lines=fs.readFileSync\\('tsc-wide.txt','utf8'\\).split\\(/\\\\r?\\\\n/\\).filter\\(l=>l.includes\\('TS2554'\\) && !l.includes\\('node_modules'\\)\\); lines.forEach\\(l=>console.log\\('  '+l.slice\\(0,300\\)\\)\\);\")",
       "Bash(node -e \"const fs=require\\('fs'\\); const lines=fs.readFileSync\\('tsc-wide.txt','utf8'\\).split\\(/\\\\r?\\\\n/\\).filter\\(l=>l.includes\\('tests/unit/auth/auth-middleware.test.js'\\)\\); lines.forEach\\(l=>console.log\\('  '+l.slice\\(0,300\\)\\)\\);\")",
-      "Bash(node -e \"const fs=require\\('fs'\\); let c=fs.readFileSync\\('tests/unit/auth/auth-middleware.test.js','utf8'\\); const orig=c; c=c.replace\\(/^\\(\\\\s*\\)const request = \\\\{/gm,'\\\\$1/** @type {any} */\\\\n\\\\$1const request = {'\\); c=c.replace\\(/^\\(\\\\s*\\)const request = \\\\{ session.*\\\\};$/gm,m=>m.replace\\(/const request/,'/** @type {any} */\\\\n        const request'\\)\\); if \\(c!==orig\\){fs.writeFileSync\\('tests/unit/auth/auth-middleware.test.js',c\\); console.log\\('patched'\\)}\")"
+      "Bash(node -e \"const fs=require\\('fs'\\); let c=fs.readFileSync\\('tests/unit/auth/auth-middleware.test.js','utf8'\\); const orig=c; c=c.replace\\(/^\\(\\\\s*\\)const request = \\\\{/gm,'\\\\$1/** @type {any} */\\\\n\\\\$1const request = {'\\); c=c.replace\\(/^\\(\\\\s*\\)const request = \\\\{ session.*\\\\};$/gm,m=>m.replace\\(/const request/,'/** @type {any} */\\\\n        const request'\\)\\); if \\(c!==orig\\){fs.writeFileSync\\('tests/unit/auth/auth-middleware.test.js',c\\); console.log\\('patched'\\)}\")",
+      "PowerShell(docker compose exec -T app sh -c \"ls tests/integration/datasets/\" 2>&1)",
+      "PowerShell(docker compose exec -T app sh -c \"ls tests/integration/\" 2>&1)",
+      "PowerShell(docker compose exec -T app sh -c \"ls\" 2>&1)"
     ]
   }
 }

@@ -1,12 +1,11 @@
 'use strict';
 
 /**
- * @file Rule checker — validaciones rapidas y deterministas sobre una
- * oracion antes (o en lugar) de consultar al LLM.
+ * @file Rule checker — fast, deterministic validations on a sentence before
+ * (or instead of) querying the LLM.
  *
- * Cubre dos casos principales: oraciones vacias y oraciones claramente
- * escritas en otro idioma (heuristica sobre palabras inglesas y mezcla
- * con espanol).
+ * Covers two main cases: empty sentences and sentences clearly written in
+ * another language (heuristic over English words and mixing with Spanish).
  */
 
 const EMPTY_SENTENCE_REASON = 'La oración está vacía.';
@@ -40,12 +39,12 @@ const ENGLISH_SIGNAL_WORDS = new Set([
 ]);
 
 /**
- * Registro de reglas declarativas aplicadas en orden sobre la oración normalizada.
- * Cada regla decide sobre `{ trimmed, lowerCase }` y produce un objeto de
- * fallo `{ reason, suggestion }` o `null` cuando la oración la supera.
+ * Registry of declarative rules applied in order over the normalized sentence.
+ * Each rule decides based on `{ trimmed, lowerCase }` and produces a failure
+ * object `{ reason, suggestion }` or `null` when the sentence passes it.
  *
- * Añadir una regla nueva consiste en empujar un descriptor a este array; no se
- * modifica `check()`.
+ * Adding a new rule just means pushing a descriptor to this array; `check()`
+ * is not modified.
  *
  * @type {Array<{
  *   code: string,
@@ -94,9 +93,9 @@ const RULES = [
 ];
 
 /**
- * Aplica las reglas locales de validacion sobre una oracion candidata.
- * @param {*} sentence - Oracion candidata.
- * @returns {{ valid:boolean, reason:?string, suggestion:?string }} Resultado de la validacion.
+ * Applies the local validation rules to a candidate sentence.
+ * @param {*} sentence - Candidate sentence.
+ * @returns {{ valid:boolean, reason:?string, suggestion:?string }} Validation result.
  */
 function check(sentence) {
     if (typeof sentence !== 'string' || sentence.trim().length === 0) {
@@ -120,9 +119,9 @@ function check(sentence) {
 }
 
 /**
- * Detecta frases claramente inglesas o mezcladas.
- * @param {string} sentence - Oracion.
- * @returns {boolean} True si parece ingles o mezcla.
+ * Detects sentences that are clearly English or mixed.
+ * @param {string} sentence - Sentence.
+ * @returns {boolean} True if it looks English or mixed.
  */
 function looksEnglishOrMixed(sentence) {
     const lowerCase = sentence.toLowerCase();
@@ -136,9 +135,9 @@ function looksEnglishOrMixed(sentence) {
 }
 
 /**
- * Indica si un resultado de validacion debe cortar el pipeline sin consultar al LLM.
- * @param {*} result - Resultado de validacion local.
- * @returns {boolean} True si la regla local falla por oracion vacia.
+ * Indicates whether a validation result should short-circuit the pipeline without querying the LLM.
+ * @param {*} result - Local validation result.
+ * @returns {boolean} True if the local rule fails due to an empty sentence.
  */
 function isImmediateFailure(result) {
     return result?.valid === false && result?.reason === EMPTY_SENTENCE_REASON;

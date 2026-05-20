@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Router publico `/annotations` — sirve la pagina HTML de anotacion.
+ * @file Public router `/annotations` — serves the annotation HTML page.
  *
- * Solo expone una ruta: `GET /` que devuelve `public/annotations.html`.
- * Protegida con `requirePageAuth` (redirige a `/login` si no hay sesion).
+ * It exposes a single route: `GET /` that returns `public/annotations.html`.
+ * Protected with `requirePageAuth` (redirects to `/login` if there is no session).
  */
 
 const express = require('express');

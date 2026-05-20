@@ -12,6 +12,7 @@ const { createApp } = require('../../../app');
 const { createPasswordHasher } = require('../../../services/password-hasher');
 const { warnIfDatabaseInactive } = require('../../../utils/database-health');
 const { TEST_DATA_PATH } = require('../../../constants/paths');
+const { normalizeBigInts } = require('../_helpers/bigint');
 
 const app = createApp();
 
@@ -60,7 +61,7 @@ describe('annotation workflow integration', function () {
             httpServer = app.listen(freePort, error => error ? reject(error) : resolve(undefined));
         });
 
-        // ── Paso 1: generar usuario ──
+        // ── Step 1: create user ──
         testEmail = `annot_${Date.now()}_${crypto.randomInt(10000)}@example.com`;
         testUserId = 2000000 + crypto.randomInt(900000);
         const passwordHash = await passwordHasher.hashPassword('AnnotPass99!');
@@ -73,7 +74,7 @@ describe('annotation workflow integration', function () {
     });
 
     after(async () => {
-        // Borrar dataset por API (cascade: Annotation, Entry, Lex, Triple, Permits, SectionAssignment...)
+        // Delete dataset via API (cascade: Annotation, Entry, Lex, Triple, Permits, SectionAssignment...)
         if (createdDatasetId && sessionCookie) {
             try {
                 await fetch(`${baseUrl}/api/datasets/${createdDatasetId}`, {
@@ -89,7 +90,7 @@ describe('annotation workflow integration', function () {
         if (httpServer)
             await new Promise(resolve => httpServer.close(() => resolve(undefined)));
 
-        // Orden de borrado para respetar FKs: dependientes antes que users
+        // Deletion order to respect FKs: dependents before users
         if (testUserId) {
             await dbQuery('DELETE FROM `active_sessions` WHERE `user_id` = ?', [testUserId]);
             await dbQuery('DELETE FROM `section_assignments` WHERE `user_id` = ?', [testUserId]);
@@ -103,8 +104,8 @@ describe('annotation workflow integration', function () {
         if (this && typeof this.timeout === 'function')
             this.timeout(60000);
 
-        // ── Paso 2: login ──
-        const loginResponse = await fetch(`${baseUrl}/create-session`, {
+        // ── Step 2: login ──
+        const loginResponse = await fetch(`${baseUrl}/api/session`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ email: testEmail, password: 'AnnotPass99!' })
@@ -113,7 +114,7 @@ describe('annotation workflow integration', function () {
         sessionCookie = extractSessionCookie(loginResponse) || '';
         assert.ok(sessionCookie, 'no se recibió cookie de sesión');
 
-        // ── Paso 3: crear dataset desde test.xml en modo "No reviewer", "No LLM" ──
+        // ── Step 3: create dataset from test.xml in "No reviewer", "No LLM" mode ──
         const xmlContent = fs.readFileSync(XML_FILE_PATH);
         const formData = new FormData();
         formData.append('xmlFile', new Blob([xmlContent], { type: 'application/xml' }), 'test.xml');
@@ -132,7 +133,7 @@ describe('annotation workflow integration', function () {
         createdDatasetId = createPayload.datasetId;
         assert.ok(Number.isInteger(createdDatasetId) && createdDatasetId > 0, 'el datasetId debe ser entero positivo');
 
-        // Verificar en BD que el dataset se ha guardado con la configuración No reviewer / No LLM
+        // Verify in the DB that the dataset was saved with the No reviewer / No LLM configuration
         const [datasetRow] = await dbQuery(
             'SELECT `llm_mode` AS llmMode, `is_review_enabled` AS isReviewEnabled, `has_additional_reviews` AS hasAdditionalReviews, `total_entries` AS entries FROM `datasets` WHERE `id` = ?',
             [createdDatasetId]
@@ -142,7 +143,7 @@ describe('annotation workflow integration', function () {
         assert.equal(Number(datasetRow.hasAdditionalReviews), 0, 'hasAdditionalReviews debería ser false');
         assert.equal(Number(datasetRow.entries), TOTAL_ENTRIES, `el dataset debería tener ${TOTAL_ENTRIES} entries`);
 
-        // ── Paso 4: iniciar el anotado (botón continuar) ──
+        // ── Step 4: start annotating (continue button) ──
         const continueResponse1 = await fetch(`${baseUrl}/api/annotations/${createdDatasetId}/continue`, {
             method: 'POST',
             headers: { cookie: sessionCookie }
@@ -154,7 +155,7 @@ describe('annotation workflow integration', function () {
         assert.equal(continuePayload1.entryPosition, 0, 'el entryPosition inicial debería ser 0');
         assert.equal(continuePayload1.entryId, 1, 'el entryId (eid) inicial debería ser 1');
 
-        // ── Paso 5: la sección se ha creado correctamente ──
+        // ── Step 5: the section was created correctly ──
         const assignmentRows = await dbQuery(
             'SELECT `section_index` AS sectionIndex, `status` FROM `section_assignments` WHERE `user_id` = ? AND `dataset_id` = ?',
             [testUserId, createdDatasetId]
@@ -171,7 +172,7 @@ describe('annotation workflow integration', function () {
         assert.equal(activeSessionRows[0].sectionNumber, 1);
         assert.equal(activeSessionRows[0].entryNumber, 0);
 
-        // ── Paso 6: se está recibiendo la primera entry del dataset ──
+        // ── Step 6: the first entry of the dataset is being received ──
         const nextResponse = await fetch(`${baseUrl}/api/annotations/${createdDatasetId}/next`, {
             headers: { cookie: sessionCookie }
         });
@@ -190,22 +191,21 @@ describe('annotation workflow integration', function () {
             'los triples de la entry 1 deberían coincidir (humanizados) con test_input_1.txt'
         );
 
-        // ── Paso 7: anotar la entry 1 y enviar ──
+        // ── Step 7: annotate entry 1 and submit ──
         const sendResponse1 = await fetch(`${baseUrl}/api/annotations/send`, {
             method: 'POST',
             headers: { cookie: sessionCookie, 'content-type': 'application/json' },
             body: JSON.stringify({
                 datasetId: createdDatasetId,
                 entryId: 1,
-                sentences: [SENTENCES_BY_EID[1]],
-                rejectionReasons: [''],
+                sentences: [{ sentence: SENTENCES_BY_EID[1], rejectionReason: null }],
                 sectionNumber: 1
             })
         });
         const sendBody1 = await sendResponse1.text();
         assert.equal(sendResponse1.status, 200, `el envío de la anotación 1 debería ser 200. Body: ${sendBody1}`);
 
-        // ── Paso 8: la anotación 1 está en base de datos ──
+        // ── Step 8: annotation 1 is in the database ──
         const [annotation1] = await dbQuery(
             `SELECT a.\`user_id\` AS id, a.\`dataset_id\` AS datasetId, a.sentence, a.origin, e.eid
              FROM \`annotations\` a
@@ -219,7 +219,7 @@ describe('annotation workflow integration', function () {
         assert.equal(annotation1.sentence, SENTENCES_BY_EID[1]);
         assert.equal(annotation1.origin, 'manual');
 
-        // ── Paso 9: siguiente continue → caso 4, devuelve la entry 2 ──
+        // ── Step 9: next continue → case 4, returns entry 2 ──
         const continueResponse2 = await fetch(`${baseUrl}/api/annotations/${createdDatasetId}/continue`, {
             method: 'POST',
             headers: { cookie: sessionCookie }
@@ -231,22 +231,21 @@ describe('annotation workflow integration', function () {
         assert.equal(continuePayload2.entryPosition, 1, 'el entryPosition debería haber avanzado a 1');
         assert.equal(continuePayload2.entryId, 2, 'la siguiente entry debería ser eid=2');
 
-        // ── Paso 10: anotar la entry 2 y enviar ──
+        // ── Step 10: annotate entry 2 and submit ──
         const sendResponse2 = await fetch(`${baseUrl}/api/annotations/send`, {
             method: 'POST',
             headers: { cookie: sessionCookie, 'content-type': 'application/json' },
             body: JSON.stringify({
                 datasetId: createdDatasetId,
                 entryId: 2,
-                sentences: [SENTENCES_BY_EID[2]],
-                rejectionReasons: [''],
+                sentences: [{ sentence: SENTENCES_BY_EID[2], rejectionReason: null }],
                 sectionNumber: 1
             })
         });
         const sendBody2 = await sendResponse2.text();
         assert.equal(sendResponse2.status, 200, `el envío de la anotación 2 debería ser 200. Body: ${sendBody2}`);
 
-        // ── Paso 11: la anotación 2 está en base de datos ──
+        // ── Step 11: annotation 2 is in the database ──
         const [annotation2] = await dbQuery(
             `SELECT a.\`user_id\` AS id, a.\`dataset_id\` AS datasetId, a.sentence, a.origin
              FROM \`annotations\` a
@@ -266,14 +265,14 @@ describe('annotation workflow integration', function () {
         );
         assert.equal(Number(annotationTotal.total), 2, 'el dataset debería tener exactamente 2 anotaciones');
 
-        // ── Paso 12: entrar en la sección de Administración (estadísticas) ──
+        // ── Step 12: enter the Administration section (statistics) ──
         const statsResponse = await fetch(`${baseUrl}/api/datasets/${createdDatasetId}/statistics`, {
             headers: { cookie: sessionCookie }
         });
         assert.equal(statsResponse.status, 200, 'las estadísticas deberían devolver 200');
         const stats = await statsResponse.json();
 
-        // ── Paso 13: las estadísticas corresponden con lo anotado ──
+        // ── Step 13: the statistics match what was annotated ──
         assert.equal(stats.dataset.datasetId, createdDatasetId);
         assert.equal(stats.dataset.totalEntries, TOTAL_ENTRIES);
         assert.equal(stats.annotation.length, 1, 'debería haber una sola fila de anotación (un solo anotador)');
@@ -291,11 +290,11 @@ describe('annotation workflow integration', function () {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Reemplaza los guiones bajos por espacios en sujeto/predicado/objeto para poder
- * comparar el triple persistido (forma RDF, con guiones bajos) con la forma
- * humanizada esperada en test_input_1.txt.
- * @param {*} triple - Triple original {subject, predicate, object}.
- * @returns {*} Triple con espacios en lugar de guiones bajos.
+ * Replaces underscores with spaces in subject/predicate/object so the
+ * persisted triple (RDF form, with underscores) can be compared with the
+ * humanized form expected in test_input_1.txt.
+ * @param {*} triple - Original triple {subject, predicate, object}.
+ * @returns {*} Triple with spaces instead of underscores.
  */
 function humanizeTriple(triple) {
     return {
@@ -306,9 +305,9 @@ function humanizeTriple(triple) {
 }
 
 /**
- * Extrae la cookie de sesión de la cabecera Set-Cookie.
- * @param {Response} response - Respuesta HTTP.
- * @returns {string|null} Cookie de sesión o null si no se encuentra.
+ * Extracts the session cookie from the Set-Cookie header.
+ * @param {Response} response - HTTP response.
+ * @returns {string|null} Session cookie, or null if not found.
  */
 function extractSessionCookie(response) {
     if (typeof response.headers.getSetCookie === 'function') {
@@ -323,11 +322,11 @@ function extractSessionCookie(response) {
 }
 
 /**
- * Ejecuta una query SQL contra Prisma y devuelve el resultado.
- * Para SELECT devuelve las filas; para INSERT/UPDATE/DELETE devuelve {affectedRows}.
- * @param {string} sql - Sentencia SQL.
- * @param {Array<*>} [params] - Parámetros posicionales.
- * @returns {Promise<*>} Filas resultado o resumen de filas afectadas.
+ * Runs a SQL query against Prisma and returns the result.
+ * For SELECT it returns the rows; for INSERT/UPDATE/DELETE it returns {affectedRows}.
+ * @param {string} sql - SQL statement.
+ * @param {Array<*>} [params] - Positional parameters.
+ * @returns {Promise<*>} Result rows, or affected-rows summary.
  */
 async function dbQuery(sql, params = []) {
     if (/^\s*SELECT\b/i.test(sql)) {
@@ -339,27 +338,8 @@ async function dbQuery(sql, params = []) {
 }
 
 /**
- * Convierte recursivamente los BigInt devueltos por Prisma a Number para
- * mantener compatibilidad con las aserciones de los tests.
- * @param {*} value - Valor a normalizar.
- * @returns {*} Valor sin BigInt.
- */
-function normalizeBigInts(value) {
-    if (typeof value === 'bigint') return Number(value);
-    if (Array.isArray(value)) return value.map(normalizeBigInts);
-    if (value && typeof value === 'object') {
-        /** @type {Record<string, *>} */
-        const result = {};
-        for (const key of Object.keys(value))
-            result[key] = normalizeBigInts(value[key]);
-        return result;
-    }
-    return value;
-}
-
-/**
- * Devuelve un puerto TCP libre.
- * @returns {Promise<number>} Puerto disponible.
+ * Returns a free TCP port.
+ * @returns {Promise<number>} Available port.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

@@ -1,19 +1,20 @@
 'use strict';
 
 /**
- * T4.7 — Tests de integracion del bloque E4.
+ * T4.7 — Integration tests for block E4.
  *
- * Validan la cadena completa de revision (cola → wizard → finalizacion → feedback)
- * y la exclusividad/expiracion entre reviewers, ejerciendo el HTTP via createApp().
+ * They validate the full review chain (queue → wizard → finalization → feedback)
+ * and the exclusivity/expiration between reviewers, exercising HTTP via createApp().
  *
- * Como las credenciales de MySQL no estan disponibles en este entorno autonomo,
- * los repositorios se sustituyen por stubs en memoria inyectados a traves de
- * `createApp({ controllers: ... })`. La capa HTTP, el middleware de auth, los
- * routers, controllers y services se ejecutan sin mocks. Solo el almacenamiento
- * persistente queda stubbeado.
+ * Since MySQL credentials are not available in this autonomous environment,
+ * the repositories are replaced by in-memory stubs injected through
+ * `createApp({ controllers: ... })`. The HTTP layer, the auth middleware, the
+ * routers, controllers and services run without mocks. Only the persistent
+ * storage is stubbed.
  *
- * La sesion se inyecta via sessionMiddleware (mismo patron que admin-api.integration.test.js)
- * usando la cabecera X-Test-User para seleccionar el usuario en cada peticion.
+ * The session is injected via sessionMiddleware (same pattern as
+ * admin-api.integration.test.js) using the X-Test-User header to select the
+ * user on each request.
  */
 
 const assert = require('node:assert/strict');
@@ -227,8 +228,8 @@ function makeAgent(/** @type {*} */ baseUrl, /** @type {*} */ user) {
             });
             const text = await res.text();
             /** @type {any} */
-            let data = null;
-            try { data = text ? JSON.parse(text) : null; } catch (_e) { data = text; }
+            let data;
+            try { data = text ? JSON.parse(text) : null; } catch { data = text; }
             return { status: res.status, data };
         },
         async get(/** @type {*} */ path) { return this.raw('GET', path); },
@@ -290,7 +291,7 @@ describe('reviews workflow integration (T4.7)', function () {
                 if (header) {
                     try {
                         request.session = { user: JSON.parse(header) };
-                    } catch (_e) {
+                    } catch {
                         request.session = {};
                     }
                 } else {

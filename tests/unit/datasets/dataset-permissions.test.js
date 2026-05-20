@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const testApi = require('node:test');
 
 const { createDatasetsService } = require('../../../services/datasets-service');
+const { createDatasetsPermissionsService } = require('../../../services/datasets-permissions-service');
 const {
     extractDatasetIdFromPath,
     normalisePermissionUser,
@@ -36,6 +37,9 @@ describe('dataset permissions administration', () => {
                 },
                 async findReviewableEntryDatasetIds() {
                     return [{ datasetId: 4 }, { datasetId: 4 }];
+                },
+                async findActiveReviewDatasetIdsForReviewer() {
+                    return [];
                 }
             },
             usersRepository: {}
@@ -89,8 +93,8 @@ describe('dataset permissions administration', () => {
     });
 
     it('lista permisos cuando el usuario actual es admin del dataset', async () => {
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         datasetId: 7,
@@ -139,8 +143,8 @@ describe('dataset permissions administration', () => {
     });
 
     it('rechaza la administracion si el usuario no tiene permiso admin en el dataset', async () => {
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         datasetId: 7,
@@ -163,8 +167,8 @@ describe('dataset permissions administration', () => {
     it('anade por email exacto con permiso annotator por defecto', async () => {
         /** @type {any[]} */
         const captured = [];
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isOwned: true,
@@ -206,8 +210,8 @@ describe('dataset permissions administration', () => {
     it('anade respetando los permisos solicitados en el payload', async () => {
         /** @type {any[]} */
         const captured = [];
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isOwned: true,
@@ -250,8 +254,8 @@ describe('dataset permissions administration', () => {
     it('descarta el permiso reviewer al anadir si el dataset no tiene revision', async () => {
         /** @type {any[]} */
         const captured = [];
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isOwned: true,
@@ -291,8 +295,8 @@ describe('dataset permissions administration', () => {
     });
 
     it('rechaza con no_role_selected si solo se pide reviewer en dataset sin revision', async () => {
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isOwned: true,
@@ -321,8 +325,8 @@ describe('dataset permissions administration', () => {
     });
 
     it('rechaza el alta si los permisos solicitados son todos falsos', async () => {
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return { isOwned: true, dataset: { id: 7, name: 'Dataset 7' } };
                 },
@@ -350,8 +354,8 @@ describe('dataset permissions administration', () => {
     it('descarta el permiso reviewer al actualizar si el dataset no tiene revision', async () => {
         /** @type {any[]} */
         const captured = [];
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isAdmin: true,
@@ -390,8 +394,8 @@ describe('dataset permissions administration', () => {
     it('borra la fila cuando se desmarcan los tres permisos', async () => {
         /** @type {any[]} */
         const deleted = [];
-        const service = createDatasetsService({
-            datasetsRepository: {
+        const service = createDatasetsPermissionsService({
+            datasetsPermissionsRepository: {
                 async findPermitForUser() {
                     return {
                         isAdmin: true,

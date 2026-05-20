@@ -1,30 +1,30 @@
 'use strict';
 
 /**
- * @file Catalogo de codigos de validacion con mensajes fijos y severidad
- * predefinida.
+ * @file Catalogue of validation codes with fixed messages and predefined
+ * severity.
  *
- * El LLM solo devuelve el codigo (`code`); el mensaje mostrado al usuario
- * proviene siempre de aqui — esto garantiza una UI estable aunque el LLM
- * cambie de modelo o de tono.
+ * The LLM only returns the code (`code`); the message shown to the user always
+ * comes from here — this guarantees a stable UI even if the LLM changes model
+ * or tone.
  *
  * severity:
- *   `error`     -> fondo rojo, bloquea la anotacion
- *   `warning`   -> fondo amarillo, permite continuar con aviso
- *   `duplicate` -> fondo morado, indica reutilizacion linguistica
- *   `ok`        -> sin alerta visible
+ *   `error`     -> red background, blocks the annotation
+ *   `warning`   -> yellow background, allows continuing with a warning
+ *   `duplicate` -> purple background, indicates linguistic reuse
+ *   `ok`        -> no visible alert
  *
- * `messageTemplate`: mensaje base. Si el LLM incluye una explicacion en el
- * campo `explanation`, se concatena: `"<messageTemplate>: <explanation>"`.
+ * `messageTemplate`: base message. If the LLM includes an explanation in the
+ * `explanation` field, it is concatenated: `"<messageTemplate>: <explanation>"`.
  *
  * @typedef {Object} ValidationCodeEntry
- * @property {string} severity                     - Severidad del codigo.
- * @property {string} type                         - Categoria del codigo (grammar, semantic, ...).
- * @property {string} messageTemplate              - Mensaje base mostrado al usuario.
+ * @property {string} severity                     - Severity of the code.
+ * @property {string} type                         - Code category (grammar, semantic, ...).
+ * @property {string} messageTemplate              - Base message shown to the user.
  */
 
 /**
- * Catalogo inmutable de codigos de validacion.
+ * Immutable catalogue of validation codes.
  * @type {Readonly<Record<string, ValidationCodeEntry>>}
  */
 const VALIDATION_CODES = Object.freeze({
@@ -126,19 +126,19 @@ const VALIDATION_CODES = Object.freeze({
 });
 
 /**
- * Lista completa de codigos validos.
+ * Full list of valid codes.
  * @type {ReadonlyArray<string>}
  */
 const ALL_CODES = Object.freeze(Object.keys(VALIDATION_CODES));
 
 /**
- * Vista tipada del catalogo para consumidores que necesitan acceder por clave.
+ * Typed view of the catalogue for consumers that need to access it by key.
  * @type {Readonly<Record<string, ValidationCodeEntry>>}
  */
 const CODES_LOOKUP = VALIDATION_CODES;
 
 /**
- * Codigos cuya severidad es `'error'`.
+ * Codes whose severity is `'error'`.
  * @type {ReadonlyArray<string>}
  */
 const ERROR_CODES = Object.freeze(
@@ -146,7 +146,7 @@ const ERROR_CODES = Object.freeze(
 );
 
 /**
- * Codigos cuya severidad es `'warning'`.
+ * Codes whose severity is `'warning'`.
  * @type {ReadonlyArray<string>}
  */
 const WARNING_CODES = Object.freeze(
@@ -154,7 +154,7 @@ const WARNING_CODES = Object.freeze(
 );
 
 /**
- * Codigos cuya severidad es `'duplicate'`.
+ * Codes whose severity is `'duplicate'`.
  * @type {ReadonlyArray<string>}
  */
 const DUPLICATE_CODES = Object.freeze(
@@ -162,12 +162,12 @@ const DUPLICATE_CODES = Object.freeze(
 );
 
 /**
- * Resuelve el mensaje fijo asociado al codigo, concatenando la explicacion
- * del LLM si esta presente y no vacia.
+ * Resolves the fixed message associated with the code, concatenating the LLM's
+ * explanation if present and non-empty.
  *
- * @param {string} code         - Codigo de validacion.
- * @param {string|null} explanation - Explicacion libre devuelta por el LLM.
- * @returns {string} Mensaje listo para mostrar al usuario.
+ * @param {string} code         - Validation code.
+ * @param {string|null} explanation - Free-form explanation returned by the LLM.
+ * @returns {string} Message ready to display to the user.
  */
 function resolveMessage(code, explanation) {
     const entry = CODES_LOOKUP[code];
@@ -182,7 +182,7 @@ function resolveMessage(code, explanation) {
 }
 
 /**
- * Devuelve true si el codigo es conocido en el catalogo.
+ * Returns true if the code is known in the catalogue.
  *
  * @param {string} code
  * @returns {boolean}

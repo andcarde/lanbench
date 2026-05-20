@@ -32,8 +32,6 @@ pnpm-debug.log
 .sonarlint
 *.swp
 *.swo
-.DS_Store
-Thumbs.db
 
 # ============================================
 # Documentation (not needed at runtime)
@@ -47,14 +45,15 @@ CLAUDE.md
 FAILING-TESTS.md
 
 # ============================================
-# Tests and mocks (not deployed to production)
+# Test tooling/artifacts not needed in the image.
+# NOTE: the test suites (tests/, *.test.js, *.spec.js) AND the fixtures
+# they read (test-datasets/) are intentionally kept in the image so the
+# documented `docker compose exec app npm run test:*` workflow works
+# inside the container — there is no source bind-mount, so anything
+# excluded here is simply absent at runtime.
 # ============================================
-tests
-test_datasets
 front-mocks
 coverage
-*.test.js
-*.spec.js
 jest.config.js
 
 # ============================================
@@ -65,6 +64,11 @@ build
 out
 logs
 *.log
+
+# ============================================
+# Stale database dumps (schema source of truth is prisma/schema.prisma)
+# ============================================
+database
 
 # ============================================
 # Development tooling configs

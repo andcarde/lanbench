@@ -12,7 +12,9 @@
         "test:integration": "mocha \"tests/integration/**/*.test.js\" --exit",
         "test:all": "mocha \"tests/{unit,integration}/**/*.test.js\" --exit",
         "test:db": "node tests/db/db-schema-check.js",
-        "lint:dead": "knip"
+        "lint:dead": "knip",
+        "lint": "eslint .",
+        "lint:report": "eslint . -f json -o eslint-report.json"
     },
     "repository": {
         "type": "git",
@@ -43,12 +45,18 @@
         "multer": "^2.1.1"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
         "@types/express": "^5.0.6",
         "@types/express-session": "^1.19.0",
         "@types/mocha": "^10.0.10",
         "@types/multer": "^2.1.0",
         "@types/node": "^25.8.0",
         "chai": "^6.2.2",
+        "dotenv": "^17.4.2",
+        "eslint": "^10.4.0",
+        "eslint-plugin-security": "^4.0.0",
+        "eslint-plugin-sonarjs": "^4.0.3",
+        "globals": "^17.6.0",
         "knip": "^6.12.2",
         "mocha": "^11.3.0",
         "prisma": "^7.7.0",

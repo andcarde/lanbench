@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * @file Spanish checker basado en LLM (Ollama/Groq).
+ * @file LLM-based Spanish checker (Ollama/Groq).
  *
- * Construye los prompts (sistema + usuario), llama al cliente JSON
- * `llm-client.generateJson`, y normaliza la respuesta del LLM al formato
- * de validacion canonico (con codigos `VALIDATION_CODES` + alertas).
+ * It builds the prompts (system + user), calls the JSON client
+ * `llm-client.generateJson`, and normalizes the LLM response to the canonical
+ * validation format (with `VALIDATION_CODES` codes + alerts).
  *
- * Expone tanto `check` (1 oracion) como `checkBatch` (lote), de forma que
- * `spanishService` pueda elegir la modalidad mas eficiente.
+ * It exposes both `check` (1 sentence) and `checkBatch` (batch), so that
+ * `spanishService` can pick the most efficient mode.
  */
 
 const ollamaClient = require('../../utils/llm-client');
@@ -16,8 +16,8 @@ const { buildValidationAlert } = require('../../utils/validation-alert');
 const { ALL_CODES, resolveMessage, isKnownCode, VALIDATION_CODES } = require('../../constants/validation-codes');
 
 /**
- * Valida una unica oracion contra el contexto RDF e ingles dado, consultando
- * al LLM.
+ * Validates a single sentence against the given RDF and English context by
+ * querying the LLM.
  *
  * @param {string} sentence
  * @param {Record<string, any>} [context]
@@ -34,8 +34,8 @@ async function check(sentence, context = {}) {
 }
 
 /**
- * Comprueba un lote de oraciones de una misma entry en una sola llamada al
- * LLM. Devuelve un array paralelo a `sentences`.
+ * Checks a batch of sentences from the same entry in a single LLM call.
+ * Returns an array parallel to `sentences`.
  *
  * @param {string[]} sentences
  * @param {Record<string, any>} [context]
@@ -53,11 +53,11 @@ async function checkBatch(sentences, context = {}) {
 }
 
 /**
- * Solicita a Ollama propuestas corregidas para las oraciones rechazadas.
- * @param {Array<*>} sentences - Oraciones candidatas originales.
- * @param {*} context - Contexto RDF y referencias inglesas.
- * @param {Array<*>} validations - Validaciones ya calculadas.
- * @returns {Promise<Array<?string>>} Propuestas indexadas por sentenceIndex.
+ * Asks Ollama for corrected proposals for the rejected sentences.
+ * @param {Array<*>} sentences - Original candidate sentences.
+ * @param {*} context - RDF context and English references.
+ * @param {Array<*>} validations - Validations already computed.
+ * @returns {Promise<Array<?string>>} Proposals indexed by sentenceIndex.
  */
 async function proposeCorrectionsBatch(sentences, context = {}, validations = []) {
     const normalizedSentences = Array.isArray(sentences) ? sentences : [];
@@ -74,6 +74,10 @@ async function proposeCorrectionsBatch(sentences, context = {}, validations = []
     return normalizeCorrectionProposalResult(response, normalizedSentences);
 }
 
+/**
+ * Builds the system prompt for single-sentence validation.
+ * @returns {string} System prompt.
+ */
 function getSystemPrompt() {
     return [
         'Eres un revisor experto de oraciones en espanol para un benchmark RDF.',
@@ -86,8 +90,8 @@ function getSystemPrompt() {
 }
 
 /**
- * Obtiene system prompt para validacion por lote.
- * @returns {string} Prompt del sistema.
+ * Gets the system prompt for batch validation.
+ * @returns {string} System prompt.
  */
 function getBatchSystemPrompt() {
     const allowedCodes = ALL_CODES.filter(code => code !== 'ok' && code !== 'repeated_sentence').join(', ');
@@ -114,8 +118,8 @@ function getBatchSystemPrompt() {
 }
 
 /**
- * Obtiene system prompt para generar propuestas de correccion.
- * @returns {string} Prompt del sistema.
+ * Gets the system prompt for generating correction proposals.
+ * @returns {string} System prompt.
  */
 function getCorrectionProposalSystemPrompt() {
     return [
@@ -130,10 +134,10 @@ function getCorrectionProposalSystemPrompt() {
 }
 
 /**
- * Construye el prompt de validacion para una unica oracion.
- * @param {*} sentence - Oracion candidata.
- * @param {*} [context] - Contexto RDF (triples, referenceSentence, category, eid).
- * @returns {string} Prompt completo para el modelo.
+ * Builds the validation prompt for a single sentence.
+ * @param {*} sentence - Candidate sentence.
+ * @param {*} [context] - RDF context (triples, referenceSentence, category, entryId).
+ * @returns {string} Full prompt for the model.
  */
 function buildCheckPrompt(sentence, context = {}) {
     const safeContext = /** @type {any} */ (context || {});
@@ -142,10 +146,10 @@ function buildCheckPrompt(sentence, context = {}) {
         ? safeContext.referenceSentence.trim()
         : '';
     const category = typeof safeContext.category === 'string' ? safeContext.category.trim() : '';
-    const eid = Number.isInteger(safeContext.eid) ? safeContext.eid : null;
+    const entryId = Number.isInteger(safeContext.entryId) ? safeContext.entryId : null;
 
     return [
-        eid ? `Entry ID: ${eid}` : null,
+        entryId ? `Entry ID: ${entryId}` : null,
         category ? `Categoria: ${category}` : null,
         triples.length
             ? `Triples RDF:\n${formatTriples(triples)}`
@@ -159,44 +163,42 @@ function buildCheckPrompt(sentence, context = {}) {
 }
 
 /**
- * Formatea triples RDF para incluirlos en prompts.
- * @param {Array<*>} triples - Triples RDF.
- * @returns {string} Lineas formateadas.
+ * Formats RDF triples for inclusion in prompts.
+ * @param {Array<*>} triples - RDF triples.
+ * @returns {string} Formatted lines.
  */
 function formatTriples(triples) {
     return triples.map((triple, index) => formatTripleLine(triple, index)).join('\n');
 }
 
 /**
- * Formatea un triple RDF.
- * @param {*} triple - Triple RDF.
- * @param {number} index - Indice.
- * @returns {string} Linea formateada.
+ * Formats a single RDF triple.
+ * @param {*} triple - RDF triple.
+ * @param {number} index - Index.
+ * @returns {string} Formatted line.
  */
 function formatTripleLine(triple, index) {
     return `${index + 1}. ${triple.subject} | ${triple.predicate} | ${triple.object}`;
 }
 
 /**
- * Construye prompt de validacion por lote.
- * @param {Array<*>} sentences - Oraciones candidatas.
- * @param {*} context - Contexto RDF y referencias.
- * @returns {string} Prompt completo.
+ * Builds the batch validation prompt.
+ * @param {Array<*>} sentences - Candidate sentences.
+ * @param {*} context - RDF context and references.
+ * @returns {string} Full prompt.
  */
 function buildBatchCheckPrompt(sentences, context = {}) {
     const normalizedSentences = Array.isArray(sentences) ? sentences : [];
     const triples = Array.isArray(context.triples) ? context.triples : [];
-    const sourceSentences = normalizeStringArray(context.englishSentences || context.sourceSentences);
+    const englishSentences = normalizeStringArray(context.englishSentences);
     const category = typeof context.category === 'string' ? context.category.trim() : '';
-    const eid = Number.isInteger(context.eid ?? context.entryId)
-        ? (context.eid ?? context.entryId)
-        : null;
+    const entryId = Number.isInteger(context.entryId) ? context.entryId : null;
 
     const requiredIndexes = normalizedSentences.map((_sentence, index) => index);
     const rdfSchematic = buildRdfSchematic(triples);
     const payload = {
         entry: {
-            entryId: eid,
+            entryId,
             category: category || null
         },
         requiredSentenceIndexes: requiredIndexes,
@@ -206,7 +208,7 @@ function buildBatchCheckPrompt(sentences, context = {}) {
             object: triple.object
         })),
         references: normalizedSentences.map((_sentence, index) => {
-            const english = sourceSentences[index];
+            const english = englishSentences[index];
             if (typeof english === 'string')
                 return { sentenceIndex: index, english };
             return { sentenceIndex: index, english: null, rdfSchematic };
@@ -214,7 +216,7 @@ function buildBatchCheckPrompt(sentences, context = {}) {
         candidates: normalizedSentences.map((sentence, index) => ({
             sentenceIndex: index,
             spanishCandidate: sentence,
-            referenceAvailable: typeof sourceSentences[index] === 'string'
+            referenceAvailable: typeof englishSentences[index] === 'string'
         }))
     };
 
@@ -228,11 +230,11 @@ function buildBatchCheckPrompt(sentences, context = {}) {
 }
 
 /**
- * Construye prompt para propuestas de correccion.
- * @param {Array<*>} sentences - Oraciones candidatas.
- * @param {*} context - Contexto RDF.
- * @param {Array<*>} validations - Validaciones previas.
- * @returns {?string} Prompt o null si no hay nada que corregir.
+ * Builds the prompt for correction proposals.
+ * @param {Array<*>} sentences - Candidate sentences.
+ * @param {*} context - RDF context.
+ * @param {Array<*>} validations - Previous validations.
+ * @returns {?string} Prompt, or null if there is nothing to correct.
  */
 function buildCorrectionProposalPrompt(sentences, context = {}, validations = []) {
     const normalizedSentences = Array.isArray(sentences) ? sentences : [];
@@ -248,14 +250,12 @@ function buildCorrectionProposalPrompt(sentences, context = {}, validations = []
         return null;
 
     const triples = Array.isArray(context.triples) ? context.triples : [];
-    const sourceSentences = normalizeStringArray(context.englishSentences || context.sourceSentences);
+    const englishSentences = normalizeStringArray(context.englishSentences);
     const category = typeof context.category === 'string' ? context.category.trim() : '';
-    const eid = Number.isInteger(context.eid ?? context.entryId)
-        ? (context.eid ?? context.entryId)
-        : null;
+    const entryId = Number.isInteger(context.entryId) ? context.entryId : null;
     const payload = {
         entry: {
-            entryId: eid,
+            entryId,
             category: category || null
         },
         triples: triples.map((/** @type {*} */ triple) => ({
@@ -266,7 +266,7 @@ function buildCorrectionProposalPrompt(sentences, context = {}, validations = []
         targets: targets.map(target => ({
             sentenceIndex: target.sentenceIndex,
             spanishCandidate: target.spanishCandidate,
-            englishReference: sourceSentences[target.sentenceIndex] || null,
+            englishReference: englishSentences[target.sentenceIndex] || null,
             reason: normalizeProposalReason(target.validation),
             alerts: Array.isArray(target.validation?.alerts)
                 ? target.validation.alerts.map((/** @type {*} */ alert) => ({
@@ -288,9 +288,9 @@ function buildCorrectionProposalPrompt(sentences, context = {}, validations = []
 }
 
 /**
- * Construye un esquema textual con los triples para usar como rdfSchematic.
- * @param {Array<*>} triples - Triples RDF.
- * @returns {string} Esquema "subject | predicate | object" separado por " ; ".
+ * Builds a textual schema with the triples to use as rdfSchematic.
+ * @param {Array<*>} triples - RDF triples.
+ * @returns {string} Schema "subject | predicate | object" separated by " ; ".
  */
 function buildRdfSchematic(triples) {
     if (!Array.isArray(triples) || triples.length === 0)
@@ -302,10 +302,10 @@ function buildRdfSchematic(triples) {
 }
 
 /**
- * Normaliza la respuesta del modelo Ollama a un resultado de validacion.
- * @param {*} result - Respuesta cruda del modelo.
- * @param {*} sentence - Oracion original validada.
- * @returns {*} Resultado normalizado con valid, reason, suggestion y alerts.
+ * Normalizes the Ollama model response into a validation result.
+ * @param {*} result - Raw model response.
+ * @param {*} sentence - Original validated sentence.
+ * @returns {*} Normalized result with valid, reason, suggestion and alerts.
  */
 function normalizeOllamaResult(result, sentence) {
     if (!result || typeof result !== 'object') {
@@ -344,10 +344,10 @@ function normalizeOllamaResult(result, sentence) {
 }
 
 /**
- * Normaliza la respuesta por lote de Ollama.
- * @param {*} result - Respuesta parseada de Ollama.
- * @param {Array<*>} sentences - Oraciones originales.
- * @returns {Array<*>} Validaciones normalizadas.
+ * Normalizes the Ollama batch response.
+ * @param {*} result - Parsed Ollama response.
+ * @param {Array<*>} sentences - Original sentences.
+ * @returns {Array<*>} Normalized validations.
  */
 function normalizeBatchOllamaResult(result, sentences) {
     const normalizedSentences = Array.isArray(sentences) ? sentences : [];
@@ -360,10 +360,10 @@ function normalizeBatchOllamaResult(result, sentences) {
 }
 
 /**
- * Normaliza propuestas de correccion indexadas por oracion.
- * @param {*} result - Respuesta parseada de Ollama.
- * @param {Array<*>} sentences - Oraciones originales.
- * @returns {Array<?string>} Propuestas por indice.
+ * Normalizes correction proposals indexed by sentence.
+ * @param {*} result - Parsed Ollama response.
+ * @param {Array<*>} sentences - Original sentences.
+ * @returns {Array<?string>} Proposals by index.
  */
 function normalizeCorrectionProposalResult(result, sentences) {
     const normalizedSentences = Array.isArray(sentences) ? sentences : [];
@@ -384,10 +384,10 @@ function normalizeCorrectionProposalResult(result, sentences) {
 }
 
 /**
- * Busca una propuesta por indice, con fallback posicional solo si no hay indices explicitos.
- * @param {Array<*>} proposals - Propuestas crudas.
- * @param {number} index - Indice buscado.
- * @returns {*} Propuesta encontrada.
+ * Finds a proposal by index, with positional fallback only if there are no explicit indexes.
+ * @param {Array<*>} proposals - Raw proposals.
+ * @param {number} index - Searched index.
+ * @returns {*} Found proposal.
  */
 function findProposalForIndex(proposals, index) {
     if (!Array.isArray(proposals))
@@ -411,9 +411,9 @@ function findProposalForIndex(proposals, index) {
 }
 
 /**
- * Extrae propuestas desde formatos tolerados.
- * @param {*} result - Respuesta parseada.
- * @returns {Array<*>} Propuestas crudas.
+ * Extracts proposals from tolerated formats.
+ * @param {*} result - Parsed response.
+ * @returns {Array<*>} Raw proposals.
  */
 function extractRawProposals(result) {
     if (Array.isArray(result))
@@ -435,9 +435,9 @@ function extractRawProposals(result) {
 }
 
 /**
- * Extrae validaciones desde formatos tolerados.
- * @param {*} result - Respuesta parseada.
- * @returns {Array<*>} Validaciones crudas.
+ * Extracts validations from tolerated formats.
+ * @param {*} result - Parsed response.
+ * @returns {Array<*>} Raw validations.
  */
 function extractRawValidations(result) {
     if (Array.isArray(result))
@@ -459,10 +459,10 @@ function extractRawValidations(result) {
 }
 
 /**
- * Busca una validacion por indice, con fallback posicional.
- * @param {Array<*>} validations - Validaciones crudas.
- * @param {number} index - Indice buscado.
- * @returns {*} Validacion encontrada.
+ * Finds a validation by index, with positional fallback.
+ * @param {Array<*>} validations - Raw validations.
+ * @param {number} index - Searched index.
+ * @returns {*} Found validation.
  */
 function findValidationForIndex(validations, index) {
     if (!Array.isArray(validations))
@@ -476,10 +476,10 @@ function findValidationForIndex(validations, index) {
 }
 
 /**
- * Normaliza una validacion individual de lote.
- * @param {*} raw - Validacion cruda.
- * @param {*} sentence - Oracion original.
- * @returns {*} Validacion normalizada.
+ * Normalizes a single batch validation.
+ * @param {*} raw - Raw validation.
+ * @param {*} sentence - Original sentence.
+ * @returns {*} Normalized validation.
  */
 function normalizeBatchValidation(raw, sentence) {
     const trimmedSentence = typeof sentence === 'string' ? sentence.trim() : '';
@@ -530,11 +530,11 @@ function normalizeBatchValidation(raw, sentence) {
 }
 
 /**
- * Normaliza alertas devueltas por Ollama aplicando mensajes fijos del catalogo.
- * El LLM devuelve {code, explanation?, severity?, suggestion?}; el mensaje final
- * se construye desde el catalogo para evitar mensajes genericos o inventados.
- * @param {*} alerts - Alertas crudas.
- * @returns {Array<*>} Alertas normalizadas con mensajes fijos.
+ * Normalizes alerts returned by Ollama, applying the catalogue's fixed messages.
+ * The LLM returns {code, explanation?, severity?, suggestion?}; the final message
+ * is built from the catalogue to avoid generic or invented messages.
+ * @param {*} alerts - Raw alerts.
+ * @returns {Array<*>} Normalized alerts with fixed messages.
  */
 function normalizeAlerts(alerts) {
     if (!Array.isArray(alerts))
@@ -583,9 +583,9 @@ function normalizeAlerts(alerts) {
 }
 
 /**
- * Obtiene primer mensaje de alerta.
- * @param {Array<*>} alerts - Alertas.
- * @returns {?string} Mensaje.
+ * Gets the first alert message.
+ * @param {Array<*>} alerts - Alerts.
+ * @returns {?string} Message.
  */
 function firstAlertMessage(alerts) {
     const first = Array.isArray(alerts) ? alerts.find(alert => alert?.message) : null;
@@ -593,9 +593,9 @@ function firstAlertMessage(alerts) {
 }
 
 /**
- * Obtiene primera sugerencia de alerta.
- * @param {Array<*>} alerts - Alertas.
- * @returns {?string} Sugerencia.
+ * Gets the first alert suggestion.
+ * @param {Array<*>} alerts - Alerts.
+ * @returns {?string} Suggestion.
  */
 function firstAlertSuggestion(alerts) {
     const first = Array.isArray(alerts) ? alerts.find(alert => alert?.suggestion) : null;
@@ -603,9 +603,9 @@ function firstAlertSuggestion(alerts) {
 }
 
 /**
- * Comprueba si una validacion necesita propuesta.
- * @param {*} validation - Validacion previa.
- * @returns {boolean} True si fue rechazada.
+ * Checks whether a validation needs a proposal.
+ * @param {*} validation - Previous validation.
+ * @returns {boolean} True if it was rejected.
  */
 function isRejectedValidation(validation) {
     if (!validation || typeof validation !== 'object')
@@ -623,9 +623,9 @@ function isRejectedValidation(validation) {
 }
 
 /**
- * Normaliza el motivo incluido en el prompt de propuesta.
- * @param {*} validation - Validacion previa.
- * @returns {?string} Motivo.
+ * Normalizes the reason included in the proposal prompt.
+ * @param {*} validation - Previous validation.
+ * @returns {?string} Reason.
  */
 function normalizeProposalReason(validation) {
     if (validation && typeof validation.reason === 'string' && validation.reason.trim().length > 0)
@@ -639,9 +639,9 @@ function normalizeProposalReason(validation) {
 }
 
 /**
- * Normaliza una propuesta de correccion.
- * @param {*} value - Texto candidato.
- * @returns {?string} Texto normalizado.
+ * Normalizes a correction proposal.
+ * @param {*} value - Candidate text.
+ * @returns {?string} Normalized text.
  */
 function normalizeProposalText(value) {
     if (typeof value !== 'string')
@@ -652,9 +652,9 @@ function normalizeProposalText(value) {
 }
 
 /**
- * Normaliza array de strings.
- * @param {*} values - Valores.
- * @returns {Array<string>} Strings no vacios.
+ * Normalizes an array of strings.
+ * @param {*} values - Values.
+ * @returns {Array<string>} Non-empty strings.
  */
 function normalizeStringArray(values) {
     if (!Array.isArray(values))
@@ -666,43 +666,8 @@ function normalizeStringArray(values) {
         .filter(Boolean);
 }
 
-/**
- * Extrae y parsea el primer objeto JSON contenido en una respuesta cruda del modelo.
- * @param {*} rawResponse - Texto bruto devuelto por Ollama.
- * @returns {*} Objeto JSON parseado.
- */
-function parseRawResponse(rawResponse) {
-    if (typeof rawResponse !== 'string')
-        throw new Error('La respuesta de Ollama debe ser una cadena de texto.');
-
-    const startIndex = rawResponse.indexOf('{');
-    const endIndex = rawResponse.lastIndexOf('}');
-    if (startIndex === -1 || endIndex === -1 || endIndex < startIndex)
-        throw new Error('No se detectó un JSON válido en la respuesta de Ollama.');
-
-    try {
-        const response = JSON.parse(rawResponse.substring(startIndex, endIndex + 1));
-        if (typeof response !== 'object' || response === null)
-            throw new Error('La respuesta parseada no es un objeto.');
-        return response;
-    } catch (caughtError) {
-        const error = /** @type {any} */ (caughtError);
-        throw new Error(`No se pudo parsear la respuesta como JSON: ${error.message}`);
-    }
-}
-
 module.exports = {
     check,
     checkBatch,
-    proposeCorrectionsBatch,
-    getSystemPrompt,
-    getBatchSystemPrompt,
-    getCorrectionProposalSystemPrompt,
-    buildCheckPrompt,
-    buildBatchCheckPrompt,
-    buildCorrectionProposalPrompt,
-    normalizeOllamaResult,
-    normalizeBatchOllamaResult,
-    normalizeCorrectionProposalResult,
-    parseRawResponse
+    proposeCorrectionsBatch
 };

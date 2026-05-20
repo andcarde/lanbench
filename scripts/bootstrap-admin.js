@@ -1,30 +1,30 @@
 'use strict';
 
 /**
- * @file `npm run bootstrap-admin` — crea o promociona a moderador inicial.
+ * @file `npm run bootstrap-admin` — creates or promotes the initial moderator.
  *
- * Lee `BOOTSTRAP_ADMIN_EMAIL` y `BOOTSTRAP_ADMIN_PASSWORD` del entorno,
- * normaliza el email a `trim().toLowerCase()` y exige que la contrasena
- * tenga al menos 8 caracteres. Si el usuario ya existe se le pone
- * `isModerator = true`; si no, se crea con la flag activa.
+ * Reads `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` from the
+ * environment, normalizes the email to `trim().toLowerCase()` and requires the
+ * password to be at least 8 characters. If the user already exists,
+ * `isModerator = true` is set; otherwise, the user is created with the flag on.
  */
 
 const { createUsersRepository } = require('../repositories/users-repository');
 const { createPasswordHasher } = require('../services/password-hasher');
 
 /**
- * Resultado de `bootstrapAdmin`.
+ * Result of `bootstrapAdmin`.
  *
  * @typedef {Object} BootstrapAdminResult
- * @property {boolean} created     - `true` si se creo un usuario nuevo.
- * @property {boolean} promoted    - `true` si se promociono uno existente.
+ * @property {boolean} created     - `true` if a new user was created.
+ * @property {boolean} promoted    - `true` if an existing one was promoted.
  * @property {number}  userId
  * @property {string}  email
  * @property {true}    isModerator
  */
 
 /**
- * Crea o promociona un usuario con `isModerator = true`.
+ * Creates or promotes a user with `isModerator = true`.
  *
  * @param {{
  *   email?: string,
@@ -32,7 +32,7 @@ const { createPasswordHasher } = require('../services/password-hasher');
  *   deps?: { usersRepository?: Record<string, any>, passwordHasher?: Record<string, any> }
  * }} [options]
  * @returns {Promise<BootstrapAdminResult>}
- * @throws {Error} Si `email` esta vacio o `password` tiene < 8 caracteres.
+ * @throws {Error} If `email` is empty or `password` has < 8 characters.
  */
 async function bootstrapAdmin({ email, password, deps } = {}) {
     const normalisedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -78,9 +78,9 @@ async function bootstrapAdmin({ email, password, deps } = {}) {
 }
 
 /**
- * Punto de entrada CLI: lee `BOOTSTRAP_ADMIN_EMAIL`/`BOOTSTRAP_ADMIN_PASSWORD`
- * del entorno indicado y delega en {@link bootstrapAdmin}. Registra un
- * mensaje informativo en el logger.
+ * CLI entry point: reads `BOOTSTRAP_ADMIN_EMAIL`/`BOOTSTRAP_ADMIN_PASSWORD`
+ * from the given environment and delegates to {@link bootstrapAdmin}. Logs an
+ * informational message to the logger.
  *
  * @param {{
  *   env?: NodeJS.ProcessEnv,

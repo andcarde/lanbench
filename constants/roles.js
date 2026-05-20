@@ -11,23 +11,23 @@
  * @typedef {import('../types/typedefs').DatasetRole} DatasetRole
  */
 
-/** @type {'annotator'} Anotador de una seccion. */
+/** @type {'annotator'} Annotator of a section. */
 const ROLE_ANNOTATOR = 'annotator';
-/** @type {'reviewer'} Revisor de las anotaciones de otros. */
+/** @type {'reviewer'} Reviewer of other users' annotations. */
 const ROLE_REVIEWER = 'reviewer';
-/** @type {'admin'} Administrador del dataset (gestiona permisos, etc.). */
+/** @type {'admin'} Dataset administrator (manages permissions, etc.). */
 const ROLE_ADMIN = 'admin';
 
 /**
- * Lista canonica e inmutable de roles validos.
+ * Canonical, immutable list of valid roles.
  * @type {ReadonlyArray<DatasetRole>}
  */
 const ALL_ROLES = Object.freeze([ROLE_ANNOTATOR, ROLE_REVIEWER, ROLE_ADMIN]);
 
 /**
- * Type-guard: devuelve true si el valor es un dataset-role conocido.
+ * Type-guard: returns true if the value is a known dataset-role.
  *
- * @param {unknown} value - Valor recibido.
+ * @param {unknown} value - Received value.
  * @returns {value is DatasetRole}
  */
 function isValidRole(value) {

@@ -1,9 +1,9 @@
 // @ts-nocheck
 /**
- * @file Toolbar superior compartida por las paginas autenticadas.
+ * @file Top toolbar shared by the authenticated pages.
  *
- * Inicializa el usuario actual via `GET /api/session/me`, gestiona el
- * boton de logout (`DELETE /api/session`) y resalta el item activo.
+ * Initializes the current user via `GET /api/session/me`, manages the logout
+ * button (`DELETE /api/session`) and highlights the active item.
  */
 (function () {
     "use strict";
@@ -14,9 +14,9 @@
     const MODERATOR_BADGE_LABEL = "moderator";
 
     /**
-     * Construye los enlaces del toolbar a partir del rol de servidor del usuario.
-     * @param {*} sessionUser - Objeto devuelto por /api/session/me.
-     * @returns {*} Estructura { isModerator, links, badgeLabel }.
+     * Builds the toolbar links from the user's server role.
+     * @param {*} sessionUser - Object returned by /api/session/me.
+     * @returns {*} Structure { isModerator, links, badgeLabel }.
      */
     function buildToolbarLinksForUser(sessionUser) {
         const isModerator = Boolean(sessionUser && sessionUser.isModerator === true);
@@ -35,8 +35,8 @@
     }
 
     /**
-     * Renderiza la insignia de moderador en la interfaz.
-     * @param {string} label - Texto de la insignia.
+     * Renders the moderator badge in the UI.
+     * @param {string} label - Badge text.
      */
     function renderModeratorBadge(label) {
         const badge = document.createElement("span");
@@ -47,8 +47,8 @@
     }
 
     /**
-     * Renderiza los enlaces y la insignia que dependen del rol de servidor.
-     * @param {*} sessionUser - Objeto devuelto por /api/session/me.
+     * Renders the links and badge that depend on the server role.
+     * @param {*} sessionUser - Object returned by /api/session/me.
      */
     function renderToolbarLinks(sessionUser) {
         const { links, badgeLabel } = buildToolbarLinksForUser(sessionUser);
@@ -74,8 +74,8 @@
     }
 
     /**
-     * Obtiene el usuario de sesion desde la API.
-     * @returns {Promise<*>} Objeto del usuario o null.
+     * Gets the session user from the API.
+     * @returns {Promise<*>} User object, or null.
      */
     function fetchSessionUser() {
         return fetch(SESSION_ME_URL, { credentials: "same-origin" })
@@ -90,8 +90,8 @@
     }
 
     /**
-     * Crea toolbar con la configuracion recibida.
-     * @returns {*} Resultado producido por la funcion.
+     * Creates the toolbar header element with its markup.
+     * @returns {HTMLElement} The toolbar element.
      */
     function createToolbar() {
         const toolbar = document.createElement("header");
@@ -111,8 +111,8 @@
     }
 
     /**
-     * Ejecuta la logica de inject toolbar.
-     * @returns {*} Resultado producido por la funcion.
+     * Injects the toolbar into the page if not already present.
+     * @returns {void}
      */
     function injectToolbar() {
         if (document.querySelector(".app-toolbar"))
@@ -123,16 +123,16 @@
     }
 
     /**
-     * Ejecuta la logica de redirect to login.
-     * @param {string} targetUrl - Valor de targetUrl usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Redirects the browser to the login page (or the given target URL).
+     * @param {string} targetUrl - Target URL to redirect to.
+     * @returns {void}
      */
     function redirectToLogin(targetUrl) {
         window.location.assign(targetUrl || DEFAULT_REDIRECT);
     }
 
     /**
-     * Ejecuta bind logout y coordina sus efectos asociados.
+     * Binds the logout button click handler and coordinates its effects.
      */
     function bindLogout() {
         const logoutButton = document.getElementById("appToolbarLogoutButton");

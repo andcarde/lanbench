@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * @file Annotations service — punto unico de validacion y persistencia de
- * anotaciones.
+ * @file Annotations service — single point of validation and persistence of
+ * annotations.
  *
- * Encapsula:
- *   - `checkSentences`: orquesta la validacion LLM/reglas via
- *     {@link createSpanishService} y normaliza los resultados al DTO canonico.
- *   - `saveAnnotation`: persiste las oraciones del usuario, marca la entry
- *     como `annotated` y coordina la transicion de seccion.
+ * It encapsulates:
+ *   - `checkSentences`: orchestrates the LLM/rule validation via
+ *     {@link createSpanishService} and normalizes the results to the canonical DTO.
+ *   - `saveAnnotation`: persists the user's sentences, marks the entry as
+ *     `annotated` and coordinates the section transition.
  *
  * @typedef {import('../types/typedefs').SentenceValidationDTO} SentenceValidationDTO
  * @typedef {import('../types/typedefs').SavedAnnotationDTO}    SavedAnnotationDTO
@@ -20,6 +20,7 @@
  * @property {Record<string, any>} [sectionAssignmentService]
  * @property {Record<string, any>} [datasetsRepository]
  * @property {Record<string, any>} [continueDatasetService]
+ * @property {Record<string, any>} [prismaClient]
  */
 
 const { createSpanishService } = require('../domain/spanish/spanish-service');
@@ -29,9 +30,10 @@ const {
 } = require('../contracts/dto-mappers');
 const { buildValidationAlert } = require('../utils/validation-alert');
 const { resolveMessage } = require('../constants/validation-codes');
+const defaultPrisma = require('../prisma/client');
 
 /**
- * Construye el servicio de anotaciones con sus dependencias inyectables.
+ * Builds the annotations service with its injectable dependencies.
  *
  * @param {AnnotationsServiceDeps} [dependencies]
  */
@@ -40,21 +42,23 @@ function createAnnotationsService({
     sectionAssignmentsRepository,
     sectionAssignmentService,
     datasetsRepository,
-    continueDatasetService
+    continueDatasetService,
+    prismaClient
 } = {}) {
     const deps = {
         spanishService: spanishService || createSpanishService(),
         sectionAssignmentsRepository: sectionAssignmentsRepository || null,
         sectionAssignmentService: sectionAssignmentService || null,
         datasetsRepository: datasetsRepository || null,
-        continueDatasetService: continueDatasetService || null
+        continueDatasetService: continueDatasetService || null,
+        prismaClient: prismaClient || defaultPrisma
     };
 
     /**
-     * Valida un conjunto de oraciones contra el contexto de la entry.
-     * Usa `checkBatch` cuando el spanishService lo soporta, o `check` por
-     * oracion como fallback. Inyecta alertas de duplicado entre oraciones
-     * del mismo envio.
+     * Validates a set of sentences against the entry context. Uses
+     * `checkBatch` when the spanishService supports it, or `check` per sentence
+     * as a fallback. Injects duplicate alerts among sentences of the same
+     * submission.
      *
      * @param {string[]} sentences
      * @param {EntryContextDTO|null|undefined} entryContext
@@ -64,6 +68,8 @@ function createAnnotationsService({
         /** @type {any} */
         let normalizedResults;
 
+        // Capability probe: spanishService may or may not implement checkBatch.
+        // When absent, fall back to N individual check() calls.
         if (deps.spanishService && typeof deps.spanishService.checkBatch === 'function') {
             const results = await deps.spanishService.checkBatch(sentences, entryContext || /** @type {*} */ ({}));
             normalizedResults = (Array.isArray(results) ? results : []).map(normalizeCheckResult);
@@ -85,30 +91,29 @@ function createAnnotationsService({
     }
 
     /**
-     * Persiste una serie de oraciones y orquesta los efectos posteriores de
-     * seccion/sesion.
+     * Persists a series of sentences and orchestrates the subsequent
+     * section/session effects.
      *
      * Boundaries:
-     *   (a) persistir la anotacion;
-     *   (b) avanzar la sesion activa;
-     *   (c) completar la asignacion de seccion y los contadores del
-     *       dataset cuando aplique.
+     *   (a) persist the annotation;
+     *   (b) advance the active session;
+     *   (c) complete the section assignment and the dataset counters when
+     *       applicable.
      *
      * @param {{
      *   userId:number,
      *   datasetId:number,
      *   rdfId:number,
-     *   sentences: Array<*>,
-     *   rejectionReasons: Array<string|null>,
+     *   sentences: Array<{sentence:string, rejectionReason?:string|null}>,
      *   sectionNumber?: number|null,
      *   isLastEntry?: boolean|null
      * }} input
      * @returns {Promise<SavedAnnotationDTO>}
      */
-    async function saveSentences({ userId, datasetId, rdfId, sentences, rejectionReasons, sectionNumber, isLastEntry }) {
+    async function saveSentences({ userId, datasetId, rdfId, sentences, sectionNumber, isLastEntry }) {
         await ensureAssignmentForSection(deps, { userId, datasetId, sectionNumber });
 
-        await persistAnnotation(deps, { userId, datasetId, rdfId, sentences, rejectionReasons });
+        await persistAnnotation(deps, { userId, datasetId, rdfId, sentences });
 
         const sessionAdvance = await advanceActiveSessionIfAvailable(deps, { userId, datasetId });
         const shouldFinalizeSection = decideSectionFinalization(sessionAdvance, isLastEntry);
@@ -123,7 +128,7 @@ function createAnnotationsService({
         return mapSavedAnnotationDTO({
             entryId: rdfId,
             datasetId,
-            sentences,
+            sentences: sentences.map((/** @type {*} */ item) => item.sentence),
             savedAt: new Date().toISOString(),
             sectionCompleted,
             sessionAdvance
@@ -137,14 +142,14 @@ function createAnnotationsService({
 }
 
 /**
- * Verifica que la seccion solicitada coincide con la asignacion activa del
- * usuario en el dataset. Si no hay `sectionAssignmentsRepository` o no se
- * indica `sectionNumber`, no se aplica esta restriccion.
+ * Verifies that the requested section matches the user's active assignment in
+ * the dataset. If there is no `sectionAssignmentsRepository` or no
+ * `sectionNumber` is given, this restriction is not applied.
  *
  * @param {Record<string, any>} deps
  * @param {{ userId:number, datasetId:number, sectionNumber?: number|null }} input
  * @returns {Promise<void>}
- * @throws {Error} `'Seccion no asignada al usuario.'` si no coincide.
+ * @throws {Error} `'Seccion no asignada al usuario.'` if it does not match.
  */
 async function ensureAssignmentForSection(deps, { userId, datasetId, sectionNumber }) {
     if (!deps.sectionAssignmentsRepository || !sectionNumber)
@@ -156,20 +161,19 @@ async function ensureAssignmentForSection(deps, { userId, datasetId, sectionNumb
 }
 
 /**
- * Persiste la anotacion mediante `spanishService.save` y propaga errores de
- * dominio (`result.error`).
+ * Persists the annotation via `spanishService.save` and propagates domain
+ * errors (`result.error`).
  *
  * @param {Record<string, any>} deps
- * @param {{ userId:number, datasetId:number, rdfId:number, sentences: Array<Record<string, any>>, rejectionReasons: Array<string|null> }} input
+ * @param {{ userId:number, datasetId:number, rdfId:number, sentences: Array<{sentence:string, rejectionReason?:string|null}> }} input
  * @returns {Promise<void>}
  */
-async function persistAnnotation(deps, { userId, datasetId, rdfId, sentences, rejectionReasons }) {
+async function persistAnnotation(deps, { userId, datasetId, rdfId, sentences }) {
     const result = await deps.spanishService.save({
         userId,
         datasetId,
         rdfId,
-        sentences,
-        rejectionReasons
+        sentences
     });
 
     if (result && typeof result === 'object' && result.error)
@@ -177,9 +181,9 @@ async function persistAnnotation(deps, { userId, datasetId, rdfId, sentences, re
 }
 
 /**
- * Avanza la sesion activa cuando el `continueDatasetService` lo soporta.
- * Si la sesion no esta activa (`no_active_session`), devuelve `null` sin
- * propagar el error.
+ * Advances the active session when the `continueDatasetService` supports it.
+ * If the session is not active (`no_active_session`), returns `null` without
+ * propagating the error.
  *
  * @param {Record<string, any>} deps
  * @param {{ userId:number, datasetId:number }} input
@@ -201,7 +205,7 @@ async function advanceActiveSessionIfAvailable(deps, { userId, datasetId }) {
 }
 
 /**
- * Decide si la seccion debe marcarse como completada en este turno.
+ * Decides whether the section should be marked as completed in this turn.
  *
  * @param {Record<string, any>|null} sessionAdvance
  * @param {boolean|null|undefined} isLastEntry
@@ -214,9 +218,14 @@ function decideSectionFinalization(sessionAdvance, isLastEntry) {
 }
 
 /**
- * Completa la asignacion de seccion y los contadores del dataset cuando
- * corresponde. Unico punto que muta `sectionAssignments` + `datasetsRepository`
- * desde este servicio.
+ * Completes the section assignment and the dataset counters when appropriate.
+ * The only point that mutates `sectionAssignments` + `datasetsRepository` from
+ * this service.
+ *
+ * Both writes (closing the assignment + updating the dataset's denormalized
+ * counters) run inside a single `prisma.$transaction` so they cannot be
+ * applied partially: either both commit or both roll back. A failure is
+ * propagated (no longer silenced with `.catch`) so the transaction rolls back.
  *
  * @param {Record<string, any>} deps
  * @param {{ userId:number, datasetId:number, sectionNumber?: number|null, shouldFinalizeSection: boolean }} input
@@ -226,27 +235,30 @@ async function finalizeSectionIfRequested(deps, { userId, datasetId, sectionNumb
     if (!sectionNumber)
         return false;
 
-    let completed = false;
+    return deps.prismaClient.$transaction(async (/** @type {*} */ tx) => {
+        let completed = false;
 
-    if (deps.sectionAssignmentService && typeof deps.sectionAssignmentService.completeAssignmentIfSectionDone === 'function') {
-        completed = await deps.sectionAssignmentService.completeAssignmentIfSectionDone({
-            userId,
-            datasetId,
-            sectionIndex: sectionNumber
-        }).catch(() => false);
-    }
+        if (deps.sectionAssignmentService) {
+            completed = await deps.sectionAssignmentService.completeAssignmentIfSectionDone({
+                userId,
+                datasetId,
+                sectionIndex: sectionNumber,
+                tx
+            });
+        }
 
-    if (shouldFinalizeSection && deps.datasetsRepository && datasetId) {
-        await deps.datasetsRepository.markSectionAsAnnotated(datasetId);
-        completed = true;
-    }
+        if (shouldFinalizeSection && deps.datasetsRepository && datasetId) {
+            await deps.datasetsRepository.markSectionAsAnnotated(datasetId, tx);
+            completed = true;
+        }
 
-    return completed;
+        return completed;
+    });
 }
 
 /**
- * Normaliza el resultado bruto de `spanishService.check` a la forma esperada
- * por el mapper canonico.
+ * Normalizes the raw result of `spanishService.check` to the shape expected
+ * by the canonical mapper.
  *
  * @param {Record<string, any>|null|undefined} result
  * @returns {Record<string, any>}
@@ -265,8 +277,8 @@ function normalizeCheckResult(result) {
 }
 
 /**
- * Construye el contexto auxiliar entregado al spanishService cuando se
- * validan oraciones una a una.
+ * Builds the auxiliary context handed to the spanishService when sentences are
+ * validated one by one.
  *
  * @param {Record<string, any>|null} entryContext
  * @param {number} sentenceIndex
@@ -277,20 +289,20 @@ function buildSentenceContext(entryContext, sentenceIndex) {
         return {};
 
     return {
-        eid: entryContext.entryId ?? entryContext.eid,
+        entryId: entryContext.entryId,
         category: entryContext.category,
         triples: entryContext.triples,
-        referenceSentence: (entryContext.englishSentences || entryContext.sourceSentences || [])[sentenceIndex] || null
+        referenceSentence: (entryContext.englishSentences || [])[sentenceIndex] || null
     };
 }
 
 /**
- * Inyecta una alerta `repeated_sentence` en los resultados cuyas oraciones
- * ya aparecen en `previousSentences` del contexto. La comparacion es
- * case-insensitive y `trim()`-eada.
+ * Injects a `repeated_sentence` alert into the results whose sentences already
+ * appear in the context's `previousSentences`. The comparison is
+ * case-insensitive and `trim()`-ed.
  *
  * @param {string[]} sentences
- * @param {Array<Record<string, any>>} results - Mutado en sitio (push de alerta).
+ * @param {Array<Record<string, any>>} results - Mutated in place (alert push).
  * @param {Record<string, any>|null|undefined} entryContext
  * @returns {void}
  */

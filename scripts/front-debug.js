@@ -1,18 +1,18 @@
 'use strict';
 
 /**
- * @file `node scripts/front-debug.js` — alterna entre las acciones reales
- * del frontend y los mocks (frontend desconectado del backend).
+ * @file `node scripts/front-debug.js` — toggles between the real frontend
+ * actions and the mocks (frontend disconnected from the backend).
  *
- * Estado del repositorio:
- *   - Modo "real":  `public/js/actions/` contiene los modulos reales.
- *                    No existe `ajax/`. `front-mocks/` puede existir o no.
- *   - Modo "debug": `public/js/actions/` contiene los mocks. `ajax/`
- *                    guarda temporalmente los modulos reales y se borrara
- *                    al volver a modo real.
+ * Repository state:
+ *   - "real" mode:  `public/js/actions/` contains the real modules.
+ *                    `ajax/` does not exist. `front-mocks/` may or may not exist.
+ *   - "debug" mode: `public/js/actions/` contains the mocks. `ajax/`
+ *                    temporarily holds the real modules and is deleted when
+ *                    returning to real mode.
  *
- * El script detecta el estado actual observando si existe `ajax/` y aplica
- * la transicion inversa, intercambiando ficheros entre los tres directorios.
+ * The script detects the current state by checking whether `ajax/` exists and
+ * applies the inverse transition, swapping files between the three directories.
  */
 
 const fs = require('node:fs');
@@ -24,8 +24,8 @@ const FRONT_MOCKS = path.join(ROOT, 'front-mocks');
 const AJAX = path.join(ROOT, 'ajax');
 
 /**
- * Mueve cada fichero del directorio `from` al directorio `to`. No es
- * recursivo (intencional: ambos directorios son planos).
+ * Moves each file from the `from` directory to the `to` directory. It is not
+ * recursive (intentional: both directories are flat).
  *
  * @param {string} from
  * @param {string} to

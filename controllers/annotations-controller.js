@@ -1,13 +1,13 @@
 'use strict';
 
 /**
- * @file Annotations controller — endpoints HTTP del flujo de anotacion.
+ * @file Annotations controller — HTTP endpoints of the annotation flow.
  *
- * Cubre:
- *   - `POST /check`        validar oraciones contra el contexto de la entry.
- *   - `POST /send`         persistir las oraciones de la entry actual.
- *   - `GET  /continue/:id` resolver la siguiente seccion via `continueDatasetService`.
- *   - `GET  /next/:id`     devolver la entry apuntada por la sesion activa.
+ * Covers:
+ *   - `POST /check`        validate sentences against the entry context.
+ *   - `POST /send`         persist the sentences of the current entry.
+ *   - `GET  /continue/:id` resolve the next section via `continueDatasetService`.
+ *   - `GET  /next/:id`     return the entry pointed to by the active session.
  *
  * @typedef {import('express').Request}  ExpressRequest
  * @typedef {import('express').Response} ExpressResponse
@@ -20,11 +20,14 @@
  * @property {string[]|null} sentences
  * @property {Record<string, any>|null} entryContext
  *
+ * @typedef {Object} SendSentenceItem
+ * @property {string} sentence
+ * @property {string|null} [rejectionReason]
+ *
  * @typedef {Object} SendPayload
- * @property {string[]|null} sentences
+ * @property {SendSentenceItem[]|null} sentences
  * @property {number|null} entryId
  * @property {number|null} datasetId
- * @property {Array<string|null>|null} rejectionReasons
  * @property {number|null} sectionNumber
  * @property {boolean|null} isLastEntry
  */
@@ -40,7 +43,7 @@ const { resolveSessionUserId } = require('../middlewares/auth');
 const { normalizeIncomingEntryContext } = require('../contracts/dto-mappers');
 
 /**
- * Construye el controlador de anotaciones.
+ * Builds the annotations controller.
  *
  * @param {AnnotationsControllerDeps} [options]
  */
@@ -49,7 +52,7 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
     const continueService = continueDatasetService || null;
 
     /**
-     * `POST /api/annotations/check` — Valida un lote de oraciones.
+     * `POST /api/annotations/check` — Validates a batch of sentences.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -73,7 +76,7 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
     }
 
     /**
-     * `POST /api/annotations/send` — Persiste las oraciones de una entry.
+     * `POST /api/annotations/send` — Persists the sentences of an entry.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -87,7 +90,7 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
         }
 
         const payload = normalizeSendPayload(request.body);
-        if (!isSendPayloadValid(payload.sentences, payload.entryId, payload.datasetId, payload.rejectionReasons)) {
+        if (!isSendPayloadValid(payload.sentences, payload.entryId, payload.datasetId)) {
             respondInvalidPayload(response, 'Datos inválidos.');
             return;
         }
@@ -97,8 +100,7 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
                 userId,
                 datasetId: /** @type {number} */ (payload.datasetId),
                 rdfId: /** @type {number} */ (payload.entryId),
-                sentences: /** @type {string[]} */ (payload.sentences),
-                rejectionReasons: /** @type {Array<string|null>} */ (payload.rejectionReasons),
+                sentences: /** @type {SendSentenceItem[]} */ (payload.sentences),
                 ...(payload.sectionNumber !== null ? { sectionNumber: payload.sectionNumber } : {}),
                 ...(payload.isLastEntry !== null ? { isLastEntry: payload.isLastEntry } : {})
             });
@@ -112,8 +114,8 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
     }
 
     /**
-     * `GET /api/annotations/continue/:datasetId` — Orquesta el boton
-     * "continuar" segun los casos definidos para secciones.
+     * `GET /api/annotations/continue/:datasetId` — Orchestrates the "continue"
+     * button according to the cases defined for sections.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -143,8 +145,8 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
     }
 
     /**
-     * `GET /api/annotations/next/:datasetId` — Devuelve la entry apuntada
-     * por la sesion activa del usuario.
+     * `GET /api/annotations/next/:datasetId` — Returns the entry pointed to
+     * by the user's active session.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -177,7 +179,7 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
 }
 
 /**
- * Normaliza el body de `POST /check` separando `sentences` y `entryContext`.
+ * Normalizes the `POST /check` body, separating `sentences` and `entryContext`.
  *
  * @param {Record<string, any>|null|undefined} payload
  * @returns {CheckPayload}
@@ -193,8 +195,8 @@ function normalizeCheckPayload(payload) {
 }
 
 /**
- * Adapta el `entryContext` recibido al formato canonico esperado por el
- * servicio. Preserva opcionalmente `previousSentences`.
+ * Adapts the received `entryContext` to the canonical format expected by the
+ * service. Optionally preserves `previousSentences`.
  *
  * @param {Record<string, any>|null} entryContext
  * @returns {Record<string, any>|null}
@@ -209,30 +211,31 @@ function normalizeEntryContext(entryContext) {
         : [];
 
     return {
-        eid: normalized.eid,
+        entryId: normalized.entryId,
         category: normalized.category,
-        sourceSentences: normalized.sourceSentences,
+        englishSentences: normalized.englishSentences,
         triples: normalized.triples,
         ...(previousSentences.length > 0 ? { previousSentences } : {})
     };
 }
 
 /**
- * Normaliza el body de `POST /send` con coerciones defensivas a numero
- * positivo / booleano.
+ * Normalizes the `POST /send` body to the canonical format. The client sends
+ * `sentences` as an array of objects `{ sentence, rejectionReason? }`; here
+ * only defensive number/boolean coercions are applied to the identifiers and
+ * the array is passed as-is to the validator.
  *
  * @param {Record<string, any>|null|undefined} payload
  * @returns {SendPayload}
  */
 function normalizeSendPayload(payload) {
     if (!payload || typeof payload !== 'object')
-        return { sentences: null, entryId: null, datasetId: null, rejectionReasons: null, sectionNumber: null, isLastEntry: null };
+        return { sentences: null, entryId: null, datasetId: null, sectionNumber: null, isLastEntry: null };
 
     return {
         sentences: payload.sentences,
         entryId: toPositiveInteger(payload.entryId ?? payload.rdfId),
         datasetId: toPositiveInteger(payload.datasetId),
-        rejectionReasons: payload.rejectionReasons || payload.rejectionReason,
         sectionNumber: payload.sectionNumber !== undefined && payload.sectionNumber !== null
             ? toPositiveInteger(payload.sectionNumber)
             : null,
@@ -243,33 +246,39 @@ function normalizeSendPayload(payload) {
 }
 
 /**
- * Valida el conjunto minimo de campos del payload de `POST /send`.
+ * Validates the minimal set of fields of the `POST /send` payload. Each item
+ * of `sentences` must be an object with a string `sentence` and an optional
+ * `rejectionReason` (string or null).
  *
  * @param {unknown} sentences
  * @param {number|null} entryId
  * @param {number|null} datasetId
- * @param {unknown} rejectionReasons
  * @returns {boolean}
  */
-function isSendPayloadValid(sentences, entryId, datasetId, rejectionReasons) {
-    return isStringArray(sentences)
+function isSendPayloadValid(sentences, entryId, datasetId) {
+    return Array.isArray(sentences)
+        && sentences.every(isSendSentenceItem)
         && Number.isInteger(entryId)
         && /** @type {number} */ (entryId) > 0
         && Number.isInteger(datasetId)
-        && /** @type {number} */ (datasetId) > 0
-        && isRejectionReasonsArray(rejectionReasons)
-        && /** @type {string[]} */ (rejectionReasons).length === /** @type {string[]} */ (sentences).length;
+        && /** @type {number} */ (datasetId) > 0;
 }
 
 /**
- * Comprueba que `value` es un array de strings (o null por slot).
+ * Checks that `item` is an object `{ sentence: string, rejectionReason?: string|null }`.
  *
- * @param {unknown} value
+ * @param {unknown} item
  * @returns {boolean}
  */
-function isRejectionReasonsArray(value) {
-    return Array.isArray(value)
-        && value.every((/** @type {unknown} */ item) => typeof item === 'string');
+function isSendSentenceItem(item) {
+    if (!item || typeof item !== 'object')
+        return false;
+    const record = /** @type {Record<string, unknown>} */ (item);
+    if (typeof record.sentence !== 'string')
+        return false;
+    if (record.rejectionReason === undefined || record.rejectionReason === null)
+        return true;
+    return typeof record.rejectionReason === 'string';
 }
 
 module.exports = {

@@ -1,13 +1,12 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/annotations.html` — pagina principal de
- * anotacion.
+ * @file Frontend for `public/annotations.html` — main annotation page.
  *
- * Renderiza la entry actual (triples + oraciones de referencia), gestiona
- * el editor de oraciones del anotador con su validacion via
- * `/api/annotations/check`, persiste cada envio via `/api/annotations/send`
- * y avanza la sesion con `/api/annotations/:datasetId/continue` /
- * `/api/annotations/:datasetId/next`.
+ * Renders the current entry (triples + reference sentences), manages the
+ * annotator's sentence editor with its validation via
+ * `/api/annotations/check`, persists each submission via
+ * `/api/annotations/send` and advances the session with
+ * `/api/annotations/:datasetId/continue` / `/api/annotations/:datasetId/next`.
  */
 const exampleData = {
     sentences: [
@@ -18,10 +17,10 @@ const exampleData = {
 };
 
 /**
- * Ejecuta la logica de extract api error message.
- * @param {*} errorLike - Valor de errorLike usado por la funcion.
- * @param {string} fallbackMessage - Valor de fallbackMessage usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Extracts a human-readable error message from an AJAX error-like object.
+ * @param {*} errorLike - jQuery xhr or error object.
+ * @param {string} fallbackMessage - Message to use if none can be extracted.
+ * @returns {string} The resolved error message.
  */
 function extractApiErrorMessage(errorLike, fallbackMessage) {
     const payload = errorLike && typeof errorLike === 'object'
@@ -66,8 +65,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     const toast = new bootstrap.Toast(document.getElementById('actionToast'));
 
     /**
-     * Actualiza toast con los datos indicados.
-     * @param {string} message - Valor de message usado por la funcion.
+     * Shows the action toast with the given message.
+     * @param {string} message - Message to display.
      */
     function showToast(message) {
         $('#toastMessage').text(message);
@@ -75,27 +74,27 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Convierte escape html al formato esperado.
-     * @param {string} text - Valor de text usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Escapes a value for safe insertion as HTML text.
+     * @param {string} text - Text to escape.
+     * @returns {string} HTML-escaped string.
      */
     function escapeHtml(text) {
         return $('<div>').text(text).html();
     }
 
     /**
-     * Convierte escape attribute al formato esperado.
-     * @param {string} text - Valor de text usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Escapes a value for safe insertion into an HTML attribute.
+     * @param {string} text - Text to escape.
+     * @returns {string} Attribute-escaped string.
      */
     function escapeAttribute(text) {
         return String(text).replace(/"/g, '&quot;');
     }
 
     /**
-     * Convierte to positive integer al formato esperado.
-     * @param {*} value - Valor de value usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Converts a value to a positive integer, or null if invalid.
+     * @param {*} value - Value to convert.
+     * @returns {?number} Positive integer, or null.
      */
     function toPositiveInteger(value) {
         const parsed = Number(value);
@@ -105,8 +104,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene page params desde la fuente correspondiente.
-     * @returns {*} Resultado producido por la funcion.
+     * Reads the page parameters (datasetId, llmMode) from the URL.
+     * @returns {*} Page parameters.
      */
     function getPageParams() {
         const params = new URLSearchParams(window.location.search);
@@ -117,9 +116,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Normaliza el modo LLM recibido desde backend o URL.
-     * @param {*} value - Valor de modo LLM.
-     * @returns {?string} Modo normalizado.
+     * Normalizes the LLM mode received from the backend or URL.
+     * @param {*} value - LLM mode value.
+     * @returns {?string} Normalized mode.
      */
     function normalizeLlmMode(value) {
         const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
@@ -127,25 +126,25 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Indica si las comprobaciones LLM estan desactivadas para el dataset.
-     * @returns {boolean} True si el modo es none.
+     * Indicates whether LLM checks are disabled for the dataset.
+     * @returns {boolean} True if the mode is none.
      */
     function isDatasetLlmDisabled() {
         return normalizeLlmMode(state.datasetOptions && state.datasetOptions.llmMode) === 'none';
     }
 
     /**
-     * Obtiene current entry desde la fuente correspondiente.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the current entry from the state.
+     * @returns {*} The current entry, or null.
      */
     function getCurrentEntry() {
         return state.currentEntry || null;
     }
 
     /**
-     * Obtiene entry triples desde la fuente correspondiente.
-     * @param {*} entry - Valor de entry usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the triples for an entry (original or modified, whichever exists).
+     * @param {*} entry - Entry object.
+     * @returns {*} Array of triples.
      */
     function getEntryTriples(entry) {
         if (!entry || typeof entry !== 'object')
@@ -164,9 +163,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene primary triple desde la fuente correspondiente.
-     * @param {*} entry - Valor de entry usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the primary (first) triple of an entry, or a placeholder triple.
+     * @param {*} entry - Entry object.
+     * @returns {*} The primary triple.
      */
     function getPrimaryTriple(entry) {
         const triples = getEntryTriples(entry);
@@ -181,8 +180,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza triple con los datos indicados.
-     * @param {*} data - Valor de data usado por la funcion.
+     * Populates the primary-triple display fields.
+     * @param {*} data - Triple with predicate/subject/object.
      */
     function populateTriple(data) {
         $('#triplePredicate').text(data.predicate);
@@ -191,8 +190,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Renderiza triples list en la interfaz.
-     * @param {*} entry - Valor de entry usado por la funcion.
+     * Renders the full triples list for an entry.
+     * @param {*} entry - Entry object.
      */
     function renderTriplesList(entry) {
         const triples = getEntryTriples(entry);
@@ -221,9 +220,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene required sentence count desde la fuente correspondiente.
-     * @param {*} entry - Valor de entry usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the required number of sentence inputs for an entry (min 3).
+     * @param {*} entry - Entry object.
+     * @returns {number} Required sentence count.
      */
     function getRequiredSentenceCount(entry = getCurrentEntry()) {
         const englishSentences = entry && Array.isArray(entry.englishSentences)
@@ -236,16 +235,16 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene current sentence count desde la fuente correspondiente.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the current number of rendered sentence inputs (defaults to 3).
+     * @returns {number} Current sentence count.
      */
     function getCurrentSentenceCount() {
         return $('.sentence-input').length || 3;
     }
 
     /**
-     * Renderiza sentence pairs en la interfaz.
-     * @param {*} entry - Valor de entry usado por la funcion.
+     * Renders the English-reference + Spanish-input sentence pairs.
+     * @param {*} entry - Entry object.
      */
     function renderSentencePairs(entry) {
         const englishSentences = entry && Array.isArray(entry.englishSentences)
@@ -287,8 +286,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene sentence values desde la fuente correspondiente.
-     * @returns {*} Resultado producido por la funcion.
+     * Gets the current values of all sentence inputs.
+     * @returns {string[]} Sentence values.
      */
     function getSentenceValues() {
         return $('.sentence-input').map(function () {
@@ -297,9 +296,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Construye check entry context a partir de los datos recibidos.
-     * @param {*} entry - Valor de entry usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Builds the entry context sent to the validation endpoint.
+     * @param {*} entry - Entry object.
+     * @returns {*} Entry context, or null.
      */
     function buildCheckEntryContext(entry) {
         if (!entry || typeof entry !== 'object')
@@ -318,7 +317,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de clear validation ui.
+     * Clears all validation UI (styles, summary, issues).
      */
     function clearValidationUI() {
         $('.sentence-block').removeClass('valid invalid warning duplicate');
@@ -345,8 +344,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Aplica las opciones del dataset en el estado de la vista.
-     * @param {*} options - Opciones del dataset.
+     * Applies the dataset options to the view state.
+     * @param {*} options - Dataset options.
      */
     function applyDatasetOptions(options) {
         const source = options && typeof options === 'object' ? options : {};
@@ -359,17 +358,17 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Carga opciones del dataset desde backend.
-     * @param {number} datasetId - Identificador del dataset.
-     * @returns {Promise<*>} Promesa de carga.
+     * Loads the dataset options from the backend.
+     * @param {number} datasetId - Dataset identifier.
+     * @returns {Promise<*>} Load promise.
      */
     function loadDatasetOptions(datasetId) {
-        if (typeof fetchDatasetOptions !== 'function') {
+        if (typeof window.fetchDatasetOptions !== 'function') {
             applyDatasetOptions({ llmMode: 'correction' });
             return $.Deferred().resolve(state.datasetOptions).promise();
         }
 
-        return fetchDatasetOptions(datasetId)
+        return window.fetchDatasetOptions(datasetId)
             .done(function (options) {
                 applyDatasetOptions(options);
             })
@@ -380,10 +379,10 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Resuelve opciones desde URL o backend.
-     * @param {number} datasetId - Identificador del dataset.
-     * @param {?string} llmMode - Modo recibido por URL.
-     * @returns {Promise<*>} Promesa de opciones.
+     * Resolves the options from the URL or the backend.
+     * @param {number} datasetId - Dataset identifier.
+     * @param {?string} llmMode - Mode received via the URL.
+     * @returns {Promise<*>} Options promise.
      */
     function resolveDatasetOptions(datasetId, llmMode) {
         if (llmMode) {
@@ -395,7 +394,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ajusta controles de validacion segun las opciones del dataset.
+     * Adjusts the validation controls according to the dataset options.
      */
     function updateValidationModeUI() {
         $('#btnCheck').toggleClass('d-none', isDatasetLlmDisabled());
@@ -410,8 +409,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza el boton de envio cuando no hay fase de check.
-     * @param {Array} sentences - Oraciones actuales.
+     * Updates the send button when there is no check phase (LLM disabled).
+     * @param {Array} sentences - Current sentences.
      */
     function updateBypassSendButton(sentences) {
         if (!isDatasetLlmDisabled())
@@ -424,8 +423,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de reset validation state.
-     * @param {number} sentenceCount - Valor de sentenceCount usado por la funcion.
+     * Resets the validation state arrays to the given sentence count.
+     * @param {number} sentenceCount - Number of sentences.
      */
     function resetValidationState(sentenceCount = getCurrentSentenceCount()) {
         state.lastSentences = Array.from({ length: sentenceCount }, () => '');
@@ -434,8 +433,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza task copy con los datos indicados.
-     * @param {string} message - Valor de message usado por la funcion.
+     * Updates the task title/subtitle copy.
+     * @param {string} message - Subtitle message.
      */
     function updateTaskCopy(message) {
         $('#taskTitle').text('Task · RDF to Spanish');
@@ -443,7 +442,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza header info con los datos indicados.
+     * Updates the header info (dataset name, section/entry indicators).
      */
     function updateHeaderInfo() {
         const currentEntryPosition = state.entryIndexInSection + 1;
@@ -468,8 +467,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza form enabled con los datos indicados.
-     * @param {boolean} isEnabled - Valor de isEnabled usado por la funcion.
+     * Enables or disables the form controls.
+     * @param {boolean} isEnabled - Whether the form is enabled.
      */
     function setFormEnabled(isEnabled) {
         $('.sentence-input').prop('disabled', !isEnabled);
@@ -480,8 +479,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene example desde la fuente correspondiente.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Loads the example sentences into the input fields.
      */
     function loadExample() {
         $('.sentence-input').each(function (index) {
@@ -493,8 +491,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de reset form.
-     * @param {string} showMessage - Valor de showMessage usado por la funcion.
+     * Resets the sentences form and validation state.
+     * @param {boolean} showMessage - Whether to show a toast.
      */
     function resetForm(showMessage = true) {
         const formElement = $('#sentencesForm')[0];
@@ -509,10 +507,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene entry desde la fuente correspondiente.
-     * @param {*} entryIndex - Valor de entryIndex usado por la funcion.
-     * @param {*} options - Valor de options usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Applies an entry payload to the view (triples, sentences, header, state).
+     * @param {*} payload - Entry payload from the backend.
+     * @param {*} options - Options (e.g. { showToast }).
      */
     function applyEntryPayload(payload, options = {}) {
         const entry = payload && payload.entry ? payload.entry : null;
@@ -562,8 +559,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de replace navigation state.
-     * @returns {*} Resultado producido por la funcion.
+     * Replaces the navigation state (URL query) to reflect the current dataset.
+     * @returns {void}
      */
     function replaceNavigationState() {
         const params = new URLSearchParams();
@@ -576,8 +573,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de complete section.
-     * @returns {*} Resultado producido por la funcion.
+     * Marks the current section as completed and shows the completion screen.
+     * @param {boolean} moreSectionsAvailable - Whether more sections remain.
      */
     function completeSection(moreSectionsAvailable = true) {
         setFormEnabled(false);
@@ -592,8 +589,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de show section completed screen.
-     * @returns {*} Resultado producido por la funcion.
+     * Shows the "section completed" screen.
+     * @param {boolean} moreSectionsAvailable - Whether more sections remain.
      */
     function showSectionCompletedScreen(moreSectionsAvailable = true) {
         $('#issuesCard').addClass('d-none');
@@ -604,8 +601,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de show dataset completed screen.
-     * @returns {*} Resultado producido por la funcion.
+     * Shows the "dataset completed" screen.
      */
     function showDatasetCompletedScreen() {
         $('#issuesCard').addClass('d-none');
@@ -617,14 +613,13 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de load next section.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Loads the next section (continue + next entry), or shows completion.
      */
     function loadNextSection() {
         setFormEnabled(false);
         updateTaskCopy('Cargando siguiente sección...');
 
-        fetchContinueAnnotation(state.datasetId)
+        window.fetchContinueAnnotation(state.datasetId)
             .done(function (continuePayload) {
                 const result = continuePayload && typeof continuePayload === 'object' ? continuePayload : {};
                 const caseNumber = Number(result.caseNumber);
@@ -634,7 +629,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
                     return;
                 }
 
-                fetchNextEntry(state.datasetId)
+                window.fetchNextEntry(state.datasetId)
                     .done(function (payload) {
                         if (!payload || !payload.entry) {
                             showDatasetCompletedScreen();
@@ -655,8 +650,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene next entry desde la fuente correspondiente.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Loads the next entry in the section, or completes the section.
      */
     function loadNextEntry() {
         if (state.isLastEntryInSection) {
@@ -665,7 +659,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
         }
 
         setFormEnabled(false);
-        fetchNextEntry(state.datasetId)
+        window.fetchNextEntry(state.datasetId)
             .done(function (payload) {
                 if (!payload || !payload.entry) {
                     completeSection();
@@ -681,10 +675,10 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Mapea validations to results al formato usado por la aplicacion.
-     * @param {Array} sentences - Valor de sentences usado por la funcion.
-     * @param {Array} validations - Valor de validations usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Maps backend validations to the visual result format used by the app.
+     * @param {Array} sentences - Current sentences.
+     * @param {Array} validations - Backend validations.
+     * @returns {Array} Visual results per sentence.
      */
     function mapValidationsToResults(sentences, validations) {
         return sentences.map((sentence, index) => {
@@ -787,8 +781,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Construye resultado visual para una sugerencia aceptada.
-     * @returns {*} Resultado valido.
+     * Builds the visual result for an accepted suggestion.
+     * @returns {*} Valid result.
      */
     function buildAcceptedResult() {
         return {
@@ -800,8 +794,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza sentence styles con los datos indicados.
-     * @param {Array} results - Valor de results usado por la funcion.
+     * Updates the per-sentence styles based on the validation results.
+     * @param {Array} results - Visual results.
      */
     function updateSentenceStyles(results) {
         $('.sentence-block').each(function (idx) {
@@ -830,8 +824,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Renderiza summary en la interfaz.
-     * @param {Array} results - Valor de results usado por la funcion.
+     * Renders the validation summary list.
+     * @param {Array} results - Visual results.
      */
     function renderSummary(results) {
         const items = results.map((result, index) => {
@@ -865,8 +859,8 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Renderiza issues en la interfaz.
-     * @param {Array} results - Valor de results usado por la funcion.
+     * Renders the issue cards/tabs for sentences that need review.
+     * @param {Array} results - Visual results.
      */
     function renderIssues(results) {
         const problematic = results
@@ -929,9 +923,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Actualiza send button con los datos indicados.
-     * @param {Array} results - Valor de results usado por la funcion.
-     * @param {Array} sentences - Valor de sentences usado por la funcion.
+     * Updates the send button visibility based on results and sentences.
+     * @param {Array} results - Visual results.
+     * @param {Array} sentences - Current sentences.
      */
     function updateSendButton(results, sentences) {
         if (isDatasetLlmDisabled()) {
@@ -950,9 +944,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Renderiza resultados ya resueltos sin volver a consultar la validacion.
-     * @param {Array} results - Resultados visuales.
-     * @param {Array} sentences - Oraciones actuales.
+     * Renders already-resolved results without re-running validation.
+     * @param {Array} results - Visual results.
+     * @param {Array} sentences - Current sentences.
      */
     function renderResolvedState(results, sentences) {
         state.lastSentences = sentences.slice();
@@ -965,9 +959,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Renderiza validation en la interfaz.
-     * @param {Array} validations - Valor de validations usado por la funcion.
-     * @param {Array} sentences - Valor de sentences usado por la funcion.
+     * Renders the validation result for the given sentences.
+     * @param {Array} validations - Backend validations.
+     * @param {Array} sentences - Current sentences.
      */
     function renderValidation(validations, sentences) {
         const results = mapValidationsToResults(sentences, validations);
@@ -981,9 +975,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de run validation.
-     * @param {string} showToastMessage - Valor de showToastMessage usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Runs the validation flow for the current entry's sentences.
+     * @param {boolean} showToastMessage - Whether to show a toast on success.
+     * @returns {*} Promise of the validation request.
      */
     function runValidation(showToastMessage) {
         const entry = getCurrentEntry();
@@ -999,7 +993,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
 
         const sentences = getSentenceValues();
 
-        return checkAnnotations(sentences, buildCheckEntryContext(entry))
+        return window.checkAnnotations(sentences, buildCheckEntryContext(entry))
             .done(function (validations) {
                 renderValidation(validations, sentences);
                 if (showToastMessage)
@@ -1012,9 +1006,9 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de are sentences synced.
-     * @param {Array} sentences - Valor de sentences usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Checks whether the given sentences match the last validated ones.
+     * @param {Array} sentences - Current sentences.
+     * @returns {boolean} True if they are in sync.
      */
     function areSentencesSynced(sentences) {
         return sentences.length === state.lastSentences.length
@@ -1022,8 +1016,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Ejecuta la logica de send annotations.
-     * @returns {*} Resultado producido por la funcion.
+     * Sends the current annotations, validating/synchronizing first as needed.
      */
     function sendAnnotations() {
         const entry = getCurrentEntry();
@@ -1066,11 +1059,11 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Persiste las anotaciones actuales y avanza la vista.
-     * @param {Array} sentences - Oraciones definitivas.
+     * Persists the current annotations and advances the view.
+     * @param {Array} sentences - Final sentences.
      */
     function postCurrentAnnotations(sentences) {
-        postAnnotations(state.datasetId, state.rdfId, sentences, state.rejectionReasons, {
+        window.postAnnotations(state.datasetId, state.rdfId, sentences, state.rejectionReasons, {
             sectionNumber: state.currentSectionNumber,
             isLastEntry: state.isLastEntryInSection
         })
@@ -1101,12 +1094,11 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
     }
 
     /**
-     * Obtiene dataset section desde la fuente correspondiente.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Resolves the active session and loads the current entry for the dataset.
      */
     function loadCurrentEntry() {
         const pageParams = getPageParams();
-        const debugDefaults = getDebugParams();
+        const debugDefaults = window.getDebugParams();
         const datasetId = pageParams.datasetId || (debugDefaults && debugDefaults.datasetId);
 
         if (!datasetId) {
@@ -1122,7 +1114,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
 
         resolveDatasetOptions(datasetId, pageParams.llmMode)
             .always(function () {
-                fetchContinueAnnotation(datasetId)
+                window.fetchContinueAnnotation(datasetId)
                     .done(function (continuePayload) {
                         const result = continuePayload && typeof continuePayload === 'object'
                             ? continuePayload
@@ -1134,7 +1126,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
                             return;
                         }
 
-                        fetchNextEntry(datasetId)
+                        window.fetchNextEntry(datasetId)
                             .done(function (payload) {
                                 if (!payload || !payload.entry) {
                                     updateHeaderInfo();

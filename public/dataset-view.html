@@ -66,7 +66,49 @@
                 >
                     <div class="dataset-view-card-header">
                         <span>Visualización del XML</span>
-                        <span class="dataset-readonly-badge">Solo lectura</span>
+                        <div class="dataset-view-card-actions">
+                            <button
+                                type="button"
+                                id="downloadOriginalBtn"
+                                class="dataset-download-btn"
+                                title="Descargar el XML original"
+                            >
+                                <svg
+                                    class="dataset-download-icon"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M8 1.5a.5.5 0 0 1 .5.5v8.293l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V2a.5.5 0 0 1 .5-.5z"/>
+                                    <path d="M2 13a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 13z"/>
+                                </svg>
+                                <span>Original</span>
+                            </button>
+                            <button
+                                type="button"
+                                id="downloadAnnotatedBtn"
+                                class="dataset-download-btn is-disabled"
+                                disabled
+                                aria-disabled="true"
+                                title="Disponible cuando el dataset esté completado al 100%"
+                            >
+                                <svg
+                                    class="dataset-download-icon"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M8 1.5a.5.5 0 0 1 .5.5v8.293l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V2a.5.5 0 0 1 .5-.5z"/>
+                                    <path d="M2 13a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 13z"/>
+                                </svg>
+                                <span>Extendido</span>
+                            </button>
+                            <span class="dataset-readonly-badge">Solo lectura</span>
+                        </div>
                     </div>
 
                     <textarea

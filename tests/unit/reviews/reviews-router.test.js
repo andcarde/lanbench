@@ -11,8 +11,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Ejecuta la logica de free port.
- * @returns {*} Resultado producido por la funcion.
+ * Runs the logic of free port.
+ * @returns {*} Result produced by the function.
  */
 function freePort() {
     return new Promise((resolve, reject) => {
@@ -26,9 +26,9 @@ function freePort() {
 }
 
 /**
- * Construye app a partir de los datos recibidos.
- * @param {*} options - Objeto de opciones usado para configurar la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds app from the received data.
+ * @param {*} options - Options object used to configure the function.
+ * @returns {*} Result produced by the function.
  */
 function buildApp({ sessionUser, controllerOverrides = {} } = {}) {
     const controller = {
@@ -53,9 +53,9 @@ function buildApp({ sessionUser, controllerOverrides = {} } = {}) {
 }
 
 /**
- * Ejecuta de forma asincrona la logica de listen.
- * @param {*} app - Valor de app usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Asynchronously runs the logic of listen.
+ * @param {*} app - Value of app used by the function.
+ * @returns {Promise<*>} Result produced by the function.
  */
 async function listen(app) {
     const port = await freePort();
@@ -66,9 +66,9 @@ async function listen(app) {
 }
 
 /**
- * Ejecuta de forma asincrona la logica de close.
- * @param {*} server - Valor de server usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Asynchronously runs the logic of close.
+ * @param {*} server - Value of server used by the function.
+ * @returns {Promise<*>} Result produced by the function.
  */
 async function close(server) {
     await new Promise(resolve => server.close(() => resolve(undefined)));

@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * @file Continue-dataset service — orquesta el flujo "continuar dataset":
- * resolver la sesion activa, asignar la siguiente seccion al usuario y
- * avanzar la posicion (`entryNumber`) dentro de la sesion.
+ * @file Continue-dataset service — orchestrates the "continue dataset" flow:
+ * resolve the active session, assign the next section to the user and advance
+ * the position (`entryNumber`) within the session.
  *
- * Algoritmo secuencial: la siguiente seccion a asignar es
- * `maxSectionIndex + 1`. Las escrituras sobre asignaciones se delegan en
- * `sectionAssignmentService.assignSection`, asi solo existe un punto que
- * crea filas en `section_assignments`.
+ * Sequential algorithm: the next section to assign is `maxSectionIndex + 1`.
+ * Writes to assignments are delegated to
+ * `sectionAssignmentService.assignSection`, so there is only one point that
+ * creates rows in `section_assignments`.
  *
  * @typedef {Object} ContinueDatasetServiceDeps
  * @property {Record<string, any>} [activeSessionsRepository]
@@ -26,13 +26,13 @@ const { createDatasetsRepository } = require('../repositories/datasets-repositor
 const { createSectionAssignmentService } = require('./section-assignment-service');
 const { ServiceError } = require('./service-error');
 
-/** Modo `ActiveSession` usado por este servicio (no se mezcla con `review`). */
+/** `ActiveSession` mode used by this service (not mixed with `review`). */
 const SESSION_MODE_ANNOTATION = 'annotation';
-/** Duracion por defecto de una asignacion antes de expirar (2 horas). */
+/** Default duration of an assignment before it expires (2 hours). */
 const DEFAULT_ASSIGNMENT_DURATION_MS = 2 * 60 * 60 * 1000;
 
 /**
- * Construye el servicio de continuacion de dataset.
+ * Builds the continue-dataset service.
  *
  * @param {ContinueDatasetServiceDeps} [options]
  */
@@ -63,18 +63,17 @@ function createContinueDatasetService({
     };
 
     /**
-     * Evalúa los 5 casos del botón continuar para un dataset y usuario dados.
-     * @param {number} userId - Usuario que pulsa continuar.
-     * @param {number} datasetId - Dataset seleccionado.
-     * @returns {Promise<*>} Resultado del caso detectado.
+     * Evaluates the 5 cases of the continue button for a given dataset and user.
+     * @param {number} userId - User who clicks continue.
+     * @param {number} datasetId - Selected dataset.
+     * @returns {Promise<*>} Result of the detected case.
      */
     async function continueDataset(userId, datasetId) {
-        if (typeof deps.sectionAssignmentsRepository.expireStaleAssignments === 'function')
-            await deps.sectionAssignmentsRepository.expireStaleAssignments(new Date());
+        await deps.sectionAssignmentsRepository.expireStaleAssignments(new Date());
 
         const dataset = await deps.datasetsRepository.findAccessibleById({ userId, datasetId });
         if (!dataset)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
+            throw ServiceError.datasetNotFound();
 
         const totalSections = Math.ceil(dataset.totalEntries / SECTION_SIZE);
         if (totalSections === 0)
@@ -160,10 +159,10 @@ function createContinueDatasetService({
     }
 
     /**
-     * Avanza la sesión activa al siguiente entry de la sección.
-     * @param {number} userId - Usuario actual.
-     * @param {number} datasetId - Dataset actual.
-     * @returns {Promise<*>} Resultado del avance.
+     * Advances the active session to the next entry of the section.
+     * @param {number} userId - Current user.
+     * @param {number} datasetId - Current dataset.
+     * @returns {Promise<*>} Result of the advance.
      */
     async function advanceSession(userId, datasetId) {
         const session = await deps.activeSessionsRepository.findSession({
@@ -180,7 +179,7 @@ function createContinueDatasetService({
 
         const dataset = await deps.datasetsRepository.findAccessibleById({ userId, datasetId });
         if (!dataset)
-            throw new ServiceError('Dataset no encontrado.', { status: 404, code: 'dataset_not_found' });
+            throw ServiceError.datasetNotFound();
 
         const sectionEnd = session.sectionNumber * SECTION_SIZE;
         const nextPosition = session.entryNumber + 1;
@@ -193,7 +192,8 @@ function createContinueDatasetService({
             });
 
             const maxSectionIndex = await findMaxSectionIndex(deps.sectionAssignmentsRepository, datasetId);
-            const nextSectionStartPosition = maxSectionIndex * SECTION_SIZE;
+            const nextSectionIndex = maxSectionIndex + 1;
+            const nextSectionStartPosition = getSectionStartPosition(nextSectionIndex);
             const moreSectionsAvailable = nextSectionStartPosition < dataset.totalEntries;
 
             return {
@@ -222,10 +222,10 @@ function createContinueDatasetService({
     }
 
     /**
-     * Devuelve la entry apuntada por la sesion activa con su contexto de seccion.
-     * @param {number} userId - Usuario actual.
-     * @param {number} datasetId - Dataset actual.
-     * @returns {Promise<*>} Payload de la entry actual.
+     * Returns the entry pointed to by the active session with its section context.
+     * @param {number} userId - Current user.
+     * @param {number} datasetId - Current dataset.
+     * @returns {Promise<*>} Payload of the current entry.
      */
     async function getNextEntry(userId, datasetId) {
         if (!deps.datasetsService)
@@ -286,19 +286,19 @@ function createContinueDatasetService({
 }
 
 /**
- * Calcula la posicion global inicial de una seccion 1-indexed.
- * @param {number} sectionNumber - Numero de seccion.
- * @returns {number} Posicion 0-indexed.
+ * Computes the initial global position of a 1-indexed section.
+ * @param {number} sectionNumber - Section number.
+ * @returns {number} 0-indexed position.
  */
 function getSectionStartPosition(sectionNumber) {
     return (sectionNumber - 1) * SECTION_SIZE;
 }
 
 /**
- * Obtiene el índice de sección más alto asignado para un dataset.
- * @param {*} repo - Repositorio de asignaciones.
- * @param {number} datasetId - Identificador del dataset.
- * @returns {Promise<number>} Índice máximo asignado (0 si ninguno).
+ * Gets the highest section index assigned for a dataset.
+ * @param {*} repo - Assignments repository.
+ * @param {number} datasetId - Dataset identifier.
+ * @returns {Promise<number>} Highest assigned index (0 if none).
  */
 async function findMaxSectionIndex(repo, datasetId) {
     const max = await repo.findMaxSectionIndex(datasetId);
@@ -306,11 +306,11 @@ async function findMaxSectionIndex(repo, datasetId) {
 }
 
 /**
- * Obtiene un entry por su posición 0-indexed en el dataset.
- * @param {*} repo - Repositorio de datasets.
- * @param {number} datasetId - Identificador del dataset.
- * @param {number} position - Posición 0-indexed del entry.
- * @returns {Promise<*>} Fila del entry o null.
+ * Gets an entry by its 0-indexed position in the dataset.
+ * @param {*} repo - Datasets repository.
+ * @param {number} datasetId - Dataset identifier.
+ * @param {number} position - 0-indexed position of the entry.
+ * @returns {Promise<*>} Entry row, or null.
  */
 async function findEntryByPosition(repo, datasetId, position) {
     if (typeof repo.findEntryByPosition !== 'function')

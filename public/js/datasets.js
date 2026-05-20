@@ -1,19 +1,19 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/datasets.html` — listado de datasets.
+ * @file Frontend for `public/datasets.html` — dataset listing.
  *
- * Carga la lista de datasets accesibles al usuario, los renderiza con
- * progreso e idiomas, y gestiona el alta via upload XML (solo
- * moderadores).
+ * Loads the list of datasets accessible to the user, renders them with
+ * progress and languages, and manages creation via XML upload (moderators
+ * only).
  */
 (function () {
   "use strict";
 
   /**
-   * Ejecuta la logica de extract api error message.
-   * @param {*} errorLike - Valor de errorLike usado por la funcion.
-   * @param {string} fallbackMessage - Valor de fallbackMessage usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Extracts a human-readable error message from an AJAX error-like object.
+   * @param {*} errorLike - jQuery xhr or error object.
+   * @param {string} fallbackMessage - Message to use if none can be extracted.
+   * @returns {string} The resolved error message.
    */
   function extractApiErrorMessage(errorLike, fallbackMessage) {
     const payload = errorLike && typeof errorLike === "object"
@@ -37,19 +37,19 @@
   }
 
   /**
-   * Normaliza role para que tenga un formato consistente.
-   * @param {string} role - Valor de role usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Normalizes a role to a consistent value ('admin' or 'annotator').
+   * @param {string} role - Raw role.
+   * @returns {string} Normalized role.
    */
   function normaliseRole(role) {
     return role === "admin" ? "admin" : "annotator";
   }
 
   /**
-   * Construye dataset export url a partir de los datos recibidos.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @param {string} format - Valor de format usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Builds the dataset export URL for the given id and format.
+   * @param {*} datasetId - Dataset id.
+   * @param {string} format - Export format ('json' or 'xml').
+   * @returns {?string} Export URL, or null if the id is invalid.
    */
   function buildDatasetExportUrl(datasetId, format) {
     const normalisedId = Number(datasetId);
@@ -63,9 +63,9 @@
   }
 
   /**
-   * Construye dataset delete url a partir de los datos recibidos.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Builds the dataset delete URL for the given id.
+   * @param {*} datasetId - Dataset id.
+   * @returns {?string} Delete URL, or null if the id is invalid.
    */
   function buildDatasetDeleteUrl(datasetId) {
     const normalisedId = Number(datasetId);
@@ -78,9 +78,9 @@
   }
 
   /**
-   * Normaliza criterion para que tenga un formato consistente.
-   * @param {*} rawCriterion - Valor de rawCriterion usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Normalizes a criterion to a consistent shape.
+   * @param {*} rawCriterion - Raw criterion object.
+   * @returns {*} Normalized criterion.
    */
   function normaliseCriterion(rawCriterion) {
     const source = rawCriterion && typeof rawCriterion === "object" ? rawCriterion : {};
@@ -137,9 +137,9 @@
   let continueDatasetModalInstance = null;
 
   /**
-   * Convierte escape html al formato esperado.
-   * @param {string} text - Valor de text usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Escapes a value for safe insertion as HTML text.
+   * @param {string} text - Text to escape.
+   * @returns {string} HTML-escaped string.
    */
   function escapeHtml(text) {
     return String(text)
@@ -151,9 +151,9 @@
   }
 
   /**
-   * Normaliza estado de revision para pintar el boton del dataset.
-   * @param {*} rawReview - Estado recibido del API.
-   * @returns {*} Estado normalizado.
+   * Normalizes the review state used to render the dataset button.
+   * @param {*} rawReview - State received from the API.
+   * @returns {*} Normalized state.
    */
   function normaliseDatasetReviewState(rawReview) {
     const review = rawReview && typeof rawReview === "object" ? rawReview : {};
@@ -167,9 +167,9 @@
   }
 
   /**
-   * Normaliza opciones del dataset.
-   * @param {*} rawOptions - Opciones recibidas del API.
-   * @returns {*} Opciones normalizadas.
+   * Normalizes the dataset options.
+   * @param {*} rawOptions - Options received from the API.
+   * @returns {*} Normalized options.
    */
   function normaliseDatasetOptions(rawOptions) {
     const source = rawOptions && typeof rawOptions === "object" ? rawOptions : {};
@@ -185,10 +185,10 @@
   }
 
   /**
-   * Normaliza dataset para que tenga un formato consistente.
-   * @param {*} rawDataset - Valor de rawDataset usado por la funcion.
-   * @param {number} index - Valor de index usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Normalizes a dataset to a consistent shape for rendering.
+   * @param {*} rawDataset - Raw dataset object.
+   * @param {number} index - Index in the list (used for a fallback name).
+   * @returns {*} Normalized dataset.
    */
   function normaliseDataset(rawDataset, index) {
     const safeDataset =
@@ -235,9 +235,9 @@
   }
 
   /**
-   * Normaliza dataset list para que tenga un formato consistente.
-   * @param {*} datasets - Valor de datasets usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Normalizes a list of datasets.
+   * @param {*} datasets - Raw dataset list.
+   * @returns {*} Normalized dataset list.
    */
   function normaliseDatasetList(datasets) {
     if (!Array.isArray(datasets)) {
@@ -248,15 +248,15 @@
   }
 
   /**
-   * Renderiza loading en la interfaz.
+   * Renders the loading state in the container.
    */
   function renderLoading() {
     $container.html('<div class="loading-state">Cargando datasets...</div>');
   }
 
   /**
-   * Renderiza error en la interfaz.
-   * @param {string} message - Valor de message usado por la funcion.
+   * Renders the error state in the container.
+   * @param {string} message - Error message to display.
    */
   function renderError(message = "No se pudieron cargar los datasets.") {
     $container.html(
@@ -265,7 +265,7 @@
   }
 
   /**
-   * Renderiza empty en la interfaz.
+   * Renders the empty state in the container.
    */
   function renderEmpty() {
     $container.html(
@@ -274,9 +274,9 @@
   }
 
   /**
-   * Construye dataset card a partir de los datos recibidos.
-   * @param {*} dataset - Valor de dataset usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Builds the HTML for a dataset card.
+   * @param {*} dataset - Normalized dataset.
+   * @returns {string} Card HTML.
    */
   function buildDatasetCard(dataset) {
     return `
@@ -309,7 +309,7 @@
               data-action="continue"
               data-id="${dataset.id}"
             >
-              Continuar
+              Anotar
             </button>
 
             ${dataset.review && dataset.review.showReviewButton
@@ -334,7 +334,7 @@
                   data-action="admin"
                   data-id="${dataset.id}"
                 >
-                  Administración
+                  Administrar
                 </button>
 
                 <button
@@ -389,8 +389,8 @@
   }
 
   /**
-   * Renderiza datasets en la interfaz.
-   * @param {*} datasets - Valor de datasets usado por la funcion.
+   * Renders the dataset cards in the container.
+   * @param {*} datasets - Datasets to render.
    */
   function renderDatasets(datasets) {
     const normalised = normaliseDatasetList(datasets);
@@ -405,9 +405,9 @@
   }
 
   /**
-   * Actualiza tooltip con los datos indicados.
-   * @param {*} dataset - Valor de dataset usado por la funcion.
-   * @param {*} buttonElement - Valor de buttonElement usado por la funcion.
+   * Shows the dataset tooltip near the given button.
+   * @param {*} dataset - Normalized dataset.
+   * @param {*} buttonElement - The button the tooltip is anchored to.
    */
   function showTooltip(dataset, buttonElement) {
     const languagesText =
@@ -453,16 +453,16 @@
   }
 
   /**
-   * Actualiza tooltip con los datos indicados.
+   * Hides the dataset tooltip.
    */
   function hideTooltip() {
     $tooltip.addClass("d-none");
   }
 
   /**
-   * Actualiza create success modal con los datos indicados.
-   * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-   * @param {string} uploadedFilename - Valor de uploadedFilename usado por la funcion.
+   * Shows the "dataset created" success modal (or an alert as fallback).
+   * @param {*} response - Creation response from the API.
+   * @param {string} uploadedFilename - Name of the uploaded file (fallback name).
    */
   function showCreateSuccessModal(response, uploadedFilename) {
     const dataset = response && typeof response === "object" ? response.dataset : null;
@@ -493,8 +493,8 @@
   }
 
   /**
-   * Ejecuta la logica de ajax get datasets.
-   * @returns {*} Resultado producido por la funcion.
+   * Requests the list of accessible datasets.
+   * @returns {*} jQuery AJAX promise.
    */
   function ajaxGetDatasets() {
     return $.ajax({
@@ -505,9 +505,9 @@
   }
 
   /**
-   * Ejecuta la logica de ajax get dataset by id.
-   * @param {number} id - Valor de id usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Requests a single dataset by id and updates the local cache.
+   * @param {number} id - Dataset id.
+   * @returns {*} jQuery AJAX promise.
    */
   function ajaxGetDatasetById(id) {
     const normalisedId = Number(id);
@@ -531,10 +531,10 @@
   }
 
   /**
-   * Ejecuta la logica de open annotations.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @param {number} sectionIndex - Valor de sectionIndex usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Navigates to the annotation screen for the given dataset.
+   * @param {*} datasetId - Dataset id.
+   * @param {*} options - Dataset options (used to pass `llmMode`).
+   * @returns {void}
    */
   function openAnnotations(datasetId, options) {
     const normalisedDatasetId = Number(datasetId);
@@ -554,9 +554,8 @@
   }
 
   /**
-   * Ejecuta la logica de ajax upload dataset.
-   * @param {*} file - Valor de file usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Reads the new-dataset options from the form controls.
+   * @returns {*} Normalized dataset options.
    */
   function readNewDatasetOptions() {
     return normaliseDatasetOptions({
@@ -567,10 +566,10 @@
   }
 
   /**
-   * Ejecuta la logica de ajax upload dataset.
-   * @param {*} file - Valor de file usado por la funcion.
-   * @param {*} options - Opciones de creacion.
-   * @returns {*} Resultado producido por la funcion.
+   * Uploads a new dataset XML file with its creation options.
+   * @param {*} file - XML file to upload.
+   * @param {*} options - Creation options.
+   * @returns {*} jQuery AJAX promise.
    */
   function ajaxUploadDataset(file, options = {}) {
     const datasetOptions = normaliseDatasetOptions(options);
@@ -591,9 +590,9 @@
   }
 
   /**
-   * Ejecuta la logica de ajax delete dataset.
-   * @param {number} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Sends the request to delete a dataset.
+   * @param {number} datasetId - Dataset id.
+   * @returns {*} jQuery AJAX promise.
    */
   function ajaxDeleteDataset(datasetId) {
     const url = buildDatasetDeleteUrl(datasetId);
@@ -609,9 +608,9 @@
   }
 
   /**
-   * Solicita al backend la continuacion del dataset.
-   * @param {number} datasetId - Dataset seleccionado.
-   * @returns {*} Promesa AJAX.
+   * Asks the backend to continue the dataset.
+   * @param {number} datasetId - Selected dataset.
+   * @returns {*} jQuery AJAX promise.
    */
   function ajaxContinueDataset(datasetId) {
     const normalisedId = Number(datasetId);
@@ -627,8 +626,8 @@
   }
 
   /**
-   * Obtiene datasets desde la fuente correspondiente.
-   * @returns {Promise<*>} Resultado producido por la funcion.
+   * Loads the datasets and renders them, handling the loading/error states.
+   * @returns {Promise<*>}
    */
   function loadDatasets() {
     renderLoading();
@@ -645,9 +644,9 @@
   }
 
   /**
-   * Obtiene dataset by id desde la fuente correspondiente.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Finds a dataset by id in the local state.
+   * @param {*} datasetId - Dataset id.
+   * @returns {*} The dataset, or null.
    */
   function findDatasetById(datasetId) {
     return state.datasets.find(function (dataset) {
@@ -656,9 +655,9 @@
   }
 
   /**
-   * Ejecuta handle view y coordina sus efectos asociados.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Handles the "view" action: navigates to the dataset detail view.
+   * @param {*} datasetId - Dataset id.
+   * @returns {void}
    */
   function handleView(datasetId) {
     const normalisedDatasetId = Number(datasetId);
@@ -679,9 +678,9 @@
   }
 
   /**
-   * Ejecuta handle continue y coordina sus efectos asociados.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
-   * @returns {*} Resultado producido por la funcion.
+   * Handles the "continue" action: resolves the next case and acts on it.
+   * @param {*} datasetId - Dataset id.
+   * @returns {void}
    */
   function handleContinue(datasetId) {
     ajaxContinueDataset(datasetId)
@@ -721,9 +720,9 @@
   }
 
   /**
-   * Muestra un aviso de continuacion usando modal si esta disponible.
-   * @param {string} title - Titulo del aviso.
-   * @param {string} message - Mensaje del aviso.
+   * Shows a continuation notice using a modal if available (alert otherwise).
+   * @param {string} title - Notice title.
+   * @param {string} message - Notice message.
    */
   function showContinueNotice(title, message) {
     if (
@@ -745,8 +744,8 @@
   }
 
   /**
-   * Abre la administracion de permisos del dataset.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * Opens the dataset's permission administration.
+   * @param {*} datasetId - Dataset id.
    */
   function handleAdmin(datasetId) {
     const normalisedDatasetId = Number(datasetId);
@@ -759,8 +758,8 @@
   }
 
   /**
-   * Borra un dataset tras confirmacion explicita.
-   * @param {*} datasetId - Valor de datasetId usado por la funcion.
+   * Deletes a dataset after explicit confirmation.
+   * @param {*} datasetId - Dataset id.
    */
   function handleDeleteDataset(datasetId) {
     const normalisedDatasetId = Number(datasetId);
@@ -795,8 +794,8 @@
   }
 
   /**
-   * Abre la pantalla de revision filtrada por dataset.
-   * @param {*} datasetId - Dataset seleccionado.
+   * Opens the review screen filtered by dataset.
+   * @param {*} datasetId - Selected dataset.
    */
   function handleReview(datasetId) {
     const normalisedDatasetId = Number(datasetId);
@@ -809,8 +808,8 @@
   }
 
   /**
-   * Ejecuta handle create dataset y coordina sus efectos asociados.
-   * @returns {*} Resultado producido por la funcion.
+   * Handles the "new dataset" action: opens the creation modal.
+   * @returns {void}
    */
   function handleCreateDataset() {
     if (
@@ -831,7 +830,7 @@
   }
 
   /**
-   * Envia el formulario de creacion de dataset.
+   * Submits the dataset creation form.
    */
   function submitNewDataset() {
     const file = $newDatasetFile[0] && $newDatasetFile[0].files
@@ -863,7 +862,7 @@
   }
 
   /**
-   * Ejecuta bind events y coordina sus efectos asociados.
+   * Binds the page's event handlers (cards, action buttons, form).
    */
   function bindEvents() {
     $container.on("mouseenter", ".dataset-button", function () {

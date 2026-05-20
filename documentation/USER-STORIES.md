@@ -66,6 +66,7 @@ In the current state of the repository, the system clearly supports:
 - sentence validation through rules and semantic checking assisted by Ollama
 - saving annotations per user and entry
 - request traceability with input logs and 500 error logs
+- download of the dataset XML from the "Visualización del XML" tab: the original XML and, on fully completed datasets, an extended XML with the Spanish annotations added
 
 ## 6. Software architecture used
 
@@ -159,7 +160,7 @@ This sequence reduces ambiguity, avoids contradictions, and improves the maintai
 - `US-01`: As an annotator, I want to register and log in to access the annotation platform.
 - `US-02`: As an annotator, I want to see a list of available datasets to select which one to work on.
 - `US-03`: As an annotator, I want to view a set of RDF triples in a natural way to understand the information to verbalize.
-- `US-04`: As an annotator, I want to select triples grouped by complexity and by work sections.
+- `US-04`: As an annotator, I want to receive triples grouped into work sections.
 - `US-05`: As an annotator, I want to write Spanish sentences from RDF triples to generate training data.
 - `US-06`: As an annotator, I want to write Spanish sentences from English to generate training data.
 - `US-07`: As an annotator, I want to edit automatically generated sentences to correct errors.
@@ -199,6 +200,11 @@ This sequence reduces ambiguity, avoids contradictions, and improves the maintai
 
 - `US-27`: As a visitor with a moderator code, I want to register directly as a moderator to access the administration surface without operational intervention.
 - `US-28`: As an operator, I want to generate batches of single-use codes to distribute among those who must register as moderators.
+
+### 9.7 Dataset visualization downloads
+
+- `US-29`: As a user with access to a dataset, I want to download the original XML from the "Visualización del XML" tab so I can inspect or reuse it outside the platform.
+- `US-30`: As a user with access to a fully completed dataset, I want to download the extended XML with the Spanish annotations added so I can reuse the annotated corpus.
 
 ## 10. User stories in detailed version
 
@@ -315,6 +321,12 @@ When pressing "continue" on the tasks page, the server evaluates the state of th
   - **Exit**: redirects to `/tasks`.
   - **Continue**: opens a new session over the next available section of the same dataset. The "Continue" button does not appear when there are no more available sections.
 
+**Entry point to annotation from the dataset view page**
+
+- The dataset view page (`/datasets/:id/view`) exposes the "Abrir anotación" button as the entry point to the annotation flow for that dataset.
+- When the dataset is 100% completed (`sectionsCompleted === ceil(totalEntries / 10) && sectionsPending === 0`), the button is rendered as disabled (visually inactive, not focusable, no navigation) because no entries remain to annotate. The tooltip explains the reason.
+- When the dataset is below 100%, the button is enabled and navigates to `/annotations` with the dataset context, regardless of whether the current user still has unassigned sections (server-side `Case 3` of this story handles that with a modal message).
+
 > Implementation details (tables, keys, assignment algorithm) are documented in [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md).
 
 **Lifecycle of an entry**
@@ -354,6 +366,60 @@ Consistent dataset persistence and XML serialization.
 
 - A query of the dataset text exists.
 - Formal export of administrative progress is not yet closed as a complete product flow.
+
+#### `US-29` Download of the original XML from the visualization tab
+
+**Description**  
+Any user with access to a dataset must be able to download the original RDF XML from the "Visualización del XML" tab.
+
+**Value delivered**  
+Allows external inspection and reuse of the source dataset without requiring administrative access or the admin export flow.
+
+**Dependencies**  
+Dataset access (`Permit`), persisted dataset graph, XML serializer (`utils/dataset-xml.js`).
+
+**Specific functional rules**
+
+- The download is exposed as a button labelled `Original` (with a download icon) in the header of the "Visualización del XML" card, next to the read-only badge.
+- The downloaded file is the dataset XML **reconstructed from the persisted graph** — the same content the read-only viewer already shows through `GET /api/datasets/:id/text`. It is not guaranteed to be byte-identical to the originally uploaded file.
+- The file name is `<Dataset.name>.xml`, where `Dataset.name` is the value persisted on registration (already derived from the original filename minus the `.xml` extension).
+- The HTTP response sets `Content-Type: application/xml; charset=utf-8` and `Content-Disposition: attachment; filename="<Dataset.name>.xml"`.
+
+**Acceptance criteria**
+
+- A user with `Permit` over the dataset can press `Original` and receive a `.xml` file whose body matches the viewer content.
+- A user without `Permit` over the dataset receives the same authorization error as any other accessible-dataset endpoint.
+- The downloaded file name is `<Dataset.name>.xml`.
+- An empty dataset (no entries) is reported with the same controlled error (`dataset_without_entries`) used by `GET /api/datasets/:id/text`.
+
+#### `US-30` Download of the extended XML with Spanish annotations
+
+**Description**  
+Any user with access to a fully completed dataset must be able to download an extended XML that contains the original content plus the Spanish annotations stored on the platform.
+
+**Value delivered**  
+Closes the corpus production loop: the Spanish annotations stop living only in the database and become a portable, reusable XML corpus.
+
+**Dependencies**  
+Dataset access (`Permit`), persisted `Annotation` rows, dataset completion counters, XML serializer extended with Spanish lex pairing (see [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md)).
+
+**Specific functional rules**
+
+- The download is exposed as a button labelled `Extendido` (with a download icon) in the same card header, next to the `Original` button.
+- The `Extendido` button is **disabled** while the dataset is below 100% completion; an inline tooltip explains the requirement.
+- "100% completed" is defined as `sectionsCompleted === ceil(totalEntries / 10) && sectionsPending === 0` on the dataset row. The frontend reads completion from the same payload used by the dataset card; the backend re-checks the condition before serving the file.
+- The file name is `<Dataset.name>-extended.xml`.
+- The extended XML mirrors the original XML structure entry by entry; for each entry, Spanish `<lex>` entries (`lang="es"`) are added from the persisted `Annotation` rows. The pairing rule with the existing English `<lex>` entries is documented in [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md).
+- The HTTP response sets `Content-Type: application/xml; charset=utf-8` and `Content-Disposition: attachment; filename="<Dataset.name>-extended.xml"`.
+
+**Acceptance criteria**
+
+- A user with `Permit` over a 100%-completed dataset pressing `Extendido` receives the extended XML.
+- A user with `Permit` over a non-completed dataset receives `409` `dataset_not_completed` from the endpoint, and the button is rendered disabled in the UI.
+- Every Spanish `<lex>` entry in the output corresponds to a persisted `Annotation` row for that entry; no Spanish lex without a matching annotation appears.
+- Pairing rule (deterministic order by `Annotation.sentenceIndex`):
+  - If the entry has an English `<lex>` at the same position as the annotation's `sentenceIndex`, the new Spanish lex reuses that English lex's `lid` (e.g. `Id1`, `Id2`).
+  - Otherwise the Spanish lex is "free" and uses `lid="id<sentenceIndex+1>"` (lowercase `id` prefix).
 
 ### 10.3 Annotation block
 

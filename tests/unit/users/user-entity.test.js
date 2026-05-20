@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Unit tests para la clase canonica `entities/User`.
+ * @file Unit tests for the canonical `entities/User` class.
  *
- * Cubre las factorias `fromPersistence`/`fromSession`, la normalizacion de
- * email/isModerator, e `isValid()`/`toSession()`.
+ * Covers the `fromPersistence`/`fromSession` factories, email/isModerator
+ * normalization, and `isValid()`/`toSession()`.
  */
 
 const assert = require('node:assert/strict');

@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Router de paginas y altas de usuario montado en `/`.
+ * @file Router for user pages and sign-ups, mounted at `/`.
  *
- *   - `GET  /tasks`              pagina protegida con la lista de tareas.
- *   - `POST /register`           alta de usuario normal.
- *   - `POST /register/moderator` alta como moderador (consume codigo).
+ *   - `GET  /tasks`              protected page with the task list.
+ *   - `POST /register`           normal user sign-up.
+ *   - `POST /register/moderator` moderator sign-up (consumes a code).
  */
 
 const express = require('express');
@@ -13,7 +13,7 @@ const path = require('node:path');
 const { requirePageAuth } = require('../middlewares/auth');
 
 /**
- * Construye el router de usuarios.
+ * Builds the users router.
  *
  * @param {{ usersController: Record<string, any> }} options
  * @returns {import('express').Router}

@@ -23,60 +23,51 @@
  * @typedef {import('../types/typedefs').SessionAdvanceDTO}   SessionAdvanceDTO
  */
 
-const { normalizePercent, toIntegerNormalized } = require('../utils/validators');
+const { normalizePercent, toIntegerNormalized, trimmedOr } = require('../utils/validators');
+const { DEFAULT_DATASET_COLOR } = require('../constants/datasets');
 
-/** Nombre por defecto cuando no llega ninguno. */
+/** Default name when none is provided. */
 const DEFAULT_DATASET_NAME = 'DATASET 1';
-/** Clase CSS por defecto cuando no llega ninguna. */
-const DEFAULT_COLOR_CLASS = 'dataset-purple';
-/** Codigo por defecto al construir una alerta generica. */
+/** Default code when building a generic alert. */
 const DEFAULT_ALERT_CODE = 'sentence_review';
-/** Severidad por defecto al construir una alerta generica. */
+/** Default severity when building a generic alert. */
 const DEFAULT_ALERT_SEVERITY = 'warning';
-/** Mensaje por defecto cuando no hay texto util en el origen. */
+/** Default message when there is no useful text in the source. */
 const DEFAULT_ALERT_MESSAGE = 'La oracion requiere revision.';
 
 /**
- * Convierte un objeto-fuente con metricas/permisos de un dataset en un
- * {@link DatasetListDTO} apto para listados y tooltips.
+ * Converts a source object with a dataset's metrics/permissions into a
+ * {@link DatasetListDTO} suitable for listings and tooltips.
  *
- * El parametro `source` se documenta como `Record<string, any>` porque
- * proviene de Prisma rows, mocks, fixtures o estructuras heredadas con
- * jerarquia variable (`progress.completed`, `metrics.rdfTriples`, ...).
+ * The canonical producer is `mapDatasetRecordToSource` in
+ * `services/datasets-service.js`.
  *
- * @param {Record<string, any> | null | undefined} source - Objeto-fuente loose.
- * @param {number} [fallbackId] - Id de respaldo si el origen no aporta uno valido.
+ * @param {Record<string, any> | null | undefined} source - Canonical source object.
+ * @param {number} [fallbackId] - Fallback id if the source does not provide a valid one.
  * @returns {DatasetListDTO}
  */
 function mapDatasetListDTO(source, fallbackId = 1) {
-    const id = toRequiredPositiveInteger(source?.id ?? source?.datasetId, fallbackId);
+    const id = toRequiredPositiveInteger(source?.id, fallbackId);
 
     return withOptionalFields({
         id,
-        name: normalizeRequiredString(source?.name, id > 0 ? `DATASET ${id}` : DEFAULT_DATASET_NAME),
-        totalEntries: toIntegerNormalized(
-            source?.totalEntries
-            ?? source?.triplesRDF
-            ?? source?.metrics?.rdfTriples
-            ?? 0
-        ),
-        completedPercent: normalizePercent(source?.completedPercent ?? source?.progress?.completed ?? 0),
-        remainPercent: normalizePercent(source?.remainPercent ?? source?.progress?.remaining ?? 100)
+        name: trimmedOr(source?.name, id > 0 ? `DATASET ${id}` : DEFAULT_DATASET_NAME),
+        totalEntries: toIntegerNormalized(source?.totalEntries ?? 0),
+        completedPercent: normalizePercent(source?.completedPercent ?? 0),
+        remainPercent: normalizePercent(source?.remainPercent ?? 100)
     }, {
-        withoutReviewPercent: normalizeOptionalPercent(
-            source?.withoutReviewPercent ?? source?.progress?.withoutReview
-        ),
-        languages: normalizeOptionalStringArray(source?.languages ?? source?.metrics?.languages),
+        withoutReviewPercent: normalizeOptionalPercent(source?.withoutReviewPercent),
+        languages: trimmedOrArray(source?.languages),
         permissions: normalizeDatasetPermissions(source?.permissions),
         review: normalizeDatasetReviewState(source?.review),
-        options: normalizeDatasetOptions(source?.options ?? source),
-        colorClass: normalizeOptionalString(source?.colorClass ?? source?.ui?.colorClass) || DEFAULT_COLOR_CLASS
+        options: normalizeDatasetOptions(source?.options),
+        colorClass: trimmedOr(source?.colorClass) || DEFAULT_DATASET_COLOR
     });
 }
 
 /**
- * Mapea un array de objetos-fuente a {@link DatasetListDTO}. Asigna un
- * `fallbackId` ascendente (1, 2, ...) para origenes sin id propio.
+ * Maps an array of source objects to {@link DatasetListDTO}. Assigns an
+ * ascending `fallbackId` (1, 2, ...) for sources without their own id.
  *
  * @param {Array<Record<string, any>> | unknown} sources
  * @returns {DatasetListDTO[]}
@@ -89,47 +80,54 @@ function mapDatasetListDTOs(sources) {
 }
 
 /**
- * Convierte un objeto-fuente en un {@link DatasetSectionDTO} canonico.
+ * Converts a source object into a canonical {@link DatasetSectionDTO}.
+ *
+ * The canonical producer (`getAccessibleDatasetSection` in
+ * `services/datasets-service.js`) already emits the flat shape defined in
+ * `contracts/dtos.json`.
  *
  * @param {Record<string, any> | null | undefined} source
  * @returns {DatasetSectionDTO}
  */
 function mapDatasetSectionDTO(source) {
-    const sectionIndex = toRequiredPositiveInteger(source?.sectionIndex ?? source?.section?.number, 1);
+    const sectionIndex = toRequiredPositiveInteger(source?.sectionIndex, 1);
     const entries = Array.isArray(source?.entries)
         ? source.entries.map((/** @type {*} */ entry) => mapEntryContextDTO(entry, { sectionIndex }))
         : [];
 
     return withOptionalFields({
         sectionIndex,
-        totalEntries: toIntegerNormalized(source?.totalEntries ?? source?.section?.totalEntries ?? entries.length),
+        totalEntries: toIntegerNormalized(source?.totalEntries ?? entries.length),
         entries
     }, {
-        datasetId: toOptionalPositiveInteger(source?.datasetId ?? source?.dataset?.datasetId ?? source?.dataset?.id),
-        datasetName: normalizeOptionalString(source?.datasetName ?? source?.dataset?.name),
-        totalSections: toOptionalPositiveInteger(source?.totalSections ?? source?.dataset?.totalSections),
-        sectionSize: toOptionalPositiveInteger(source?.sectionSize ?? source?.section?.size),
-        startEntry: toOptionalPositiveInteger(source?.startEntry ?? source?.section?.startEntry),
-        endEntry: toOptionalPositiveInteger(source?.endEntry ?? source?.section?.endEntry),
-        isLastSection: normalizeOptionalBoolean(source?.isLastSection ?? source?.section?.isLastSection)
+        datasetId: toOptionalPositiveInteger(source?.datasetId),
+        datasetName: trimmedOr(source?.datasetName),
+        totalSections: toOptionalPositiveInteger(source?.totalSections),
+        sectionSize: toOptionalPositiveInteger(source?.sectionSize),
+        startEntry: toOptionalPositiveInteger(source?.startEntry),
+        endEntry: toOptionalPositiveInteger(source?.endEntry),
+        isLastSection: normalizeOptionalBoolean(source?.isLastSection)
     });
 }
 
 /**
- * Convierte un objeto-fuente en un {@link EntryContextDTO} canonico.
- * Si el origen no aporta `sectionIndex`, se usa el argumento opcional.
+ * Converts a source object into a canonical {@link EntryContextDTO}.
+ * If the source does not provide `sectionIndex`, the optional argument is used.
+ *
+ * The canonical producer is `mapPersistedEntryToAnnotationEntry` in
+ * `services/datasets-service.js`.
  *
  * @param {Record<string, any> | null | undefined} source
  * @param {{ sectionIndex?: number|null }} [context]
  * @returns {EntryContextDTO}
  */
 function mapEntryContextDTO(source, { sectionIndex = null } = {}) {
-    const triples = normalizeTriples(source?.triples ?? source?.originalTriples ?? source?.modifiedTriples);
+    const triples = normalizeTriples(source?.triples);
 
     return withOptionalFields({
-        entryId: toRequiredPositiveInteger(source?.entryId ?? source?.eid ?? source?.rdfId, 0),
+        entryId: toRequiredPositiveInteger(source?.entryId, 0),
         triples,
-        englishSentences: normalizeOptionalStringArray(source?.englishSentences ?? source?.sourceSentences) || [],
+        englishSentences: trimmedOrArray(source?.englishSentences) || [],
         sectionIndex: toRequiredPositiveInteger(source?.sectionIndex ?? sectionIndex, 1)
     }, {
         category: normalizeEntryCategory(source?.category, triples)
@@ -137,55 +135,51 @@ function mapEntryContextDTO(source, { sectionIndex = null } = {}) {
 }
 
 /**
- * Convierte el resultado bruto de un validador (LLM o reglas) en un
- * {@link SentenceValidationDTO} canonico. Si `result.isValid` es falso y no
- * incluye alertas, se sintetiza una alerta a partir de `reason`/`message`.
+ * Converts the raw result of a validator (LLM or rules) into a canonical
+ * {@link SentenceValidationDTO}. If `result.valid` is false and includes no
+ * alerts, an alert is synthesized from `reason`.
+ *
+ * The canonical producer (`normalizeCheckResult` in `annotations-service.js`)
+ * emits `{ valid, reason, suggestion, proposal, alerts }`.
  *
  * @param {Record<string, any> | null | undefined} result
- * @param {string} [sentence] - Oracion original (para fallback de `result.sentence`).
+ * @param {string} [sentence] - Original sentence (fallback for `result.sentence`).
  * @returns {SentenceValidationDTO}
  */
 function mapSentenceValidationDTO(result, sentence = '') {
     const alerts = normalizeAlerts(result?.alerts);
-    const isValid = typeof result?.isValid === 'boolean'
-        ? result.isValid
-        : Boolean(result?.valid);
-    const proposal = normalizeOptionalString(
-        result?.proposal
-        ?? result?.correctionProposal
-        ?? result?.proposedSentence
-    );
+    const isValid = Boolean(result?.valid);
+    const proposal = trimmedOr(result?.proposal);
 
     if (isValid) {
         return withOptionalFields({
-            sentence: normalizeRequiredString(result?.sentence, sentence),
+            sentence: trimmedOr(result?.sentence, sentence),
             isValid: true,
             alerts,
-            rejectionReasons: normalizeOptionalStringArray(result?.rejectionReasons ?? result?.rejectionReason) || []
+            rejectionReasons: []
         }, {
             proposal
         });
     }
 
     return withOptionalFields({
-        sentence: normalizeRequiredString(result?.sentence, sentence),
+        sentence: trimmedOr(result?.sentence, sentence),
         isValid: false,
         alerts: alerts.length > 0
             ? alerts
             : [buildAlert(/** @type {*} */ {
-                message: result?.reason ?? result?.message,
+                message: result?.reason,
                 suggestion: result?.suggestion
             })],
-        rejectionReasons: normalizeOptionalStringArray(result?.rejectionReasons ?? result?.rejectionReason) || []
+        rejectionReasons: []
     }, /** @type {*} */ {
         proposal
     });
 }
 
 /**
- * Mapea, en paralelo por indice, una lista de oraciones y una lista de
- * resultados de validacion. El array devuelto tiene siempre la longitud
- * maxima de ambas entradas.
+ * Maps, in parallel by index, a list of sentences and a list of validation
+ * results. The returned array always has the maximum length of both inputs.
  *
  * @param {string[]} sentences
  * @param {Array<Record<string, any>>} results
@@ -203,8 +197,8 @@ function mapSentenceValidationDTOs(sentences, results) {
 }
 
 /**
- * Convierte el resultado de persistir una anotacion en un
- * {@link SavedAnnotationDTO} canonico.
+ * Converts the result of persisting an annotation into a canonical
+ * {@link SavedAnnotationDTO}.
  *
  * @param {Record<string, any>} input
  * @returns {SavedAnnotationDTO}
@@ -219,7 +213,7 @@ function mapSavedAnnotationDTO({
 }) {
     return withOptionalFields({
         entryId: toRequiredPositiveInteger(entryId, 0),
-        sentences: normalizeOptionalStringArray(sentences) || [],
+        sentences: trimmedOrArray(sentences) || [],
         savedAt: normalizeIsoDate(savedAt)
     }, {
         datasetId: toOptionalPositiveInteger(datasetId),
@@ -229,9 +223,9 @@ function mapSavedAnnotationDTO({
 }
 
 /**
- * Normaliza el avance de sesion devuelto tras guardar anotaciones.
- * @param {Record<string, any> | null | undefined} source - Resultado de continueDatasetService.advanceSession.
- * @returns {SessionAdvanceDTO|null} DTO de avance o null si la entrada no es valida.
+ * Normalizes the session advance returned after saving annotations.
+ * @param {Record<string, any> | null | undefined} source - Result of continueDatasetService.advanceSession.
+ * @returns {SessionAdvanceDTO|null} Advance DTO, or null if the input is invalid.
  */
 function normalizeSessionAdvance(source) {
     if (!source || typeof source !== 'object')
@@ -254,9 +248,9 @@ function normalizeSessionAdvance(source) {
 }
 
 /**
- * Convierte un valor opcional a entero no negativo.
- * @param {string|number|null|undefined} value - Valor recibido.
- * @returns {number|null} Entero normalizado o null si el valor no es valido.
+ * Converts an optional value to a non-negative integer.
+ * @param {string|number|null|undefined} value - Received value.
+ * @returns {number|null} Normalized integer, or null if the value is invalid.
  */
 function toOptionalNonNegativeInteger(value) {
     if (value === null || value === undefined)
@@ -270,11 +264,13 @@ function toOptionalNonNegativeInteger(value) {
 }
 
 /**
- * Convierte un `EntryContext` recibido del frontend a la forma interna
- * esperada por los servicios (con `eid`, `sourceSentences`, ...).
+ * Converts an `EntryContext` received from the frontend into the canonical
+ * shape (`entryId`, `englishSentences`, `category`, `triples`) consumed by the
+ * services. The frontend already emits the canonical shape
+ * (`public/js/annotations.js`).
  *
  * @param {Record<string, any> | null | undefined} entryContext
- * @returns {{ eid: number|null, category: string, sourceSentences: string[], triples: TripleDTO[] }|null}
+ * @returns {{ entryId: number|null, category: string, englishSentences: string[], triples: TripleDTO[] }|null}
  */
 function normalizeIncomingEntryContext(entryContext) {
     if (!entryContext || typeof entryContext !== 'object')
@@ -283,26 +279,24 @@ function normalizeIncomingEntryContext(entryContext) {
     const triples = /** @type {TripleDTO[]} */ (normalizeTriples(entryContext.triples));
 
     return {
-        eid: toOptionalPositiveInteger(entryContext.entryId ?? entryContext.eid),
+        entryId: toOptionalPositiveInteger(entryContext.entryId),
         category: normalizeEntryCategory(entryContext.category, triples) || '',
-        sourceSentences: normalizeOptionalStringArray(
-            entryContext.englishSentences ?? entryContext.sourceSentences
-        ) || [],
+        englishSentences: trimmedOrArray(entryContext.englishSentences) || [],
         triples
     };
 }
 
 /**
- * Normaliza `category` usando los triples cuando el XML trae una categoria
- * inconsistente (caso conocido: WebNLG marca `Airport` para entidades que
- * no son aeropuertos, donde se reescribe a `Place`).
+ * Normalizes `category` using the triples when the XML brings an inconsistent
+ * category (known case: WebNLG marks `Airport` for entities that are not
+ * airports, where it is rewritten to `Place`).
  *
- * @param {string|null|undefined} category - Categoria original.
- * @param {TripleDTO[]} triples            - Triples normalizados.
- * @returns {string|null} Categoria corregida (null si no habia categoria).
+ * @param {string|null|undefined} category - Original category.
+ * @param {TripleDTO[]} triples            - Normalized triples.
+ * @returns {string|null} Corrected category (null if there was no category).
  */
 function normalizeEntryCategory(category, triples) {
-    const normalized = normalizeOptionalString(category);
+    const normalized = trimmedOr(category);
     if (!normalized)
         return null;
 
@@ -318,10 +312,10 @@ function normalizeEntryCategory(category, triples) {
 }
 
 /**
- * Comprueba si algun extremo del triple apunta claramente a un aeropuerto
- * (heuristica sobre `subject`/`object` que incluye `airport`/`aeropuerto`).
+ * Checks whether either end of the triple clearly points to an airport
+ * (heuristic over `subject`/`object` that includes `airport`/`aeropuerto`).
  *
- * @param {TripleDTO} triple - Triple RDF normalizado.
+ * @param {TripleDTO} triple - Normalized RDF triple.
  * @returns {boolean}
  */
 function tripleHasAirportEntity(triple) {
@@ -332,8 +326,8 @@ function tripleHasAirportEntity(triple) {
 }
 
 /**
- * Normaliza una lista de triples RDF. Descarta los triples con campos
- * vacios o de tipo incorrecto.
+ * Normalizes a list of RDF triples. Discards triples with empty or
+ * wrongly-typed fields.
  *
  * @param {unknown} triples
  * @returns {TripleDTO[]}
@@ -348,9 +342,9 @@ function normalizeTriples(triples) {
         if (!triple || typeof triple !== 'object')
             continue;
 
-        const subject = normalizeOptionalString(triple.subject);
-        const predicate = normalizeOptionalString(triple.predicate);
-        const object = normalizeOptionalString(triple.object);
+        const subject = trimmedOr(triple.subject);
+        const predicate = trimmedOr(triple.predicate);
+        const object = trimmedOr(triple.object);
 
         if (!subject || !predicate || !object)
             continue;
@@ -361,8 +355,8 @@ function normalizeTriples(triples) {
 }
 
 /**
- * Normaliza una lista heterogenea de alertas (strings u objetos parciales)
- * a un array tipado de {@link ValidationAlertDTO}.
+ * Normalizes a heterogeneous list of alerts (strings or partial objects) into
+ * a typed array of {@link ValidationAlertDTO}.
  *
  * @param {unknown} alerts
  * @returns {ValidationAlertDTO[]}
@@ -386,61 +380,30 @@ function normalizeAlerts(alerts) {
 }
 
 /**
- * Construye una {@link ValidationAlertDTO} aplicando los defaults declarados
- * en este modulo cuando algun campo obligatorio falte.
+ * Builds a {@link ValidationAlertDTO} applying the defaults declared in this
+ * module when any required field is missing.
  *
  * @param {Partial<ValidationAlertDTO>} [input]
  * @returns {ValidationAlertDTO}
  */
 function buildAlert({ code, severity, message, suggestion } = {}) {
     return /** @type {ValidationAlertDTO} */ (withOptionalFields({
-        code: normalizeRequiredString(code, DEFAULT_ALERT_CODE),
-        severity: normalizeRequiredString(severity, DEFAULT_ALERT_SEVERITY),
-        message: normalizeRequiredString(message, DEFAULT_ALERT_MESSAGE)
+        code: trimmedOr(code, DEFAULT_ALERT_CODE),
+        severity: trimmedOr(severity, DEFAULT_ALERT_SEVERITY),
+        message: trimmedOr(message, DEFAULT_ALERT_MESSAGE)
     }, {
-        suggestion: normalizeOptionalString(suggestion)
+        suggestion: trimmedOr(suggestion)
     }));
 }
 
 /**
- * Devuelve `value.trim()` si es una cadena con contenido util; en otro caso
- * devuelve `fallback`.
- *
- * @param {unknown} value
- * @param {string} fallback
- * @returns {string}
- */
-function normalizeRequiredString(value, fallback) {
-    if (typeof value !== 'string')
-        return fallback;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : fallback;
-}
-
-/**
- * Como {@link normalizeRequiredString} pero devuelve `null` cuando el valor
- * no es una cadena util.
- *
- * @param {unknown} value
- * @returns {string|null}
- */
-function normalizeOptionalString(value) {
-    if (typeof value !== 'string')
-        return null;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
-}
-
-/**
- * Normaliza una lista de cadenas (filtra no-strings, aplica `trim`, descarta
- * cadenas vacias). Devuelve `null` si la entrada no era un array.
+ * Normalizes a list of strings (filters out non-strings, applies `trim`,
+ * discards empty strings). Returns `null` if the input was not an array.
  *
  * @param {unknown} values
  * @returns {string[]|null}
  */
-function normalizeOptionalStringArray(values) {
+function trimmedOrArray(values) {
     if (!Array.isArray(values))
         return null;
 
@@ -451,8 +414,8 @@ function normalizeOptionalStringArray(values) {
 }
 
 /**
- * Variante opcional de {@link normalizePercent}: devuelve `null` para
- * `null`/`undefined`, y delega para el resto.
+ * Optional variant of {@link normalizePercent}: returns `null` for
+ * `null`/`undefined`, and delegates for the rest.
  *
  * @param {unknown} value
  * @returns {number|null}
@@ -465,8 +428,8 @@ function normalizeOptionalPercent(value) {
 }
 
 /**
- * Convierte cualquier representacion aceptada por `Date` en una cadena ISO.
- * Si la fecha es invalida, devuelve la fecha actual.
+ * Converts any representation accepted by `Date` into an ISO string. If the
+ * date is invalid, returns the current date.
  *
  * @param {string|number|Date} value
  * @returns {string}
@@ -479,7 +442,7 @@ function normalizeIsoDate(value) {
 }
 
 /**
- * Devuelve `value` si es booleano, en otro caso `null`.
+ * Returns `value` if it is a boolean, otherwise `null`.
  *
  * @param {unknown} value
  * @returns {boolean|null}
@@ -489,27 +452,31 @@ function normalizeOptionalBoolean(value) {
 }
 
 /**
- * Normaliza permisos del usuario actual sobre un dataset.
- * @param {*} permissions - Permisos de entrada.
- * @returns {*} Permisos normalizados.
+ * Normalizes the current user's permissions over a dataset. The canonical
+ * producer (`mapCurrentUserDatasetPermissions` in
+ * `services/datasets-service.js`) already translates the Prisma columns
+ * (`isAnnotator`, ...) into the canonical keys.
+ *
+ * @param {*} permissions - Input permissions in canonical form.
+ * @returns {*} Normalized permissions.
  */
 function normalizeDatasetPermissions(permissions) {
     if (!permissions || typeof permissions !== 'object')
         return null;
 
     return {
-        annotator: Boolean(permissions.annotator ?? permissions.isAnnotator),
-        reviewer: Boolean(permissions.reviewer ?? permissions.isReviewer),
-        admin: Boolean(permissions.admin ?? permissions.isAdmin),
-        owner: Boolean(permissions.owner ?? permissions.isOwned),
-        canAdmin: Boolean(permissions.canAdmin ?? permissions.admin ?? permissions.isAdmin ?? permissions.owner ?? permissions.isOwned)
+        annotator: Boolean(permissions.annotator),
+        reviewer: Boolean(permissions.reviewer),
+        admin: Boolean(permissions.admin),
+        owner: Boolean(permissions.owner),
+        canAdmin: Boolean(permissions.canAdmin)
     };
 }
 
 /**
- * Normaliza estado de revision del usuario actual sobre un dataset.
- * @param {*} review - Estado de entrada.
- * @returns {*} Estado normalizado.
+ * Normalizes the current user's review state over a dataset.
+ * @param {*} review - Input state.
+ * @returns {*} Normalized state.
  */
 function normalizeDatasetReviewState(review) {
     if (!review || typeof review !== 'object')
@@ -524,13 +491,13 @@ function normalizeDatasetReviewState(review) {
 }
 
 /**
- * Normaliza opciones del dataset.
- * @param {*} options - Opciones de entrada.
- * @returns {*} Opciones normalizadas.
+ * Normalizes the dataset options.
+ * @param {*} options - Input options.
+ * @returns {*} Normalized options.
  */
 function normalizeDatasetOptions(options) {
     const source = options && typeof options === 'object' ? options : {};
-    const llmMode = normalizeOptionalString(source.llmMode);
+    const llmMode = trimmedOr(source.llmMode);
     const isReviewEnabled = source.isReviewEnabled;
     const hasAdditionalReviews = source.hasAdditionalReviews;
 
@@ -545,7 +512,7 @@ function normalizeDatasetOptions(options) {
 }
 
 /**
- * Convierte un valor a entero positivo, o devuelve `null` si no es valido.
+ * Converts a value to a positive integer, or returns `null` if invalid.
  *
  * @param {unknown} value
  * @returns {number|null}
@@ -558,8 +525,8 @@ function toOptionalPositiveInteger(value) {
 }
 
 /**
- * Convierte un valor a entero positivo, recurriendo a `fallback` si no es
- * valido y finalmente a `1` si tampoco el fallback lo es.
+ * Converts a value to a positive integer, falling back to `fallback` if it is
+ * invalid and finally to `1` if the fallback is invalid too.
  *
  * @param {unknown} value
  * @param {unknown} fallback
@@ -570,10 +537,10 @@ function toRequiredPositiveInteger(value, fallback) {
 }
 
 /**
- * Combina los campos obligatorios (`base`) con los opcionales (`optionalFields`),
- * descartando estos ultimos cuando son `null`/`undefined`. La devolucion es
- * `any` para que el llamante la trate como el DTO especifico que esperan
- * sus consumidores (cada `mapXxxDTO` declara su `@returns` concreto).
+ * Combines the required fields (`base`) with the optional ones
+ * (`optionalFields`), discarding the latter when they are `null`/`undefined`.
+ * The return type is `any` so the caller can treat it as the specific DTO its
+ * consumers expect (each `mapXxxDTO` declares its concrete `@returns`).
  *
  * @param {Record<string, any>} base
  * @param {Record<string, any> | null | undefined} optionalFields

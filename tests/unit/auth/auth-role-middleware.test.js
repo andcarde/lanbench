@@ -12,8 +12,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Ejecuta la logica de make response recorder.
- * @returns {*} Resultado producido por la funcion.
+ * Runs the logic of make response recorder.
+ * @returns {*} Result produced by the function.
  */
 function makeResponseRecorder() {
     /** @type {any} */

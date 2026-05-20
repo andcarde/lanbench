@@ -28,4 +28,24 @@ describe('service-error', () => {
         assert.equal(error.status, 401);
         assert.equal(error.code, 'unauthorized');
     });
+
+    it('ServiceError.datasetNotFound produce 404 dataset_not_found canónico', () => {
+        const error = ServiceError.datasetNotFound();
+
+        assert.equal(error instanceof ServiceError, true);
+        assert.equal(error.name, 'ServiceError');
+        assert.equal(error.message, 'Dataset no encontrado.');
+        assert.equal(error.status, 404);
+        assert.equal(error.code, 'dataset_not_found');
+    });
+
+    it('ServiceError.emailTaken produce 409 email_taken canónico', () => {
+        const error = ServiceError.emailTaken();
+
+        assert.equal(error instanceof ServiceError, true);
+        assert.equal(error.name, 'ServiceError');
+        assert.equal(error.message, 'Email already registered.');
+        assert.equal(error.status, 409);
+        assert.equal(error.code, 'email_taken');
+    });
 });

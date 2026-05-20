@@ -20,16 +20,16 @@ describe('users-service', () => {
             passwordHasher,
             usersRepository: {
                 /**
-                 * Obtiene by email desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the findByEmail repository method.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findByEmail() {
                     return null;
                 },
                 /**
-                 * Crea user con la configuracion recibida.
-                 * @param {*} user - Valor de user usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the createUser repository method.
+                 * @param {*} user - User to persist.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async createUser(user) {
                     persistedUser = user;
@@ -62,9 +62,9 @@ describe('users-service', () => {
             passwordHasher,
             usersRepository: {
                 /**
-                 * Obtiene by email desde la fuente correspondiente.
-                 * @param {*} email - Valor de email usado por la funcion.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the findByEmail repository method.
+                 * @param {*} email - Email to look up.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findByEmail(email) {
                     assert.equal(email, 'test@example.com');
@@ -76,7 +76,7 @@ describe('users-service', () => {
                     };
                 },
                 /**
-                 * Actualiza password con los datos indicados.
+                 * Mock of the updatePassword repository method.
                  */
                 async updatePassword() {
                     throw new Error('updatePassword should not be called for already hashed passwords');
@@ -106,8 +106,8 @@ describe('users-service', () => {
             passwordHasher,
             usersRepository: {
                 /**
-                 * Obtiene by email desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the findByEmail repository method.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findByEmail() {
                     return {
@@ -118,9 +118,9 @@ describe('users-service', () => {
                     };
                 },
                 /**
-                 * Actualiza password con los datos indicados.
-                 * @param {*} userId - Valor de userId usado por la funcion.
-                 * @param {*} nextPassword - Valor de nextPassword usado por la funcion.
+                 * Mock of the updatePassword repository method.
+                 * @param {*} userId - User id.
+                 * @param {*} nextPassword - New password hash.
                  */
                 async updatePassword(userId, nextPassword) {
                     assert.equal(userId, 11);
@@ -155,8 +155,8 @@ describe('users-service', () => {
             passwordHasher,
             usersRepository: {
                 /**
-                 * Obtiene by email desde la fuente correspondiente.
-                 * @returns {Promise<*>} Resultado producido por la funcion.
+                 * Mock of the findByEmail repository method.
+                 * @returns {Promise<*>} Result produced by the function.
                  */
                 async findByEmail() {
                     return {

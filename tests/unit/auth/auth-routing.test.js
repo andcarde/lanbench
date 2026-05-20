@@ -94,8 +94,8 @@ describe('auth routing boundary', function () {
 });
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets free port from the corresponding source.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

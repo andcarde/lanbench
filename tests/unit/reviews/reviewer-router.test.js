@@ -11,8 +11,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets free port from the corresponding source.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {
@@ -29,9 +29,9 @@ function getFreePort() {
 }
 
 /**
- * Construye app a partir de los datos recibidos.
- * @param {*} sessionUser - Valor de sessionUser usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds app from the received data.
+ * @param {*} sessionUser - Value of sessionUser used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildApp(sessionUser) {
     const app = express();
@@ -44,9 +44,9 @@ function buildApp(sessionUser) {
 }
 
 /**
- * Ejecuta de forma asincrona la logica de listen.
- * @param {*} app - Valor de app usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Asynchronously runs the logic of listen.
+ * @param {*} app - Value of app used by the function.
+ * @returns {Promise<*>} Result produced by the function.
  */
 async function listen(app) {
     const port = await getFreePort();

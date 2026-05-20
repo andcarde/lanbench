@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Estados validos del ciclo de vida de una review.
+ * @file Valid states of a review's lifecycle.
  *
- * Particiones utiles:
- *   - {@link ACTIVE_REVIEW_STATUSES}: revisiones aun abiertas.
- *   - {@link TERMINAL_REVIEW_STATUSES}: revisiones cerradas con resolucion.
+ * Useful partitions:
+ *   - {@link ACTIVE_REVIEW_STATUSES}: reviews still open.
+ *   - {@link TERMINAL_REVIEW_STATUSES}: reviews closed with a resolution.
  *
  * @typedef {import('../types/typedefs').ReviewStatus} ReviewStatus
  */
@@ -24,7 +24,7 @@ const REVIEW_RELEASED = 'released';
 const REVIEW_EXPIRED = 'expired';
 
 /**
- * Lista canonica con todos los estados de revision.
+ * Canonical list with all review states.
  * @type {ReviewStatus[]}
  */
 const ALL_REVIEW_STATUSES = [
@@ -37,19 +37,19 @@ const ALL_REVIEW_STATUSES = [
 ];
 
 /**
- * Estados que representan una revision aun en curso.
+ * States representing a review still in progress.
  * @type {ReviewStatus[]}
  */
 const ACTIVE_REVIEW_STATUSES = [REVIEW_PENDING, REVIEW_IN_PROGRESS];
 
 /**
- * Estados que representan una revision cerrada con resolucion.
+ * States representing a review closed with a resolution.
  * @type {ReviewStatus[]}
  */
 const TERMINAL_REVIEW_STATUSES = [REVIEW_COMPLETED, REVIEW_DISPUTED];
 
 /**
- * Type-guard: comprueba si el valor es un estado de revision conocido.
+ * Type-guard: checks whether the value is a known review state.
  *
  * @param {unknown} value
  * @returns {value is ReviewStatus}

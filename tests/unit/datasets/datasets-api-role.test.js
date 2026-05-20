@@ -11,8 +11,8 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets free port from the corresponding source.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {
@@ -29,41 +29,41 @@ function getFreePort() {
 }
 
 /**
- * Construye datasets controller a partir de los datos recibidos.
- * @param {*} postSpy - Valor de postSpy usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds datasets controller from the received data.
+ * @param {*} postSpy - Value of postSpy used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildDatasetsController(postSpy) {
     return {
         /**
-         * Ejecuta de forma asincrona la logica de list all datasets.
-         * @param {*} _req - Valor de _req usado por la funcion.
-         * @param {*} res - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs the logic of list all datasets.
+         * @param {*} _req - Value of _req used by the function.
+         * @param {*} res - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async listAllDatasets(_req, res) { return res.status(200).json([]); },
         /**
-         * Crea dataset con la configuracion recibida.
-         * @param {*} _req - Valor de _req usado por la funcion.
-         * @param {*} res - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Creates dataset with the received configuration.
+         * @param {*} _req - Value of _req used by the function.
+         * @param {*} res - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async createDataset(_req, res) {
             postSpy.called = true;
             return res.status(201).json({ ok: true });
         },
         /**
-         * Obtiene dataset by id desde la fuente correspondiente.
-         * @param {*} _req - Valor de _req usado por la funcion.
-         * @param {*} res - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset by id from the corresponding source.
+         * @param {*} _req - Value of _req used by the function.
+         * @param {*} res - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async getDatasetById(_req, res) { return res.status(200).json({}); },
         /**
-         * Obtiene dataset section desde la fuente correspondiente.
-         * @param {*} _req - Valor de _req usado por la funcion.
-         * @param {*} res - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset section from the corresponding source.
+         * @param {*} _req - Value of _req used by the function.
+         * @param {*} res - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async getDatasetSection(_req, res) { return res.status(200).json({}); },
         async listDatasetPermissions(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({ users: [] }); },
@@ -72,20 +72,22 @@ function buildDatasetsController(postSpy) {
         async getDatasetStatistics(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({}); },
         async deleteDataset(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({ ok: true }); },
         /**
-         * Obtiene dataset text desde la fuente correspondiente.
-         * @param {*} _req - Valor de _req usado por la funcion.
-         * @param {*} res - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset text from the corresponding source.
+         * @param {*} _req - Value of _req used by the function.
+         * @param {*} res - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
-        async getDatasetText(_req, res) { return res.status(200).send(''); }
+        async getDatasetText(_req, res) { return res.status(200).send(''); },
+        async downloadDatasetXml(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).send(''); },
+        async downloadDatasetAnnotatedXml(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).send(''); }
     };
 }
 
 /**
- * Construye app a partir de los datos recibidos.
- * @param {*} sessionUser - Valor de sessionUser usado por la funcion.
- * @param {*} postSpy - Valor de postSpy usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds app from the received data.
+ * @param {*} sessionUser - Value of sessionUser used by the function.
+ * @param {*} postSpy - Value of postSpy used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildApp(sessionUser, postSpy) {
     const app = express();
@@ -98,8 +100,8 @@ function buildApp(sessionUser, postSpy) {
         datasetsController: buildDatasetsController(postSpy),
         uploadMiddleware: /** @type {any} */ ({
             /**
-             * Ejecuta la logica de single.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of single.
+             * @returns {*} Result produced by the function.
              */
             single() {
                 return function fakeUpload(/** @type {*} */ _req, /** @type {*} */ _res, /** @type {*} */ next) { next(); };
@@ -110,9 +112,9 @@ function buildApp(sessionUser, postSpy) {
 }
 
 /**
- * Ejecuta de forma asincrona la logica de listen.
- * @param {*} app - Valor de app usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Asynchronously runs the logic of listen.
+ * @param {*} app - Value of app used by the function.
+ * @returns {Promise<*>} Result produced by the function.
  */
 async function listen(app) {
     const port = await getFreePort();

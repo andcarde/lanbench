@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @file Router publico `/reviewer` — sirve la pagina HTML del revisor.
+ * @file Public router `/reviewer` — serves the reviewer HTML page.
  */
 
 const express = require('express');
@@ -9,7 +9,7 @@ const path = require('node:path');
 const { requirePageAuth } = require('../middlewares/auth');
 
 /**
- * Construye el router `/reviewer` (una sola pagina, protegida).
+ * Builds the `/reviewer` router (a single, protected page).
  *
  * @returns {import('express').Router}
  */

@@ -14,10 +14,12 @@
  * @typedef {import('../types/typedefs').SessionUserPayload} SessionUserPayload
  */
 
+const { normalizeEmail } = require('../utils/validators');
+
 /**
- * Datos crudos aceptados por el constructor. Cada campo puede llegar como
- * `string|number|boolean|null|undefined` cuando proceden de la BD o de la
- * sesion; el constructor se encarga de normalizarlos.
+ * Raw data accepted by the constructor. Each field may arrive as
+ * `string|number|boolean|null|undefined` when it comes from the DB or the
+ * session; the constructor is responsible for normalizing them.
  *
  * @typedef {Object} UserConstructorInput
  * @property {number|string|null} [id]
@@ -26,26 +28,26 @@
  */
 
 /**
- * Usuario canonico de la aplicacion.
+ * Canonical application user.
  *
- * Una instancia valida cumple {@link User#isValid}: `id` es entero positivo y
- * `email` es una cadena no vacia. `isModerator` es siempre booleano.
+ * A valid instance satisfies {@link User#isValid}: `id` is a positive integer
+ * and `email` is a non-empty string. `isModerator` is always a boolean.
  */
 class User {
     /**
      * @param {UserConstructorInput} [options]
      */
     constructor({ id, email, isModerator } = {}) {
-        /** @type {number|null} Identificador entero positivo o null si no valido. */
+        /** @type {number|null} Positive integer identifier, or null if invalid. */
         this.id = normalizeId(id);
-        /** @type {string} Email normalizado (trim + lowercase). */
-        this.email = normalizeEmail(email);
-        /** @type {boolean} Rol global de moderador. */
+        /** @type {string} Normalized email (trim + lowercase). */
+        this.email = normalizeEmail(email, '');
+        /** @type {boolean} Global moderator role. */
         this.isModerator = normalizeIsModerator(isModerator);
     }
 
     /**
-     * Construye un `User` a partir de una fila de BD (Prisma o consulta RAW).
+     * Builds a `User` from a DB row (Prisma or RAW query).
      *
      * @param {Partial<UserDTO> & Record<string, unknown> | null | undefined} source
      * @returns {User}
@@ -59,8 +61,8 @@ class User {
     }
 
     /**
-     * Construye un `User` desde el payload almacenado en `request.session.user`.
-     * Devuelve `null` si la sesion no contiene un usuario valido.
+     * Builds a `User` from the payload stored in `request.session.user`.
+     * Returns `null` if the session does not contain a valid user.
      *
      * @param {SessionUserPayload | null | undefined} source
      * @returns {User|null}
@@ -79,7 +81,7 @@ class User {
     }
 
     /**
-     * Comprueba si la instancia es utilizable como usuario autenticado.
+     * Checks whether the instance is usable as an authenticated user.
      * @returns {boolean}
      */
     isValid() {
@@ -90,9 +92,9 @@ class User {
     }
 
     /**
-     * Serializa el usuario para guardarlo en `request.session.user`.
+     * Serializes the user for storage in `request.session.user`.
      * @returns {UserDTO}
-     * @throws {Error} Si la instancia no supera {@link User#isValid}.
+     * @throws {Error} If the instance does not pass {@link User#isValid}.
      */
     toSession() {
         if (!this.isValid())
@@ -107,9 +109,9 @@ class User {
 }
 
 /**
- * Normaliza un identificador numerico aceptado como `number|string`.
+ * Normalizes a numeric identifier accepted as `number|string`.
  * @param {number|string|null|undefined} value
- * @returns {number|null} Entero positivo, o `null` si invalido.
+ * @returns {number|null} Positive integer, or `null` if invalid.
  */
 function normalizeId(value) {
     const parsed = Number(value);
@@ -119,20 +121,8 @@ function normalizeId(value) {
 }
 
 /**
- * Normaliza un email: si no es string, devuelve `''`; en otro caso aplica
- * `trim().toLowerCase()`.
- * @param {string|null|undefined} value
- * @returns {string}
- */
-function normalizeEmail(value) {
-    if (typeof value !== 'string')
-        return '';
-    return value.trim().toLowerCase();
-}
-
-/**
- * Convierte cualquiera de las representaciones tipicas de boolean en BD/sesion
- * (`true`, `1`, `'1'`) en un booleano estricto.
+ * Converts any of the typical boolean representations in DB/session
+ * (`true`, `1`, `'1'`) into a strict boolean.
  * @param {boolean|number|string|null|undefined} value
  * @returns {boolean}
  */

@@ -1,23 +1,23 @@
 'use strict';
 
 /**
- * @file Cliente Groq (modo `cloud`).
+ * @file Groq client (`cloud` mode).
  *
- * Implementa `generateJson` contra el endpoint OpenAI-compatible de Groq,
- * compartiendo las primitivas HTTP/timeout/JSON-extract con
- * `ollama-client` (via `llm-http`).
+ * Implements `generateJson` against Groq's OpenAI-compatible endpoint, sharing
+ * the HTTP/timeout/JSON-extract primitives with `ollama-client` (via
+ * `llm-http`).
  */
 
 const config = require('../config');
 const { removeTrailingSlashes, extractJsonPayload, fetchWithTimeout } = require('./llm-http');
 
-/** Nombre del proveedor (para mensajes de error y logs). */
+/** Provider name (for error messages and logs). */
 const PROVIDER_NAME = 'Groq';
 
 /**
- * Llama al endpoint OpenAI-compatible de Groq y devuelve un JSON parseado.
- * @param {*} options - system, prompt y overrides opcionales.
- * @returns {Promise<*>} JSON parseado de la respuesta.
+ * Calls Groq's OpenAI-compatible endpoint and returns parsed JSON.
+ * @param {*} options - system, prompt and optional overrides.
+ * @returns {Promise<*>} Parsed JSON of the response.
  */
 async function generateJson({ system, prompt, model, apiBase, apiKey, timeoutMs }) {
     const normalizedApiBase = removeTrailingSlashes(String(apiBase || config.groq.apiBase));

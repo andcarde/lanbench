@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Router `/api/datasets` — endpoints JSON de gestion de datasets.
+ * @file Router `/api/datasets` — JSON endpoints for dataset management.
  *
- * `requireApiAuth` protege todas las rutas; `requireApiModerator()` solo se
- * exige en `POST /` (creacion via upload de XML).
+ * `requireApiAuth` protects all routes; `requireApiModerator()` is only
+ * required on `POST /` (creation via XML upload).
  */
 
 const express = require('express');
@@ -12,14 +12,14 @@ const { createUploadMiddleware } = require('../middlewares/upload-middleware');
 const { requireApiAuth, requireApiModerator } = require('../middlewares/auth');
 
 /**
- * Construye el router `/api/datasets`.
+ * Builds the `/api/datasets` router.
  *
  * @param {{
  *   datasetsController?: Record<string, any>,
  *   uploadMiddleware?: import('multer').Multer
  * }} [options]
  * @returns {import('express').Router}
- * @throws {Error} Si no se proporciona `datasetsController`.
+ * @throws {Error} If `datasetsController` is not provided.
  */
 function createDatasetsApiRouter({ datasetsController, uploadMiddleware } = {}) {
     if (!datasetsController)
@@ -39,6 +39,8 @@ function createDatasetsApiRouter({ datasetsController, uploadMiddleware } = {}) 
     router.get('/:id/statistics', datasetsController.getDatasetStatistics);
     router.get('/:id', datasetsController.getDatasetById);
     router.get('/:id/text', datasetsController.getDatasetText);
+    router.get('/:id/download', datasetsController.downloadDatasetXml);
+    router.get('/:id/download/annotated', datasetsController.downloadDatasetAnnotatedXml);
     router.get('/:id/sections/:section', datasetsController.getDatasetSection);
     router.delete('/:id', datasetsController.deleteDataset);
 

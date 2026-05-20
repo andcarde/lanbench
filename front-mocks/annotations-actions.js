@@ -1,11 +1,12 @@
 // @ts-nocheck
 /**
- * @file Mocks de las acciones de anotacion para desarrollo del frontend
- * sin backend (modo `front-debug`).
+ * @file Mocks of the annotation actions for frontend development without a
+ * backend (`front-debug` mode).
  *
- * Replica la firma publica de `public/js/actions/annotations-actions.js`
- * pero devolviendo datos sinteticos deterministas. Se intercambia con la
- * version real via `scripts/front-debug.js`.
+ * Replicates the public signature of
+ * `public/js/actions/annotations-actions.js` but returning deterministic
+ * synthetic data. It is swapped with the real version via
+ * `scripts/front-debug.js`.
  */
 
 const MOCK_SECTION = {
@@ -135,10 +136,10 @@ const EXAMPLE_SENTENCES = [
 ];
 
 /**
- * Comprueba check annotations y devuelve el resultado de la validacion.
- * @param {Array} sentences - Valor de sentences usado por la funcion.
- * @param {object} entryContext - Valor de entryContext usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Mocks the annotation check and returns deterministic validations.
+ * @param {Array} sentences - Candidate sentences.
+ * @param {object} entryContext - Entry context (unused in the mock).
+ * @returns {*} Promise resolving to the mock validations.
  */
 function checkAnnotations(sentences, _entryContext) {
     const mockValidations = sentences.map(function (s, index) {
@@ -178,12 +179,12 @@ function checkAnnotations(sentences, _entryContext) {
 }
 
 /**
- * Ejecuta post annotations contra la capa de persistencia o API correspondiente.
- * @param {object} datasetId - Valor de datasetId usado por la funcion.
- * @param {number} rdfId - Valor de rdfId usado por la funcion.
- * @param {Array} sentences - Valor de sentences usado por la funcion.
- * @param {Array} rejectionReasons - Valor de rejectionReasons usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Mocks persisting annotations and echoes back a saved-annotation payload.
+ * @param {object} datasetId - Dataset identifier.
+ * @param {number} rdfId - RDF entry identifier.
+ * @param {Array} sentences - Sentences to save.
+ * @param {Array} rejectionReasons - Rejection reasons (unused in the mock).
+ * @returns {Promise<*>} Promise resolving to the mock saved annotation.
  */
 function postAnnotations(datasetId, rdfId, sentences, _rejectionReasons) {
     return $.Deferred().resolve({
@@ -195,9 +196,9 @@ function postAnnotations(datasetId, rdfId, sentences, _rejectionReasons) {
 }
 
 /**
- * Mock de continuar anotacion: simula caso 5 (asignacion nueva en seccion 1).
- * @param {number} datasetId - Valor de datasetId usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Mock of continue-annotation: simulates case 5 (new assignment in section 1).
+ * @param {number} datasetId - Dataset identifier (unused in the mock).
+ * @returns {Promise<*>} Promise resolving to the mock continuation result.
  */
 function fetchContinueAnnotation(_datasetId) {
     return $.Deferred().resolve({
@@ -210,9 +211,9 @@ function fetchContinueAnnotation(_datasetId) {
 }
 
 /**
- * Mock de obtener la entry apuntada por la sesion activa.
- * @param {number} datasetId - Valor de datasetId usado por la funcion.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Mock of getting the entry pointed to by the active session.
+ * @param {number} datasetId - Dataset identifier (unused in the mock).
+ * @returns {Promise<*>} Promise resolving to the mock current entry.
  */
 function fetchNextEntry(_datasetId) {
     const entries = Array.isArray(MOCK_SECTION.entries) ? MOCK_SECTION.entries : [];
@@ -231,16 +232,16 @@ function fetchNextEntry(_datasetId) {
 }
 
 /**
- * Obtiene opciones mock del dataset.
- * @returns {Promise<*>} Resultado producido por la funcion.
+ * Gets the mock dataset options.
+ * @returns {Promise<*>} Promise resolving to the mock dataset options.
  */
 function fetchDatasetOptions() {
     return $.Deferred().resolve({ llmMode: 'correction' }).promise();
 }
 
 /**
- * Obtiene debug params desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets the mock debug params (datasetId + sectionNumber).
+ * @returns {*} Mock debug params.
  */
 function getDebugParams() {
     return { datasetId: 1, sectionNumber: 1 };

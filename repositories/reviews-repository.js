@@ -4,9 +4,10 @@
  * @file Repository for the `Review`, `ReviewDecision` and `ReviewComment`
  * tables.
  *
- * Una `Review` representa la asignacion temporal de una entry anotada a un
- * revisor. Cada criterio se evalua con un `ReviewDecision` (insert-or-update)
- * y cada comentario por oracion se persiste como `ReviewComment`.
+ * A `Review` represents the temporary assignment of an annotated entry to a
+ * reviewer. Each criterion is evaluated with a `ReviewDecision`
+ * (insert-or-update) and each per-sentence comment is persisted as a
+ * `ReviewComment`.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  * @typedef {import('../types/typedefs').ReviewStatus}     ReviewStatus
@@ -51,7 +52,7 @@ const {
 const { ENTRY_ANNOTATED } = require('../constants/entry-status');
 
 /**
- * Estados de revision que bloquean a una entry para nuevas asignaciones.
+ * Review states that block an entry from new assignments.
  * @type {ReviewStatus[]}
  */
 const ENTRY_REVIEW_BLOCKING_STATUSES = [
@@ -62,7 +63,7 @@ const ENTRY_REVIEW_BLOCKING_STATUSES = [
 ];
 
 /**
- * Construye el repositorio de revisiones.
+ * Builds the reviews repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  */
@@ -72,8 +73,8 @@ function createReviewsRepository({ prisma } = {}) {
     };
 
     /**
-     * Devuelve la review activa del revisor, opcionalmente acotada a un
-     * dataset, o `null` si no tiene ninguna.
+     * Returns the reviewer's active review, optionally scoped to a dataset,
+     * or `null` if they have none.
      *
      * @param {{ reviewerId:number, datasetId?: number|null }} input
      * @returns {Promise<ReviewRow|null>}
@@ -93,7 +94,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Recupera una review por su id.
+     * Retrieves a review by its id.
      *
      * @param {number} reviewId
      * @returns {Promise<ReviewRow|null>}
@@ -105,9 +106,9 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista entries con estado `annotated` candidatas a ser revisadas por
-     * `reviewerId`, excluyendo aquellas que el propio reviewer haya
-     * anotado y las que ya tengan una review en curso/cerrada.
+     * Lists entries in `annotated` state that are candidates to be reviewed by
+     * `reviewerId`, excluding those the reviewer annotated themselves and
+     * those that already have an in-progress/closed review.
      *
      * @param {{ reviewerId:number, datasetId?: number|null, limit?: number }} input
      * @returns {Promise<Array<Record<string, any>>>}
@@ -141,7 +142,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Crea una review en estado `pending` con `currentCriterionIndex = 0`.
+     * Creates a review in `pending` state with `currentCriterionIndex = 0`.
      *
      * @param {{ entryId:number, reviewerId:number, annotatorId:number, expiresAt:Date }} input
      * @returns {Promise<ReviewRow>}
@@ -160,7 +161,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Actualiza el `status` de una review, fijando opcionalmente `completedAt`.
+     * Updates a review's `status`, optionally setting `completedAt`.
      *
      * @param {{ reviewId:number, status:ReviewStatus, completedAt?: Date|null }} input
      * @returns {Promise<ReviewRow>}
@@ -178,7 +179,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Avanza `currentCriterionIndex` y, opcionalmente, el `status`.
+     * Advances `currentCriterionIndex` and, optionally, the `status`.
      *
      * @param {{ reviewId:number, currentCriterionIndex:number, status?: ReviewStatus }} input
      * @returns {Promise<ReviewRow>}
@@ -195,8 +196,8 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Pasa a `expired` todas las reviews activas cuyo `expiresAt` sea
-     * estrictamente anterior a `cutoffDate`.
+     * Moves to `expired` all active reviews whose `expiresAt` is strictly
+     * earlier than `cutoffDate`.
      *
      * @param {Date} cutoffDate
      * @returns {Promise<{ count:number }>}
@@ -212,8 +213,8 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Inserta o actualiza una decision `(reviewId, criterionCode)`, refrescando
-     * `decidedAt` al instante actual cuando ya existia.
+     * Inserts or updates a `(reviewId, criterionCode)` decision, refreshing
+     * `decidedAt` to the current instant when it already existed.
      *
      * @param {{ reviewId:number, criterionCode:ReviewCriterionCode, decision:ReviewDecisionValue, comment?:string|null }} input
      * @returns {Promise<ReviewDecisionRow>}
@@ -238,7 +239,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista todas las decisiones de una review ordenadas por `decidedAt`.
+     * Lists all decisions of a review ordered by `decidedAt`.
      *
      * @param {{ reviewId:number }} input
      * @returns {Promise<ReviewDecisionRow[]>}
@@ -251,7 +252,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Persiste un comentario por oracion asociado a una review.
+     * Persists a per-sentence comment associated with a review.
      *
      * @param {{ reviewId:number, sentenceIndex:number, originalSentence:string, correctedSentence:string, comment:string }} input
      * @returns {Promise<ReviewCommentRow>}
@@ -269,7 +270,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista los comentarios de una review ordenados por `sentenceIndex`.
+     * Lists a review's comments ordered by `sentenceIndex`.
      *
      * @param {{ reviewId:number }} input
      * @returns {Promise<ReviewCommentRow[]>}
@@ -282,8 +283,8 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lista las reviews terminales (`completed`/`disputed`) cuyo `annotatorId`
-     * coincide. Util para mostrar al anotador el feedback recibido.
+     * Lists the terminal reviews (`completed`/`disputed`) whose `annotatorId`
+     * matches. Useful to show the annotator the feedback received.
      *
      * @param {{ annotatorId:number, datasetId?: number|null, limit?: number }} input
      * @returns {Promise<Array<Record<string, any>>>}

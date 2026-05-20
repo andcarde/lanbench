@@ -15,10 +15,10 @@ const PUNJAB_TRIPLE = {
 };
 
 const CONTEXT = {
-    eid: 100,
+    entryId: 100,
     category: 'Place',
     triples: [PUNJAB_TRIPLE],
-    sourceSentences: [null, null, null]
+    englishSentences: [null, null, null]
 };
 
 describe('spanish-service — "ejerce el liderazgo" regresion', () => {

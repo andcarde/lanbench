@@ -3,10 +3,10 @@
 /**
  * @file Repository for the `RegisterCode` table.
  *
- * Los codigos de registro son strings de un solo uso que permiten registrar
- * usuarios. La unica forma de "usarlos" es borrar la fila atomicamente —
- * por eso `consumeCode` traga el `P2025` ("record not found") como `false`
- * en lugar de propagarlo.
+ * Register codes are single-use strings that allow registering users. The
+ * only way to "use" them is to delete the row atomically — that is why
+ * `consumeCode` swallows the `P2025` ("record not found") as `false` instead
+ * of propagating it.
  *
  * @typedef {import('../types/typedefs').PrismaClientLike} PrismaClientLike
  */
@@ -14,7 +14,7 @@
 const defaultPrisma = require('../prisma/client');
 
 /**
- * Construye el repositorio de `RegisterCode`.
+ * Builds the `RegisterCode` repository.
  *
  * @param {{ prisma?: PrismaClientLike }} [options]
  * @returns {{
@@ -28,13 +28,13 @@ function createRegisterCodesRepository({ prisma } = {}) {
     };
 
     /**
-     * Inserta una lista de codigos dentro de una unica transaccion. Cada
-     * fila se crea con `prisma.registerCode.create` (no `createMany`) para
-     * que un duplicado aborte el lote completo.
+     * Inserts a list of codes within a single transaction. Each row is created
+     * with `prisma.registerCode.create` (not `createMany`) so that a duplicate
+     * aborts the whole batch.
      *
      * @param {string[]} codes
-     * @returns {Promise<string[]>} Los mismos codigos persistidos (copia segura).
-     * @throws {TypeError} Si `codes` no es un array.
+     * @returns {Promise<string[]>} The same persisted codes (safe copy).
+     * @throws {TypeError} If `codes` is not an array.
      */
     async function insertCodes(codes) {
         if (!Array.isArray(codes))
@@ -49,12 +49,12 @@ function createRegisterCodesRepository({ prisma } = {}) {
     }
 
     /**
-     * Consume (borra) un codigo de forma atomica.
+     * Consumes (deletes) a code atomically.
      *
      * @param {string} code
-     * @returns {Promise<boolean>} `true` si el codigo existia y fue borrado;
-     *   `false` si no existia.
-     * @throws Cualquier error distinto a `P2025` se propaga.
+     * @returns {Promise<boolean>} `true` if the code existed and was deleted;
+     *   `false` if it did not exist.
+     * @throws Any error other than `P2025` is propagated.
      */
     async function consumeCode(code) {
         try {

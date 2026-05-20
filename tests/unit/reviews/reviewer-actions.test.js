@@ -9,7 +9,7 @@ const beforeEach = /** @type {Mocha.HookFunction} */ (globalThis.beforeEach || t
 const afterEach = /** @type {Mocha.HookFunction} */ (globalThis.afterEach || testApi.afterEach);
 
 /**
- * Obtiene actions desde la fuente correspondiente.
+ * Gets actions from the corresponding source.
  * @returns {*} Modulo actions recargado.
  */
 function loadActions() {

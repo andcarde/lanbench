@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * @file Construye el middleware de sesion (express-session) respaldado por
- * Prisma. `store` y `prisma` son inyectables para que los tests usen un
- * cliente alternativo sin sesion real.
+ * @file Builds the session middleware (express-session) backed by Prisma.
+ * `store` and `prisma` are injectable so tests can use an alternative client
+ * without a real session.
  *
  */
 
@@ -12,7 +12,7 @@ const config = require('../config');
 const { PrismaSessionStore } = require('../utils/prisma-session-store');
 
 /**
- * Crea el middleware de sesion respaldado por Prisma.
+ * Creates the Prisma-backed session middleware.
  *
  * @param {{
  *   store?: any,

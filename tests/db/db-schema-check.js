@@ -1,26 +1,26 @@
 'use strict';
 
 /**
- * Compara la estructura real de la base de datos con la definicion esperada
- * derivada de prisma/schema.prisma.
+ * Compares the real database structure against the expected definition
+ * derived from prisma/schema.prisma.
  *
- * Verifica de forma bidireccional:
- *  - Lo esperado existe en la BD (tablas / columnas / indices ausentes).
- *  - La BD no contiene nada extra (tablas / columnas extra no declaradas en Prisma).
+ * Verifies bidirectionally:
+ *  - The expected exists in the DB (missing tables / columns / indexes).
+ *  - The DB contains nothing extra (extra tables / columns not declared in Prisma).
  *
- * Uso: npm run test:db
+ * Usage: npm run test:db
  */
 
 const mariadb = require('mariadb');
 const config = require('../../config');
 
-// ── Definicion esperada (derivada de prisma/schema.prisma) ───────────────────
+// ── Expected definition (derived from prisma/schema.prisma) ──────────────────
 
-// Tablas gestionadas por otros componentes en runtime (no por Prisma).
-// Se excluyen del control de extras para no marcar como discrepancia un objeto
-// que no debe estar en schema.prisma.
+// Tables managed by other components at runtime (not by Prisma).
+// They are excluded from the extras check so as not to flag an object that is
+// not meant to be in schema.prisma as a discrepancy.
 const IGNORED_TABLES = new Set([
-    'sessions' // creada y mantenida por express-mysql-session
+    'sessions' // created and maintained by express-mysql-session
 ]);
 
 const EXPECTED_TABLES = new Set([
@@ -45,9 +45,9 @@ const EXPECTED_TABLES = new Set([
     'register_codes'
 ]);
 
-// Cada columna: { name, nullable, default? }
-//   - nullable: true si acepta NULL.
-//   - default: valor exacto que se quiere verificar (string). Si se omite, no se comprueba.
+// Each column: { name, nullable, default? }
+//   - nullable: true if it accepts NULL.
+//   - default: exact value to verify (string). If omitted, it is not checked.
 const EXPECTED_COLUMNS = {
     datasets: [
         { name: 'id',                     nullable: false },
@@ -224,7 +224,7 @@ const EXPECTED_COLUMNS = {
     ]
 };
 
-// Indices con nombre explicito declarados en prisma/schema.prisma (excluye PRIMARY)
+// Explicitly named indexes declared in prisma/schema.prisma (excludes PRIMARY)
 const EXPECTED_INDEXES = {
     sections:                   ['idx_sections_dataset'],
     permits:                    ['idx_permits_user'],
@@ -244,7 +244,7 @@ const EXPECTED_INDEXES = {
     review_comments:            ['idx_review_comments_review']
 };
 
-// ── Helpers de salida ────────────────────────────────────────────────────────
+// ── Output helpers ───────────────────────────────────────────────────────────
 
 const RED    = '\x1b[31m';
 const YELLOW = '\x1b[33m';
@@ -257,14 +257,14 @@ function warn(/** @type {*} */ msg)  { console.log(`  ${YELLOW}⚠${RESET}  ${ms
 function fail(/** @type {*} */ msg)  { console.log(`  ${RED}✖${RESET}  ${msg}`); }
 function section(/** @type {*} */ title) { console.log(`\n${BOLD}${title}${RESET}`); }
 
-// ── Comprobaciones ───────────────────────────────────────────────────────────
+// ── Checks ───────────────────────────────────────────────────────────────────
 
 /**
- * Verifica de forma bidireccional el conjunto de tablas:
- *  - Cuenta como issue toda tabla esperada ausente en la BD.
- *  - Cuenta como issue toda tabla presente en la BD no declarada en Prisma.
- * @param {Set<string>} actualTables - Nombres reales (minusculas) de tablas en la BD.
- * @returns {number} Numero de discrepancias.
+ * Verifies the set of tables bidirectionally:
+ *  - Counts as an issue every expected table missing from the DB.
+ *  - Counts as an issue every table present in the DB not declared in Prisma.
+ * @param {Set<string>} actualTables - Real (lowercase) table names in the DB.
+ * @returns {number} Number of discrepancies.
  */
 function checkTables(actualTables) {
     section('Tablas');
@@ -293,13 +293,13 @@ function checkTables(actualTables) {
 }
 
 /**
- * Verifica columnas por tabla en ambos sentidos:
- *  - Cada columna esperada existe con la nullability y default declarados.
- *  - No hay columnas extra en la BD respecto a las declaradas en Prisma.
- * @param {*} conn - Conexion MariaDB.
- * @param {string} db - Base de datos.
- * @param {Set<string>} actualTables - Tablas reales.
- * @returns {Promise<number>} Numero de discrepancias.
+ * Verifies columns per table in both directions:
+ *  - Each expected column exists with the declared nullability and default.
+ *  - There are no extra columns in the DB beyond those declared in Prisma.
+ * @param {*} conn - MariaDB connection.
+ * @param {string} db - Database.
+ * @param {Set<string>} actualTables - Real tables.
+ * @returns {Promise<number>} Number of discrepancies.
  */
 async function checkColumns(conn, db, actualTables) {
     let issues = 0;
@@ -344,7 +344,7 @@ async function checkColumns(conn, db, actualTables) {
 
             if (expected.default !== undefined) {
                 const rawDefault = col.COLUMN_DEFAULT === null ? null : String(col.COLUMN_DEFAULT);
-                // MariaDB envuelve los defaults de string con comillas simples en INFORMATION_SCHEMA.
+                // MariaDB wraps string defaults with single quotes in INFORMATION_SCHEMA.
                 const actualDefault = rawDefault === null ? null : rawDefault.replace(/^'(.*)'$/, '$1');
                 if (actualDefault !== String(expected.default)) {
                     notes.push(`default: esperado '${expected.default}', actual '${actualDefault}'`);
@@ -372,13 +372,13 @@ async function checkColumns(conn, db, actualTables) {
 }
 
 /**
- * Verifica que existan en la BD todos los indices con nombre declarados en Prisma.
- * (No reporta indices extra: Prisma genera indices auxiliares para FKs cuyo nombre
- * no esta bajo control explicito en schema.prisma.)
- * @param {*} conn - Conexion MariaDB.
- * @param {string} db - Base de datos.
- * @param {Set<string>} actualTables - Tablas reales.
- * @returns {Promise<number>} Numero de discrepancias.
+ * Verifies that all named indexes declared in Prisma exist in the DB.
+ * (It does not report extra indexes: Prisma generates auxiliary indexes for
+ * FKs whose name is not under explicit control in schema.prisma.)
+ * @param {*} conn - MariaDB connection.
+ * @param {string} db - Database.
+ * @param {Set<string>} actualTables - Real tables.
+ * @returns {Promise<number>} Number of discrepancies.
  */
 async function checkIndexes(conn, db, actualTables) {
     let issues = 0;
@@ -413,18 +413,18 @@ async function checkIndexes(conn, db, actualTables) {
     return issues;
 }
 
-// ── Invariantes de datos ─────────────────────────────────────────────────────
-// Cubre lo que la estructura declarada en Prisma no puede garantizar por si sola:
-//  - Dominios sobre columnas VarChar (los enum reales como TriplesetType ya los
-//    impone MySQL y no se repiten aqui).
-//  - Cadenas vacias en columnas NOT NULL (NOT NULL no impide TRIM='').
-//  - Reglas de negocio multi-fila (propietario unico por dataset, etc.).
+// ── Data invariants ──────────────────────────────────────────────────────────
+// Covers what the structure declared in Prisma cannot guarantee on its own:
+//  - Domains over VarChar columns (real enums like TriplesetType are already
+//    enforced by MySQL and are not repeated here).
+//  - Empty strings in NOT NULL columns (NOT NULL does not prevent TRIM='').
+//  - Multi-row business rules (single owner per dataset, etc.).
 
 /**
- * Cuenta filas devueltas por una query COUNT(*).
- * @param {*} conn - Conexion MariaDB.
- * @param {string} sql - Query que devuelve un unico COUNT(*).
- * @returns {Promise<number>} Numero de filas.
+ * Counts the rows returned by a COUNT(*) query.
+ * @param {*} conn - MariaDB connection.
+ * @param {string} sql - Query returning a single COUNT(*).
+ * @returns {Promise<number>} Number of rows.
  */
 async function countRows(conn, sql) {
     const rows = await conn.query(sql);
@@ -432,11 +432,11 @@ async function countRows(conn, sql) {
 }
 
 /**
- * Verifica invariantes de datos no expresables en el schema.
- * Las advertencias (warn) no cuentan como issues.
- * @param {*} conn - Conexion MariaDB.
- * @param {Set<string>} actualTables - Tablas reales (minusculas).
- * @returns {Promise<number>} Numero de violaciones.
+ * Verifies data invariants that cannot be expressed in the schema.
+ * Warnings (warn) do not count as issues.
+ * @param {*} conn - MariaDB connection.
+ * @param {Set<string>} actualTables - Real (lowercase) tables.
+ * @returns {Promise<number>} Number of violations.
  */
 async function checkDataInvariants(conn, actualTables) {
     let issues = 0;
@@ -544,7 +544,7 @@ async function checkDataInvariants(conn, actualTables) {
     return issues;
 }
 
-// ── Punto de entrada ─────────────────────────────────────────────────────────
+// ── Entry point ──────────────────────────────────────────────────────────────
 
 async function main() {
     console.log(`\n${BOLD}=== Comprobacion de schema: ${config.mysql.database}@${config.mysql.host}:${config.mysql.port} ===${RESET}`);
@@ -565,7 +565,7 @@ async function main() {
              WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE'`,
             [config.mysql.database]
         );
-        // MariaDB con lower_case_table_names=1 (Windows) devuelve los nombres en minuscula.
+        // MariaDB with lower_case_table_names=1 (Windows) returns names in lowercase.
         const actualTables = new Set(tableRows.map((/** @type {*} */ r) => r.TABLE_NAME.toLowerCase()));
 
         const tables = checkTables(actualTables);

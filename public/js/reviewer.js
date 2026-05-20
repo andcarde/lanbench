@@ -1,11 +1,11 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/reviewer.html` — pagina de revision.
+ * @file Frontend for `public/reviewer.html` — the review page.
  *
- * Pide la siguiente review (`POST /api/reviews/request`), renderiza la
- * entry con los criterios ordenados y persiste cada decision con
- * `POST /api/reviews/:id/decisions`. Al cerrar, envia `/finalize` o
- * `/release` segun el caso.
+ * Requests the next review (`POST /api/reviews/request`), renders the entry
+ * with the ordered criteria and persists each decision with
+ * `POST /api/reviews/:id/decisions`. On close, it sends `/finalize` or
+ * `/release` as appropriate.
  */
 'use strict';
 
@@ -29,10 +29,10 @@
     const DECISION_NEEDS_FIX = 'needs_fix';
 
     /**
-     * Construye criteria state a partir de los datos recibidos.
-     * @param {*} criteria - Valor de criteria usado por la funcion.
-     * @param {Array} decisions - Valor de decisions usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Builds the criteria state from the received data.
+     * @param {*} criteria - Ordered list of criteria.
+     * @param {Array} decisions - Decisions already taken on the review.
+     * @returns {*} Criteria state with each criterion's decision.
      */
     function buildCriteriaState(criteria, decisions) {
         const decisionMap = new Map((decisions || []).map(d => [d.criterionCode, d]));
@@ -50,9 +50,9 @@
     }
 
     /**
-     * Ejecuta la logica de compute next active criterion.
-     * @param {*} criteriaState - Valor de criteriaState usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Computes the next undecided criterion in the state.
+     * @param {*} criteriaState - Current criteria state.
+     * @returns {*} The next undecided criterion, or null.
      */
     function computeNextActiveCriterion(criteriaState) {
         if (!Array.isArray(criteriaState))
@@ -62,9 +62,9 @@
     }
 
     /**
-     * Ejecuta la logica de can finalize.
-     * @param {*} criteriaState - Valor de criteriaState usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Indicates whether all criteria have been decided.
+     * @param {*} criteriaState - Current criteria state.
+     * @returns {boolean} True if every criterion is decided.
      */
     function canFinalize(criteriaState) {
         if (!Array.isArray(criteriaState) || criteriaState.length === 0)
@@ -73,10 +73,10 @@
     }
 
     /**
-     * Construye sentence review state con las anotaciones de la entry.
-     * @param {Array} annotations - Frases anotadas por el anotador.
-     * @param {Array} comments - Correcciones previas del revisor.
-     * @returns {Array} Estado normalizado por frase.
+     * Builds the sentence review state from the entry's annotations.
+     * @param {Array} annotations - Sentences annotated by the annotator.
+     * @param {Array} comments - The reviewer's previous corrections.
+     * @returns {Array} Normalized per-sentence state.
      */
     function buildSentenceReviewState(annotations, comments) {
         const latestCommentBySentence = new Map();
@@ -106,9 +106,9 @@
     }
 
     /**
-     * Comprueba si todas las frases tienen una decision valida.
-     * @param {Array} sentenceState - Estado por frase.
-     * @returns {boolean} True cuando se puede mostrar Listo.
+     * Checks whether all sentences have a valid decision.
+     * @param {Array} sentenceState - Per-sentence state.
+     * @returns {boolean} True when "Done" can be shown.
      */
     function canFinishSentenceReview(sentenceState) {
         if (!Array.isArray(sentenceState) || sentenceState.length === 0)
@@ -126,18 +126,18 @@
     }
 
     /**
-     * Indica si alguna frase ha sido rechazada.
-     * @param {Array} sentenceState - Estado por frase.
-     * @returns {boolean} True si existe rechazo.
+     * Indicates whether any sentence has been rejected.
+     * @param {Array} sentenceState - Per-sentence state.
+     * @returns {boolean} True if there is a rejection.
      */
     function hasRejectedSentence(sentenceState) {
         return Array.isArray(sentenceState) && sentenceState.some(sentence => sentence.decision === DECISION_REJECTED);
     }
 
     /**
-     * Construye comentario compacto para la decision global de revision.
-     * @param {Array} sentenceState - Estado por frase.
-     * @returns {string} Comentario para persistencia.
+     * Builds a compact comment for the global review decision.
+     * @param {Array} sentenceState - Per-sentence state.
+     * @returns {string} Comment for persistence.
      */
     function buildRejectedSentencesComment(sentenceState) {
         const indexes = (sentenceState || [])
@@ -149,18 +149,18 @@
     }
 
     /**
-     * Ejecuta la logica de requires comment.
-     * @param {*} decision - Valor de decision usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Indicates whether a decision requires a comment.
+     * @param {*} decision - Review decision.
+     * @returns {boolean} True if a comment is required.
      */
     function requiresComment(decision) {
         return decision === DECISION_REJECTED || decision === DECISION_NEEDS_FIX;
     }
 
     /**
-     * Lee datasetId de la URL si la pantalla viene desde una tarjeta de dataset.
-     * @param {Location} locationLike - Location del navegador.
-     * @returns {?number} Dataset normalizado.
+     * Reads datasetId from the URL if the screen came from a dataset card.
+     * @param {Location} locationLike - Browser location.
+     * @returns {?number} Normalized dataset id.
      */
     function readDatasetIdFromLocation(locationLike) {
         const search = locationLike && typeof locationLike.search === 'string'
@@ -171,10 +171,10 @@
     }
 
     /**
-     * Comprueba is criterion unlocked y devuelve el resultado de la validacion.
-     * @param {*} criteriaState - Valor de criteriaState usado por la funcion.
-     * @param {string} code - Valor de code usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Checks whether a criterion is unlocked (all previous ones decided).
+     * @param {*} criteriaState - Current criteria state.
+     * @param {string} code - Criterion code to check.
+     * @returns {boolean} True if the criterion is unlocked.
      */
     function isCriterionUnlocked(criteriaState, code) {
         if (!Array.isArray(criteriaState))
@@ -188,9 +188,9 @@
     }
 
     /**
-     * Ejecuta de forma asincrona la logica de bootstrap.
-     * @param {Array} actions - Valor de actions usado por la funcion.
-     * @returns {Promise<*>} Resultado producido por la funcion.
+     * Bootstraps the reviewer UI: wires DOM elements and event handlers.
+     * @param {Array} actions - Review action functions (AJAX layer).
+     * @returns {Promise<*>}
      */
     async function bootstrap(actions) {
         if (typeof document === 'undefined' || !actions)
@@ -211,16 +211,16 @@
         };
 
         /**
-         * Actualiza status con los datos indicados.
-         * @param {string} text - Valor de text usado por la funcion.
+         * Updates the status line text.
+         * @param {string} text - Status text to display.
          */
         function setStatus(text) {
             if (statusEl) statusEl.textContent = text || '';
         }
 
         /**
-         * Renderiza context en la interfaz.
-         * @param {*} dto - Valor de dto usado por la funcion.
+         * Renders the review context (triples, English reference, alert decisions) in the UI.
+         * @param {*} dto - Review context DTO.
          */
         function renderContext(dto) {
             if (!contextEl) return;
@@ -243,7 +243,7 @@
         }
 
         /**
-         * Renderiza las frases anotadas para aceptarlas o rechazarlas.
+         * Renders the annotated sentences so they can be accepted or rejected.
          */
         function renderSentenceReviews() {
             if (!sentencesEl) return;
@@ -300,8 +300,8 @@
         }
 
         /**
-         * Ejecuta la logica de refresh finalize button.
-         * @returns {*} Resultado producido por la funcion.
+         * Refreshes the enabled/visible state of the finalize button.
+         * @returns {void}
          */
         function refreshFinalizeButton() {
             if (!finalizeBtn) return;
@@ -311,8 +311,8 @@
         }
 
         /**
-         * Guarda alternativas, criterios globales y cierra la revision.
-         * @returns {Promise<boolean>} True si se pudo finalizar.
+         * Saves alternatives and global criteria, then closes the review.
+         * @returns {Promise<boolean>} True if it could be finalized.
          */
         async function submitSentenceReview() {
             const rejectedSentences = state.sentences.filter(sentence => sentence.decision === DECISION_REJECTED);
@@ -364,9 +364,9 @@
         }
 
         /**
-         * Obtiene context desde la fuente correspondiente.
-         * @param {number} reviewId - Valor de reviewId usado por la funcion.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Loads the review context for the given review id and renders it.
+         * @param {number} reviewId - Review id to load.
+         * @returns {Promise<*>}
          */
         async function loadContext(reviewId) {
             const res = await actions.fetchReviewContext(reviewId);
@@ -433,9 +433,9 @@
     }
 
     /**
-     * Convierte escape html al formato esperado.
-     * @param {*} value - Valor de value usado por la funcion.
-     * @returns {*} Resultado producido por la funcion.
+     * Escapes a value for safe insertion as HTML text.
+     * @param {*} value - Value to escape.
+     * @returns {string} HTML-escaped string.
      */
     function escapeHtml(value) {
         if (value === null || value === undefined) return '';

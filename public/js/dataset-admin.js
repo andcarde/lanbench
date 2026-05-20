@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
- * @file Frontend de `public/dataset-admin.html`.
+ * @file Frontend for `public/dataset-admin.html`.
  *
- * Consulta los permisos por dataset (`GET /api/datasets/:id/permissions`)
- * y permite al owner/admin modificarlos con `POST`/`PATCH` sobre la misma
- * coleccion. Trabaja sobre tres roles por dataset:
+ * Queries the per-dataset permissions (`GET /api/datasets/:id/permissions`)
+ * and lets the owner/admin modify them with `POST`/`PATCH` on the same
+ * collection. It works with three per-dataset roles:
  * `annotator`/`reviewer`/`admin`.
  */
 (function () {
@@ -18,15 +18,15 @@
   };
 
   /**
-   * Devuelve los roles visibles segun la configuracion del dataset.
-   * @returns {string[]} Roles visibles.
+   * Returns the visible roles according to the dataset configuration.
+   * @returns {string[]} Visible roles.
    */
   function visibleRoleKeys() {
     return ROLE_KEYS.filter(role => role !== "reviewer" || state.isReviewEnabled);
   }
 
   /**
-   * Calcula el colspan para mensajes de la tabla (1 columna de usuario + roles visibles).
+   * Computes the colspan for table messages (1 user column + visible roles).
    * @returns {number} Colspan.
    */
   function rolesColspan() {
@@ -59,9 +59,9 @@
   const $reviewStatsPane = $("#reviewStatsPane");
 
   /**
-   * Escapa html.
-   * @param {*} value - Texto.
-   * @returns {string} Texto escapado.
+   * Escapes a value for safe insertion as HTML text.
+   * @param {*} value - Text to escape.
+   * @returns {string} HTML-escaped string.
    */
   function escapeHtml(value) {
     return String(value ?? "")
@@ -73,9 +73,9 @@
   }
 
   /**
-   * Muestra mensaje.
-   * @param {string} text - Mensaje.
-   * @param {string} type - Tipo Bootstrap.
+   * Shows a message banner.
+   * @param {string} text - Message text.
+   * @param {string} type - Bootstrap contextual type.
    */
   function showMessage(text, type) {
     $message
@@ -85,16 +85,16 @@
   }
 
   /**
-   * Limpia mensaje.
+   * Clears the message banner.
    */
   function clearMessage() {
     $message.addClass("d-none").text("");
   }
 
   /**
-   * Extrae id de dataset desde la ruta.
+   * Extracts the dataset id from the path.
    * @param {string} pathName - Path.
-   * @returns {?number} Id.
+   * @returns {?number} Dataset id, or null.
    */
   function extractDatasetIdFromPath(pathName) {
     const match = String(pathName || "").match(/\/datasets\/(\d+)\/admin(?:\/)?$/);
@@ -103,9 +103,9 @@
   }
 
   /**
-   * Normaliza usuario de permisos.
-   * @param {*} rawUser - Usuario crudo.
-   * @returns {*} Usuario normalizado.
+   * Normalizes a permission user row.
+   * @param {*} rawUser - Raw user object.
+   * @returns {*} Normalized user.
    */
   function normalisePermissionUser(rawUser) {
     const source = rawUser && typeof rawUser === "object" ? rawUser : {};
@@ -125,8 +125,8 @@
   }
 
   /**
-   * Construye payload de permisos para enviar al backend.
-   * @param {*} permissions - Permisos.
+   * Builds the permissions payload to send to the backend.
+   * @param {*} permissions - Permissions.
    * @returns {*} Payload.
    */
   function buildPermissionsUpdatePayload(permissions) {
@@ -141,7 +141,7 @@
   }
 
   /**
-   * URL base de permisos.
+   * Base permissions URL for the current dataset.
    * @returns {string} URL.
    */
   function permissionsUrl() {
@@ -149,7 +149,7 @@
   }
 
   /**
-   * URL de estadisticas.
+   * Statistics URL for the current dataset.
    * @returns {string} URL.
    */
   function statisticsUrl() {
@@ -157,10 +157,10 @@
   }
 
   /**
-   * Extrae mensaje de error.
-   * @param {*} xhr - Error ajax.
-   * @param {string} fallback - Fallback.
-   * @returns {string} Mensaje.
+   * Extracts an error message from an AJAX error.
+   * @param {*} xhr - AJAX error.
+   * @param {string} fallback - Fallback message.
+   * @returns {string} Message.
    */
   function extractErrorMessage(xhr, fallback) {
     if (xhr && xhr.responseJSON && typeof xhr.responseJSON.message === "string")
@@ -171,8 +171,8 @@
   }
 
   /**
-   * Aplica las opciones del dataset a los controles de la sección Opciones.
-   * @param {*} options - Opciones del dataset.
+   * Applies the dataset options to the controls in the Options section.
+   * @param {*} options - Dataset options.
    */
   function renderOptions(options) {
     const source = options && typeof options === "object" ? options : {};
@@ -183,8 +183,8 @@
   }
 
   /**
-   * Muestra u oculta la pestana de Revision segun la opcion isReviewEnabled.
-   * @param {boolean} isReviewEnabled - True si el dataset tiene revision activa.
+   * Shows or hides the Review tab according to the isReviewEnabled option.
+   * @param {boolean} isReviewEnabled - True if the dataset has review enabled.
    */
   function applyReviewTabVisibility(isReviewEnabled) {
     state.isReviewEnabled = Boolean(isReviewEnabled);
@@ -199,7 +199,7 @@
   }
 
   /**
-   * Renderiza filas.
+   * Renders the permission rows.
    */
   function renderUsers() {
     const roles = visibleRoleKeys();
@@ -229,9 +229,9 @@
   }
 
   /**
-   * Renderiza tabla de estadisticas.
-   * @param {*} $target - Contenedor destino.
-   * @param {Array} rows - Filas.
+   * Renders a statistics table.
+   * @param {*} $target - Destination container.
+   * @param {Array} rows - Rows.
    */
   function renderStatisticsTable($target, rows) {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -270,7 +270,7 @@
   }
 
   /**
-   * Carga estadisticas del dataset.
+   * Loads the dataset statistics.
    */
   function loadStatistics() {
     const loading = '<div class="stats-empty">Cargando estadísticas...</div>';
@@ -297,7 +297,7 @@
   }
 
   /**
-   * Carga permisos iniciales.
+   * Loads the initial permissions.
    */
   function loadPermissions() {
     clearMessage();
@@ -312,7 +312,7 @@
         const datasetName = payload && payload.dataset && payload.dataset.name
           ? payload.dataset.name
           : `Dataset ${state.datasetId}`;
-        $subtitle.text(datasetName);
+        $subtitle.text(`Dataset · ${datasetName}`);
         renderOptions(payload?.options);
         state.users = Array.isArray(payload?.users)
           ? payload.users.map(normalisePermissionUser).filter(user => user.userId > 0)
@@ -328,7 +328,7 @@
   }
 
   /**
-   * Anade usuario por email exacto.
+   * Adds a user by exact email.
    */
   function addUserByEmail() {
     const email = $emailInput.val().trim().toLowerCase();
@@ -369,9 +369,9 @@
   }
 
   /**
-   * Lee permisos de una fila.
-   * @param {*} $row - Fila jQuery.
-   * @returns {*} Permisos.
+   * Reads the permissions from a table row.
+   * @param {*} $row - jQuery row.
+   * @returns {*} Permissions.
    */
   function readRowPermissions($row) {
     const permissions = {};
@@ -382,9 +382,9 @@
   }
 
   /**
-   * Actualiza usuario local.
-   * @param {number} userId - Usuario.
-   * @param {*} permissions - Permisos.
+   * Updates the local user state (or removes it if no roles remain).
+   * @param {number} userId - User id.
+   * @param {*} permissions - Permissions.
    */
   function updateLocalUser(userId, permissions) {
     const hasAny = ROLE_KEYS.some(role => permissions[role]);
@@ -399,8 +399,8 @@
   }
 
   /**
-   * Maneja cambio de checkbox.
-   * @param {*} checkbox - Checkbox.
+   * Handles a permission checkbox change (persists it via PATCH).
+   * @param {*} checkbox - The changed checkbox element.
    */
   function handlePermissionChange(checkbox) {
     const $row = $(checkbox).closest("tr");

@@ -22,10 +22,10 @@ describe('datasets router integration', function () {
 
     const datasetsController = {
         /**
-         * Ejecuta de forma asincrona la logica de list all datasets.
-         * @param {*} _request - Valor de _request usado por la funcion.
-         * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Asynchronously runs the logic of list all datasets.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async listAllDatasets(_request, response) {
             return response.status(200).json([{
@@ -40,28 +40,28 @@ describe('datasets router integration', function () {
             }]);
         },
         /**
-         * Crea dataset con la configuracion recibida.
-         * @param {*} _request - Valor de _request usado por la funcion.
-         * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Creates dataset with the received configuration.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async createDataset(_request, response) {
             return response.status(201).json({ ok: true });
         },
         /**
-         * Obtiene dataset by id desde la fuente correspondiente.
-         * @param {*} _request - Valor de _request usado por la funcion.
-         * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset by id from the corresponding source.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async getDatasetById(_request, response) {
             return response.status(200).json({ id: 1, name: 'DATASET 1', totalEntries: 12, completedPercent: 0, remainPercent: 100 });
         },
         /**
-         * Obtiene dataset section desde la fuente correspondiente.
-         * @param {*} _request - Valor de _request usado por la funcion.
-         * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset section from the corresponding source.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async getDatasetSection(_request, response) {
             return response.status(200).json({
@@ -88,16 +88,42 @@ describe('datasets router integration', function () {
             });
         },
         /**
-         * Obtiene dataset text desde la fuente correspondiente.
-         * @param {*} _request - Valor de _request usado por la funcion.
-         * @param {*} response - Respuesta HTTP usada para devolver el resultado.
-         * @returns {Promise<*>} Resultado producido por la funcion.
+         * Gets dataset text from the corresponding source.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
          */
         async getDatasetText(_request, response) {
             return response
                 .status(200)
                 .type('text/plain; charset=utf-8')
                 .send('<benchmark><entries><entry eid="1" category="Airport" size="1"></entry></entries></benchmark>');
+        },
+        /**
+         * Downloads the dataset XML as an attachment.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
+         */
+        async downloadDatasetXml(_request, response) {
+            return response
+                .status(200)
+                .type('application/xml; charset=utf-8')
+                .set('Content-Disposition', 'attachment; filename="ru_dev.xml"')
+                .send('<benchmark>ok</benchmark>');
+        },
+        /**
+         * Downloads the extended dataset XML as an attachment.
+         * @param {*} _request - Value of _request used by the function.
+         * @param {*} response - HTTP response used to return the result.
+         * @returns {Promise<*>} Result produced by the function.
+         */
+        async downloadDatasetAnnotatedXml(_request, response) {
+            return response
+                .status(200)
+                .type('application/xml; charset=utf-8')
+                .set('Content-Disposition', 'attachment; filename="ru_dev-extended.xml"')
+                .send('<benchmark>extended</benchmark>');
         },
         async listDatasetPermissions(/** @type {*} */ _request, /** @type {*} */ response) {
             return response.status(200).json({ users: [] });
@@ -125,11 +151,11 @@ describe('datasets router integration', function () {
                 datasetsController
             },
             /**
-             * Ejecuta la logica de session middleware.
-             * @param {*} request - Peticion HTTP con los datos de entrada.
-             * @param {*} _response - Valor de _response usado por la funcion.
-             * @param {Function} next - Callback de Express para continuar la cadena de middlewares.
-             * @returns {*} Resultado producido por la funcion.
+             * Runs the logic of session middleware.
+             * @param {*} request - HTTP request with the input data.
+             * @param {*} _response - Value of _response used by the function.
+             * @param {Function} next - Express callback to continue the middleware chain.
+             * @returns {*} Result produced by the function.
              */
             sessionMiddleware(request, _response, next) {
                 request.session = {
@@ -165,8 +191,8 @@ describe('datasets router integration', function () {
             datasetsController,
             uploadMiddleware: /** @type {any} */ ({
                 /**
-                 * Ejecuta la logica de single.
-                 * @returns {*} Resultado producido por la funcion.
+                 * Runs the logic of single.
+                 * @returns {*} Result produced by the function.
                  */
                 single() {
                     return (/** @type {*} */ _request, /** @type {*} */ _response, /** @type {*} */ next) => next();
@@ -279,11 +305,35 @@ describe('datasets router integration', function () {
             '<benchmark><entries><entry eid="1" category="Airport" size="1"></entry></entries></benchmark>'
         );
     });
+
+    it('expone GET /api/datasets/:id/download como descarga adjunta del XML', async () => {
+        const downloadResponse = await fetch(`${baseUrl}/api/datasets/1/download`);
+
+        assert.equal(downloadResponse.status, 200);
+        assert.match(downloadResponse.headers.get('content-type') || '', /application\/xml/);
+        assert.equal(
+            downloadResponse.headers.get('content-disposition'),
+            'attachment; filename="ru_dev.xml"'
+        );
+        assert.equal(await downloadResponse.text(), '<benchmark>ok</benchmark>');
+    });
+
+    it('expone GET /api/datasets/:id/download/annotated como descarga adjunta del XML extendido', async () => {
+        const annotatedResponse = await fetch(`${baseUrl}/api/datasets/1/download/annotated`);
+
+        assert.equal(annotatedResponse.status, 200);
+        assert.match(annotatedResponse.headers.get('content-type') || '', /application\/xml/);
+        assert.equal(
+            annotatedResponse.headers.get('content-disposition'),
+            'attachment; filename="ru_dev-extended.xml"'
+        );
+        assert.equal(await annotatedResponse.text(), '<benchmark>extended</benchmark>');
+    });
 });
 
 /**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Gets free port from the corresponding source.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

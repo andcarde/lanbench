@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @file Unit tests para los middlewares de autenticacion
+ * @file Unit tests for the authentication middlewares
  * (`requirePageAuth`/`requireApiAuth`).
  */
 
@@ -29,15 +29,15 @@ describe('auth middleware', () => {
         /** @type {any} */
         const response = {
             /**
-             * Ejecuta la logica de cookie.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.cookie().
+             * @returns {*} Result produced by the function.
              */
             cookie() {
                 throw new Error('cookie should not be called');
             },
             /**
-             * Ejecuta la logica de redirect.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.redirect().
+             * @returns {*} Result produced by the function.
              */
             redirect() {
                 throw new Error('redirect should not be called');
@@ -108,20 +108,20 @@ describe('auth middleware', () => {
         /** @type {any} */
         const response = {
             /**
-             * Ejecuta la logica de cookie.
-             * @param {string} name - Valor de name usado por la funcion.
-             * @param {*} payload - Valor de payload usado por la funcion.
-             * @param {*} options - Valor de options usado por la funcion.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.cookie().
+             * @param {string} name - Cookie name.
+             * @param {*} payload - Cookie payload.
+             * @param {*} options - Cookie options.
+             * @returns {*} Result produced by the function.
              */
             cookie(name, payload, options) {
                 calls.cookie = { name, payload, options };
                 return this;
             },
             /**
-             * Ejecuta la logica de redirect.
-             * @param {string} path - Valor de path usado por la funcion.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.redirect().
+             * @param {string} path - Redirect path.
+             * @returns {*} Result produced by the function.
              */
             redirect(path) {
                 calls.redirect = path;
@@ -158,18 +158,18 @@ describe('auth middleware', () => {
         /** @type {any} */
         const response = {
             /**
-             * Ejecuta la logica de status.
-             * @param {string} code - Valor de code usado por la funcion.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.status().
+             * @param {string} code - HTTP status code.
+             * @returns {*} Result produced by the function.
              */
             status(code) {
                 recorder.statusCode = code;
                 return this;
             },
             /**
-             * Ejecuta la logica de json.
-             * @param {*} payload - Valor de payload usado por la funcion.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.json().
+             * @param {*} payload - Cookie payload.
+             * @returns {*} Result produced by the function.
              */
             json(payload) {
                 recorder.payload = payload;
@@ -206,15 +206,15 @@ describe('auth middleware', () => {
         /** @type {any} */
         const response = {
             /**
-             * Ejecuta la logica de status.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.status().
+             * @returns {*} Result produced by the function.
              */
             status() {
                 throw new Error('status should not be called');
             },
             /**
-             * Ejecuta la logica de json.
-             * @returns {*} Resultado producido por la funcion.
+             * Mock of response.json().
+             * @returns {*} Result produced by the function.
              */
             json() {
                 throw new Error('json should not be called');

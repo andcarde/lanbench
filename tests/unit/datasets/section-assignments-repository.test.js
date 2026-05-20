@@ -9,36 +9,36 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Construye fake prisma a partir de los datos recibidos.
- * @param {Object<string, *>} [overrides] - Valor de overrides usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Builds fake prisma from the received data.
+ * @param {Object<string, *>} [overrides] - Value of overrides used by the function.
+ * @returns {*} Result produced by the function.
  */
 function buildFakePrisma(overrides = {}) {
     return {
         sectionAssignment: {
             /**
-             * Obtiene first desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets first from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findFirst() { return null; },
             /**
-             * Obtiene many desde la fuente correspondiente.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async findMany() { return []; },
             /**
-             * Crea create con la configuracion recibida.
-             * @param {*} payload - Valor de payload usado por la funcion.
-             * @returns {Promise<*>} Resultado producido por la funcion.
+             * Creates create with the received configuration.
+             * @param {*} payload - Value of payload used by the function.
+             * @returns {Promise<*>} Result produced by the function.
              */
             async create(payload) { return { id: 1, ...payload.data }; },
             /**
-             * Actualiza update con los datos indicados.
-             * @param {*} payload - Valor de payload usado por la funcion.
+             * Updates update with the given data.
+             * @param {*} payload - Value of payload used by the function.
              */
             async update(payload) { return payload.data; },
             /**
-             * Actualiza many con los datos indicados.
+             * Updates many with the given data.
              */
             async updateMany() { return { count: 0 }; },
             ...overrides
@@ -54,9 +54,9 @@ describe('section-assignments-repository', () => {
             const repo = createSectionAssignmentsRepository({
                 prisma: buildFakePrisma({
                     /**
-                     * Obtiene first desde la fuente correspondiente.
-                     * @param {*} args - Valor de args usado por la funcion.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Gets first from the corresponding source.
+                     * @param {*} args - Value of args used by the function.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async findFirst(args) {
                         calls.push(args);
@@ -74,38 +74,6 @@ describe('section-assignments-repository', () => {
         });
     });
 
-    describe('findActiveSectionIndexes', () => {
-        it('devuelve un Set con los índices de sección activos', async () => {
-            const repo = createSectionAssignmentsRepository({
-                prisma: buildFakePrisma({
-                    /**
-                     * Obtiene many desde la fuente correspondiente.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
-                     */
-                    async findMany() {
-                        return [{ sectionIndex: 1 }, { sectionIndex: 3 }];
-                    }
-                })
-            });
-
-            const result = await repo.findActiveSectionIndexes(7);
-
-            assert.ok(result instanceof Set);
-            assert.ok(result.has(1));
-            assert.ok(result.has(3));
-            assert.equal(result.size, 2);
-        });
-
-        it('devuelve Set vacío si no hay asignaciones activas', async () => {
-            const repo = createSectionAssignmentsRepository({
-                prisma: buildFakePrisma()
-            });
-
-            const result = await repo.findActiveSectionIndexes(7);
-            assert.equal(result.size, 0);
-        });
-    });
-
     describe('createAssignment', () => {
         it('persiste la asignación con status active', async () => {
             /** @type {any[]} */
@@ -113,9 +81,9 @@ describe('section-assignments-repository', () => {
             const repo = createSectionAssignmentsRepository({
                 prisma: buildFakePrisma({
                     /**
-                     * Crea create con la configuracion recibida.
-                     * @param {*} payload - Valor de payload usado por la funcion.
-                     * @returns {Promise<*>} Resultado producido por la funcion.
+                     * Creates create with the received configuration.
+                     * @param {*} payload - Value of payload used by the function.
+                     * @returns {Promise<*>} Result produced by the function.
                      */
                     async create(payload) {
                         creates.push(payload);
@@ -142,8 +110,8 @@ describe('section-assignments-repository', () => {
             const repo = createSectionAssignmentsRepository({
                 prisma: buildFakePrisma({
                     /**
-                     * Actualiza many con los datos indicados.
-                     * @param {*} payload - Valor de payload usado por la funcion.
+                     * Updates many with the given data.
+                     * @param {*} payload - Value of payload used by the function.
                      */
                     async updateMany(payload) {
                         updateManyCalls.push(payload);
@@ -169,8 +137,8 @@ describe('section-assignments-repository', () => {
             const repo = createSectionAssignmentsRepository({
                 prisma: buildFakePrisma({
                     /**
-                     * Actualiza many con los datos indicados.
-                     * @param {*} payload - Valor de payload usado por la funcion.
+                     * Updates many with the given data.
+                     * @param {*} payload - Value of payload used by the function.
                      */
                     async updateMany(payload) {
                         updateManyCalls.push(payload);

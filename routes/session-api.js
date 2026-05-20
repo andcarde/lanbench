@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Router `/api/session` — expone la sesion como recurso REST.
+ * @file Router `/api/session` — exposes the session as a REST resource.
  *
- *   - `GET    /me` -> usuario actual (UserDTO) o 401.
- *   - `POST   /`   -> iniciar sesion (delegado a `usersController.login`).
- *   - `DELETE /`   -> cerrar sesion (destruye la cookie `connect.sid`).
+ *   - `GET    /me` -> current user (UserDTO) or 401.
+ *   - `POST   /`   -> log in (delegated to `usersController.login`).
+ *   - `DELETE /`   -> log out (destroys the `connect.sid` cookie).
  *
  * @typedef {import('express').Request}  ExpressRequest
  * @typedef {import('express').Response} ExpressResponse
@@ -17,7 +17,7 @@ const { resolveSessionUser } = require('../middlewares/auth');
 const { buildApiErrorPayload } = require('../utils/api-error-payload');
 
 /**
- * Construye el router `/api/session`.
+ * Builds the `/api/session` router.
  *
  * @param {{ usersController?: Record<string, any> }} [options]
  * @returns {import('express').Router}

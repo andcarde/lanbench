@@ -1,27 +1,29 @@
 'use strict';
 
 /**
- * @file Construccion y combinacion de alertas de validacion.
+ * @file Construction and combination of validation alerts.
  *
- * Una `ValidationAlert` describe un problema detectado sobre una oracion:
- * codigo (`spelling_error`, `semantic_mismatch`, ...), tipo
- * (`semantic`/`grammar`/...), severidad y mensaje legible. Estas funciones
- * actuan como factoria + fusion (`mergeAlerts`).
+ * A `ValidationAlert` describes a problem detected on a sentence: code
+ * (`spelling_error`, `semantic_mismatch`, ...), type
+ * (`semantic`/`grammar`/...), severity and human-readable message. These
+ * functions act as a factory + merger (`mergeAlerts`).
  */
 
-/** Codigo por defecto cuando el origen no aporta uno. */
+/** Default code when the source does not provide one. */
 const DEFAULT_CODE = 'sentence_review';
-/** Tipo de incidencia por defecto. */
+/** Default issue type. */
 const DEFAULT_TYPE = 'semantic';
-/** Severidad por defecto cuando no se especifica. */
+/** Default severity when not specified. */
 const DEFAULT_SEVERITY = 'warning';
-/** Fuente que origino la alerta (LLM + reglas combinadas). */
+/** Source that originated the alert (LLM + rules combined). */
 const DEFAULT_SOURCE = 'hybrid';
-/** Mensaje legible por defecto. */
+/** Default human-readable message. */
 const DEFAULT_MESSAGE = 'La oración requiere revisión.';
 
+const { trimmedOr } = require('./validators');
+
 /**
- * Construye una alerta normalizada con defaults coherentes.
+ * Builds a normalized alert with coherent defaults.
  *
  * @param {Record<string, any>} [input]
  * @returns {Record<string, any>}
@@ -39,14 +41,14 @@ function buildValidationAlert({
 } = {}) {
     /** @type {Record<string, any>} */
     const alert = {
-        code: normalizeString(code, DEFAULT_CODE),
+        code: trimmedOr(code, DEFAULT_CODE),
         type: normalizeType(type),
         severity: normalizeSeverity(severity),
         source: normalizeSource(source),
-        message: normalizeString(message, DEFAULT_MESSAGE)
+        message: trimmedOr(message, DEFAULT_MESSAGE)
     };
 
-    const normalizedSuggestion = normalizeOptionalString(suggestion);
+    const normalizedSuggestion = trimmedOr(suggestion);
     if (normalizedSuggestion)
         alert.suggestion = normalizedSuggestion;
 
@@ -63,27 +65,27 @@ function buildValidationAlert({
 }
 
 /**
- * Combina varias listas de alertas en una sola, filtrando entradas no validas.
- * @param {...Array<*>} groups - Conjuntos de alertas (cualquier objeto plano).
- * @returns {Array<*>} Lista combinada y normalizada.
+ * Combines several alert lists into one, filtering out invalid entries.
+ * @param {...Array<*>} groups - Sets of alerts (any plain object).
+ * @returns {Array<*>} Combined, normalized list.
  */
 function mergeAlerts(/** @type {Array<Array<*>>} */ ...groups) {
     return groups.flat().filter(isValidationAlertLike).map(buildValidationAlert);
 }
 
 /**
- * Comprueba si un valor parece una alerta (objeto plano no nulo).
- * @param {*} value - Valor candidato.
- * @returns {boolean} True si es un objeto plano.
+ * Checks whether a value looks like an alert (non-null plain object).
+ * @param {*} value - Candidate value.
+ * @returns {boolean} True if it is a plain object.
  */
 function isValidationAlertLike(value) {
     return value && typeof value === 'object' && !Array.isArray(value);
 }
 
 /**
- * Devuelve el tipo si es permitido o el default.
- * @param {*} value - Tipo recibido.
- * @returns {string} Tipo normalizado.
+ * Returns the type if allowed, otherwise the default.
+ * @param {*} value - Received type.
+ * @returns {string} Normalized type.
  */
 function normalizeType(value) {
     const allowed = ['orthography', 'grammar', 'semantic', 'coverage', 'diversity'];
@@ -91,9 +93,9 @@ function normalizeType(value) {
 }
 
 /**
- * Devuelve la severidad si es permitida o el default.
- * @param {*} value - Severidad recibida.
- * @returns {string} Severidad normalizada.
+ * Returns the severity if allowed, otherwise the default.
+ * @param {*} value - Received severity.
+ * @returns {string} Normalized severity.
  */
 function normalizeSeverity(value) {
     const allowed = ['info', 'warning', 'error', 'duplicate'];
@@ -101,40 +103,13 @@ function normalizeSeverity(value) {
 }
 
 /**
- * Devuelve la fuente si es permitida o el default.
- * @param {*} value - Fuente recibida.
- * @returns {string} Fuente normalizada.
+ * Returns the source if allowed, otherwise the default.
+ * @param {*} value - Received source.
+ * @returns {string} Normalized source.
  */
 function normalizeSource(value) {
     const allowed = ['rules', 'llm', 'hybrid'];
     return allowed.includes(value) ? value : DEFAULT_SOURCE;
-}
-
-/**
- * Devuelve `value` recortado o `fallback` si no es una cadena util.
- * @param {*} value - Valor candidato.
- * @param {*} fallback - Valor de respaldo.
- * @returns {*} Cadena recortada o fallback.
- */
-function normalizeString(value, fallback) {
-    if (typeof value !== 'string')
-        return fallback;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : fallback;
-}
-
-/**
- * Devuelve `value` recortado o null si no es una cadena no vacia.
- * @param {*} value - Valor candidato.
- * @returns {?string} Cadena recortada o null.
- */
-function normalizeOptionalString(value) {
-    if (typeof value !== 'string')
-        return null;
-
-    const trimmed = value.trim();
-    return trimmed.length > 0 ? trimmed : null;
 }
 
 module.exports = {

@@ -3,14 +3,14 @@
 const assert = require('node:assert/strict');
 const testApi = require('node:test');
 
-const { createDatasetsService } = require('../../../services/datasets-service');
+const { createDatasetsStatisticsService } = require('../../../services/datasets-statistics-service');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 describe('dataset statistics', () => {
     it('calcula rankings, porcentajes truncados, tiempo medio y precision', async () => {
-        const service = createDatasetsService({
+        const service = createDatasetsStatisticsService({
             datasetsRepository: {
                 async findAccessibleById() {
                     return {
@@ -23,7 +23,9 @@ describe('dataset statistics', () => {
                         sectionsPending: 1,
                         colorClass: 'dataset-blue'
                     };
-                },
+                }
+            },
+            datasetsStatisticsRepository: {
                 async findDatasetStatisticsGraph() {
                     return {
                         id: 5,
@@ -73,8 +75,7 @@ describe('dataset statistics', () => {
                         ]
                     };
                 }
-            },
-            usersRepository: {}
+            }
         });
 
         const stats = await service.getDatasetStatistics(99, 5);
@@ -109,7 +110,7 @@ describe('dataset statistics', () => {
     });
 
     it('trunca porcentajes sin redondear', async () => {
-        const service = createDatasetsService({
+        const service = createDatasetsStatisticsService({
             datasetsRepository: {
                 async findAccessibleById() {
                     return {
@@ -120,7 +121,9 @@ describe('dataset statistics', () => {
                         sectionsInReview: 0,
                         sectionsPending: 1000
                     };
-                },
+                }
+            },
+            datasetsStatisticsRepository: {
                 async findDatasetStatisticsGraph() {
                     return {
                         id: 5,
@@ -138,8 +141,7 @@ describe('dataset statistics', () => {
                         }))
                     };
                 }
-            },
-            usersRepository: {}
+            }
         });
 
         const stats = await service.getDatasetStatistics(99, 5);

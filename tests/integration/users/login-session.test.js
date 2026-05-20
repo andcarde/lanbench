@@ -10,6 +10,7 @@ const { createApp } = require('../../../app');
 const app = createApp();
 const { createPasswordHasher } = require('../../../services/password-hasher');
 const { warnIfDatabaseInactive } = require('../../../utils/database-health');
+const { normalizeBigInts } = require('../_helpers/bigint');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
@@ -75,7 +76,7 @@ describe('login session integration', function () {
             [testUserId, testEmail, passwordHash]
         );
 
-        const loginResponse = await fetch(`${baseUrl}/create-session`, {
+        const loginResponse = await fetch(`${baseUrl}/api/session`, {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -112,17 +113,17 @@ describe('login session integration', function () {
 });
 
 /**
- * Construye test user id a partir de los datos recibidos.
- * @returns {*} Resultado producido por la funcion.
+ * Builds a unique test user id.
+ * @returns {*} Result produced by the function.
  */
 function buildTestUserId() {
     return 1000000 + Math.floor(Math.random() * 1000000);
 }
 
 /**
- * Obtiene session cookie desde la fuente correspondiente.
- * @param {*} response - Respuesta HTTP usada para devolver el resultado.
- * @returns {*} Resultado producido por la funcion.
+ * Gets the session cookiefrom the corresponding source.
+ * @param {*} response - HTTP response.
+ * @returns {*} Result produced by the function.
  */
 function getSessionCookie(response) {
     if (typeof response.headers.getSetCookie === 'function') {
@@ -140,9 +141,9 @@ function getSessionCookie(response) {
 }
 
 /**
- * Obtiene session set cookie desde la fuente correspondiente.
- * @param {*} response - Respuesta HTTP usada para devolver el resultado.
- * @returns {*} Resultado producido por la funcion.
+ * Gets the session set-cookiefrom the corresponding source.
+ * @param {*} response - HTTP response.
+ * @returns {*} Result produced by the function.
  */
 function getSessionSetCookie(response) {
     if (typeof response.headers.getSetCookie === 'function') {
@@ -154,9 +155,9 @@ function getSessionSetCookie(response) {
 }
 
 /**
- * Ejecuta la logica de extract session id.
- * @param {*} sessionCookie - Valor de sessionCookie usado por la funcion.
- * @returns {*} Resultado producido por la funcion.
+ * Extracts the session id from the session cookie.
+ * @param {*} sessionCookie - Session cookie value.
+ * @returns {string} Session id, or empty string.
  */
 function extractSessionId(sessionCookie) {
     const rawValue = sessionCookie.replace(/^connect\.sid=/, '');
@@ -169,11 +170,11 @@ function extractSessionId(sessionCookie) {
 }
 
 /**
- * Ejecuta una query SQL contra Prisma y devuelve el resultado.
- * Para SELECT devuelve las filas; para INSERT/UPDATE/DELETE devuelve {affectedRows}.
- * @param {string} sql - Sentencia SQL.
- * @param {Array<*>} [params] - Parametros posicionales.
- * @returns {Promise<*>} Filas resultado o resumen de filas afectadas.
+ * Runs a SQL query against Prisma and returns the result.
+ * For SELECT it returns the rows; for INSERT/UPDATE/DELETE it returns {affectedRows}.
+ * @param {string} sql - SQL statement.
+ * @param {Array<*>} [params] - Positional parameters.
+ * @returns {Promise<*>} Result rows, or affected-rows summary.
  */
 async function dbQuery(sql, params = []) {
     if (/^\s*SELECT\b/i.test(sql)) {
@@ -185,26 +186,8 @@ async function dbQuery(sql, params = []) {
 }
 
 /**
- * Convierte recursivamente los BigInt devueltos por Prisma a Number.
- * @param {*} value - Valor a normalizar.
- * @returns {*} Valor sin BigInt.
- */
-function normalizeBigInts(value) {
-    if (typeof value === 'bigint') return Number(value);
-    if (Array.isArray(value)) return value.map(normalizeBigInts);
-    if (value && typeof value === 'object') {
-        /** @type {Record<string, *>} */
-        const result = {};
-        for (const key of Object.keys(value))
-            result[key] = normalizeBigInts(value[key]);
-        return result;
-    }
-    return value;
-}
-
-/**
- * Obtiene free port desde la fuente correspondiente.
- * @returns {*} Resultado producido por la funcion.
+ * Returns a free TCP port.
+ * @returns {*} Result produced by the function.
  */
 function getFreePort() {
     return new Promise((resolve, reject) => {

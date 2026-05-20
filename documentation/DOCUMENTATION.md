@@ -77,9 +77,9 @@ Meta-index for `lanbench`. Lists every documentation type the project uses, wher
 - **Type:** refined order templates that can be given verbatim to an agent (code review, documentation generation, architectural analysis, coverage analysis, vulnerability analysis, mitigation of audit findings, etc.).
 - **Update policy:** append new refined prompts when a reusable pattern emerges.
 
-### 2.10 `METODOLOGY.md`
+### 2.10 `METHODOLOGY.md`
 
-- **Path:** `doc-agents/METODOLOGY.md`
+- **Path:** `doc-agents/METHODOLOGY.md`
 - **Type:** example prompt showing how a user story is sliced into tasks and subtasks following `CLAUDE.md`.
 - **Status:** example. Not the canonical methodology — the canonical methodology lives in `CLAUDE.md` at the project root.
 
@@ -105,7 +105,7 @@ The skeleton below is the minimal structure for a new audit. Replace `<n>`, date
 
 **Date:** YYYY-MM-DD
 **Auditor:** <model name and reasoning level>
-**Scope:** application source code of `lanbench` (list excluded paths: `node_modules/`, `public/`, `views/`, `logs/`, `tmp/`, `test_datasets/`, `front-mocks/`, `tests/`).
+**Scope:** application source code of `lanbench` (list excluded paths: `node_modules/`, `public/`, `views/`, `logs/`, `tmp/`, `test-datasets/`, `front-mocks/`, `tests/`).
 **Previous baseline:** [`AUDITORY-<n-1>.md`](AUDITORY-<n-1>.md). The following previous findings are already mitigated and are NOT repeated here:
 - <bullet per mitigated finding, citing file:line>
 

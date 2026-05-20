@@ -22,22 +22,22 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Identificador entero positivo (1..2^31 - 1).
+ * Positive integer identifier (1..2^31 - 1).
  * @typedef {number} PositiveInteger
  */
 
 /**
- * Identificador entero no negativo (0..2^31 - 1).
+ * Non-negative integer identifier (0..2^31 - 1).
  * @typedef {number} NonNegativeInteger
  */
 
 /**
- * Cadena no vacia tras `trim()`.
+ * Non-empty string after `trim()`.
  * @typedef {string} NonEmptyString
  */
 
 /**
- * Marca temporal ISO-8601 (`new Date().toISOString()`).
+ * ISO-8601 timestamp (`new Date().toISOString()`).
  * @typedef {string} IsoDateString
  */
 
@@ -46,25 +46,24 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Forma persistida del usuario en la BD y serializada en sesion.
- * Se exporta como clase canonica en `entities/user.js`.
+ * Persisted form of the user in the DB and serialized in the session.
+ * Exported as the canonical class in `entities/user.js`.
  *
  * @typedef {Object} UserDTO
- * @property {PositiveInteger} id           - Identificador estable del usuario.
- * @property {NonEmptyString} email         - Correo electronico en minusculas.
- * @property {boolean} isModerator         - Rol global (no por-dataset).
+ * @property {PositiveInteger} id           - Stable user identifier.
+ * @property {NonEmptyString} email         - Email address in lowercase.
+ * @property {boolean} isModerator         - Global role (not per-dataset).
  */
 
 /**
- * Payload tal cual se serializa en `request.session.user`.
- * Coincide con `UserDTO` pero todos los campos pueden faltar en
- * sesiones legacy/incompletas.
+ * Payload as it is serialized in `request.session.user`. Matches `UserDTO`
+ * but all fields may be missing in legacy/incomplete sessions.
  *
  * @typedef {Partial<UserDTO>} SessionUserPayload
  */
 
 /**
- * Roles por dataset (tabla `permits`).
+ * Per-dataset roles (`permits` table).
  * @typedef {'annotator'|'reviewer'|'admin'} DatasetRole
  */
 
@@ -73,7 +72,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Triple RDF normalizado.
+ * Normalized RDF triple.
  * @typedef {Object} TripleDTO
  * @property {NonEmptyString} subject
  * @property {NonEmptyString} predicate
@@ -81,7 +80,7 @@
  */
 
 /**
- * Permisos del usuario actual sobre un dataset.
+ * Current user's permissions over a dataset.
  * @typedef {Object} DatasetPermissionsDTO
  * @property {boolean} annotator
  * @property {boolean} reviewer
@@ -91,7 +90,7 @@
  */
 
 /**
- * Estado de revision del usuario actual sobre un dataset.
+ * Current user's review state over a dataset.
  * @typedef {Object} DatasetReviewStateDTO
  * @property {boolean} canReview
  * @property {boolean} showReviewButton
@@ -100,7 +99,7 @@
  */
 
 /**
- * Opciones declaradas a nivel de dataset (modo LLM, revision activa, etc.).
+ * Options declared at the dataset level (LLM mode, review enabled, etc.).
  * @typedef {Object} DatasetOptionsDTO
  * @property {string} llmMode                      - 'none' | 'local' | 'groq' | ...
  * @property {boolean} isReviewEnabled
@@ -108,7 +107,7 @@
  */
 
 /**
- * Resumen canonico de un dataset (listados y tooltips).
+ * Canonical summary of a dataset (listings and tooltips).
  * @typedef {Object} DatasetListDTO
  * @property {PositiveInteger} id
  * @property {NonEmptyString} name
@@ -124,7 +123,7 @@
  */
 
 /**
- * Contexto canonico de una entry para anotacion/validacion.
+ * Canonical context of an entry for annotation/validation.
  * @typedef {Object} EntryContextDTO
  * @property {PositiveInteger} entryId
  * @property {TripleDTO[]} triples
@@ -134,7 +133,7 @@
  */
 
 /**
- * Bloque canonico de trabajo: una seccion del dataset.
+ * Canonical work block: a section of the dataset.
  * @typedef {Object} DatasetSectionDTO
  * @property {PositiveInteger} sectionIndex
  * @property {NonNegativeInteger} totalEntries
@@ -153,12 +152,12 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Severidad de una alerta producida por validacion.
+ * Severity of an alert produced by validation.
  * @typedef {'info'|'warning'|'error'|'duplicate'|'ok'} ValidationSeverity
  */
 
 /**
- * Incidencia devuelta por la validacion de una oracion.
+ * Issue returned by the validation of a sentence.
  * @typedef {Object} ValidationAlertDTO
  * @property {NonEmptyString} code
  * @property {ValidationSeverity} severity
@@ -167,7 +166,7 @@
  */
 
 /**
- * Resultado canonico de validar una oracion.
+ * Canonical result of validating a sentence.
  * @typedef {Object} SentenceValidationDTO
  * @property {string} sentence
  * @property {boolean} isValid
@@ -177,7 +176,7 @@
  */
 
 /**
- * Avance de sesion devuelto tras persistir una anotacion.
+ * Session advance returned after persisting an annotation.
  * @typedef {Object} SessionAdvanceDTO
  * @property {boolean} sectionDone
  * @property {PositiveInteger} [sectionNumber]
@@ -188,7 +187,7 @@
  */
 
 /**
- * Respuesta canonica tras persistir una anotacion.
+ * Canonical response after persisting an annotation.
  * @typedef {Object} SavedAnnotationDTO
  * @property {PositiveInteger} entryId
  * @property {string[]} sentences
@@ -203,27 +202,27 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Estados validos de una review.
+ * Valid states of a review.
  * @typedef {'pending'|'in_progress'|'completed'|'disputed'|'released'|'expired'} ReviewStatus
  */
 
 /**
- * Decisiones posibles sobre una review.
+ * Possible decisions on a review.
  * @typedef {'accepted'|'rejected'|'needs_fix'} ReviewDecision
  */
 
 /**
- * Codigos de criterio reconocidos en revision.
+ * Criterion codes recognized in review.
  * @typedef {'criterion_grammar'|'criterion_coverage'|'criterion_diversity'|'criterion_semantic_fidelity'} ReviewCriterionCode
  */
 
 /**
- * Estado de asignacion de seccion al anotador/revisor.
+ * Status of a section assignment to the annotator/reviewer.
  * @typedef {'active'|'completed'|'expired'|'released'} AssignmentStatus
  */
 
 /**
- * Estado de una entry en el flujo de anotacion.
+ * Status of an entry in the annotation flow.
  * @typedef {'pending'|'in_progress'|'annotated'|'under_review'|'reviewed'|'disputed'} EntryStatus
  */
 
@@ -232,32 +231,32 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Request de Express ya tipado con session opcional.
+ * Express request, already typed with an optional session.
  * @typedef {import('express').Request} ExpressRequest
  */
 
 /**
- * Response de Express.
+ * Express response.
  * @typedef {import('express').Response} ExpressResponse
  */
 
 /**
- * Funcion `next` de Express.
+ * Express `next` function.
  * @typedef {import('express').NextFunction} ExpressNext
  */
 
 /**
- * Handler estandar de Express compatible con async.
+ * Standard async-compatible Express handler.
  * @typedef {(request: ExpressRequest, response: ExpressResponse, next: ExpressNext) => (void|Promise<void>)} ExpressHandler
  */
 
 /**
- * Router de Express.
+ * Express router.
  * @typedef {import('express').Router} ExpressRouter
  */
 
 /**
- * Cliente Prisma. Se mantiene `any` para no acoplar tests a tipos generados.
+ * Prisma client. Kept as `any` so tests are not coupled to generated types.
  * @typedef {*} PrismaClientLike
  */
 

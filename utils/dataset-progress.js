@@ -1,28 +1,29 @@
 'use strict';
 
 /**
- * @file Calculo de progreso de un dataset.
+ * @file Dataset progress calculation.
  *
- * Convierte contadores de seccion + numero de entries anotadas en
- * porcentajes (`completed`, `remaining`, `withoutReview`) usados por
- * la UI y la exportacion administrativa.
+ * Converts section counters + the number of annotated entries into
+ * percentages (`completed`, `remaining`, `withoutReview`) used by the UI and
+ * the administrative export.
  */
 
 const { SECTION_SIZE } = require('../constants/datasets');
 
 /**
- * Calcula porcentajes de avance combinando contadores de seccion y, cuando
- * se aporta, el numero de entries anotadas en el dataset.
+ * Calculates progress percentages combining section counters and, when
+ * provided, the number of annotated entries in the dataset.
  *
- * Cuando `annotatedEntries` y `totalEntries` estan disponibles se usan para
- * que las anotaciones de secciones aun no completas tambien sumen al progreso.
+ * When `annotatedEntries` and `totalEntries` are available they are used so
+ * that annotations in sections that are not yet complete also count toward
+ * progress.
  *
- * Cuando `reviewEnabled` es false, todas las entries anotadas cuentan como
- * completadas. Cuando es true, solo las entries de secciones marcadas como
- * `sectionsCompleted` (revisadas) cuentan como completadas; el resto de
- * anotaciones se reportan en `withoutReview`.
+ * When `reviewEnabled` is false, all annotated entries count as completed.
+ * When it is true, only entries from sections marked as `sectionsCompleted`
+ * (reviewed) count as completed; the remaining annotations are reported in
+ * `withoutReview`.
  *
- * @param {*} options - Contadores de seccion y, opcionalmente, conteos por entry.
+ * @param {*} options - Section counters and, optionally, per-entry counts.
  * @returns {{completed: number, withoutReview: number, remaining: number}}
  */
 function calculatePercentagesFromSectionCounters({
@@ -62,9 +63,9 @@ function calculatePercentagesFromSectionCounters({
 }
 
 /**
- * Calcula porcentajes de avance basandose en entries (no en secciones).
+ * Calculates progress percentages based on entries (not sections).
  * @param {*} options - { annotatedEntryCount, totalEntryCount, completedSections, reviewEnabled }.
- * @returns {{completed:number, withoutReview:number, remaining:number}} Porcentajes acotados a [0,100].
+ * @returns {{completed:number, withoutReview:number, remaining:number}} Percentages clamped to [0,100].
  */
 function computeEntryBasedPercentages(/** @type {*} */ {
     annotatedEntryCount,
@@ -92,10 +93,10 @@ function computeEntryBasedPercentages(/** @type {*} */ {
 }
 
 /**
- * Indica si los conteos por entry permiten un calculo mas preciso del progreso.
- * @param {*} annotatedEntries - Entries anotadas o null/undefined.
- * @param {*} totalEntryCount - Total de entries del dataset.
- * @returns {boolean} True si se puede usar la matematica por entries.
+ * Indicates whether the per-entry counts allow a more precise progress calculation.
+ * @param {*} annotatedEntries - Annotated entries, or null/undefined.
+ * @param {*} totalEntryCount - Total entries in the dataset.
+ * @returns {boolean} True if the per-entry math can be used.
  */
 function canUseEntryBasedMath(annotatedEntries, totalEntryCount) {
     return annotatedEntries !== null
@@ -103,18 +104,34 @@ function canUseEntryBasedMath(annotatedEntries, totalEntryCount) {
         && totalEntryCount > 0;
 }
 
+/**
+ * Clamps a value to a non-negative ceiling.
+ * @param {number} value - Value to clamp.
+ * @param {number} ceiling - Upper bound (returns 0 if it is <= 0).
+ * @returns {number} Value bounded to [0, ceiling].
+ */
 function clampToCeiling(/** @type {number} */ value, /** @type {number} */ ceiling) {
     if (ceiling <= 0) return 0;
     if (value > ceiling) return ceiling;
     return value;
 }
 
+/**
+ * Coerces a value to a non-negative integer (floors it; 0 for non-positive/non-finite).
+ * @param {*} value - Value to coerce.
+ * @returns {number} Non-negative integer.
+ */
 function nonNegativeInteger(/** @type {*} */ value) {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) return 0;
     return Math.floor(parsed);
 }
 
+/**
+ * Clamps a value to the percentage range [0, 100].
+ * @param {*} value - Value to clamp.
+ * @returns {number} Value bounded to [0, 100].
+ */
 function clampPercent(/** @type {*} */ value) {
     if (!Number.isFinite(value)) return 0;
     if (value < 0) return 0;

@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Helpers de parsing/escapado XML.
+ * @file XML parsing/escaping helpers.
  *
- * Expone la configuracion compartida de `fast-xml-parser` (etiquetas que
- * siempre deben tratarse como arrays) y utilidades de bajo nivel:
- * `escapeXml`, `escapeAttr`, `toArray` y `splitWhitespace`.
+ * Exposes the shared `fast-xml-parser` configuration (tags that should always
+ * be treated as arrays) and low-level utilities: `escapeXml`, `renderAttrs`,
+ * `toArray` and `nodeText`.
  */
 
 const { XMLParser } = require('fast-xml-parser');
@@ -23,6 +23,11 @@ const ALWAYS_ARRAY_TAGS = Object.freeze([
 
 const ALWAYS_ARRAY_LOOKUP = new Set(ALWAYS_ARRAY_TAGS);
 
+/**
+ * Creates a `fast-xml-parser` instance configured for the WebNLG benchmark.
+ * @param {Record<string, *>} [overrides] - Options that override the defaults.
+ * @returns {XMLParser} Configured parser.
+ */
 function createBenchmarkXmlParser(overrides = {}) {
     return new XMLParser({
         ignoreAttributes: false,
@@ -35,9 +40,9 @@ function createBenchmarkXmlParser(overrides = {}) {
 }
 
 /**
- * Devuelve `value` como array: lo envuelve, lo deja igual o devuelve [] para nulos.
- * @param {*} value - Valor a normalizar.
- * @returns {Array<*>} Array equivalente.
+ * Returns `value` as an array: wraps it, leaves it as-is, or returns [] for nulls.
+ * @param {*} value - Value to normalize.
+ * @returns {Array<*>} Equivalent array.
  */
 function toArray(value) {
     if (value == null)
@@ -47,9 +52,9 @@ function toArray(value) {
 }
 
 /**
- * Extrae el texto de un nodo parseado por fast-xml-parser.
- * @param {*} node - Nodo string u objeto con `#text`.
- * @returns {string} Texto del nodo o cadena vacia.
+ * Extracts the text from a node parsed by fast-xml-parser.
+ * @param {*} node - String node or object with `#text`.
+ * @returns {string} Node text, or empty string.
  */
 function nodeText(node) {
     if (typeof node === 'string')
@@ -62,9 +67,9 @@ function nodeText(node) {
 }
 
 /**
- * Parsea un nodo en formato "subject | predicate | object" a un triple normalizado.
- * @param {*} value - Nodo XML o texto a parsear.
- * @returns {?{subject:string, predicate:string, object:string}} Triple parseado o null si no es valido.
+ * Parses a node in "subject | predicate | object" format into a normalized triple.
+ * @param {*} value - XML node or text to parse.
+ * @returns {?{subject:string, predicate:string, object:string}} Parsed triple, or null if invalid.
  */
 function parsePipeTriple(value) {
     const normalized = nodeText(value).trim();
@@ -94,10 +99,10 @@ function parsePipeTriple(value) {
 }
 
 /**
- * Escapa un valor para usarlo como contenido o atributo XML.
- * Sustituye los cinco caracteres reservados (&, <, >, ", ') por sus entidades.
- * @param {*} value - Valor a escapar.
- * @returns {string} Texto seguro para emitir.
+ * Escapes a value for use as XML content or attribute.
+ * Replaces the five reserved characters (&, <, >, ", ') with their entities.
+ * @param {*} value - Value to escape.
+ * @returns {string} Text safe to emit.
  */
 function escapeXml(value) {
     return String(value ?? '')
@@ -109,13 +114,27 @@ function escapeXml(value) {
 }
 
 /**
- * Escapa un valor para usarlo dentro de comillas dobles en un atributo XML.
- * Más conservador que `escapeXml`: solo sustituye comillas dobles.
- * @param {*} value - Valor a escapar.
- * @returns {string} Texto seguro para atributos.
+ * Builds the attribute list of an XML tag from an object. Returns the string
+ * with a leading space (` k1="v1" k2="v2"`) so it can be concatenated directly
+ * between the tag name and the closing `>`. `null` or `undefined` values are
+ * omitted, which covers the conditional pattern used by the current
+ * serializers (optional attributes like `shape`).
+ *
+ * @param {Record<string, *>} attrs - Attribute/value pairs.
+ * @returns {string} Formatted attributes, ready to insert into a tag.
  */
-function escapeAttr(value) {
-    return String(value ?? '').replaceAll('"', '&quot;');
+function renderAttrs(attrs) {
+    if (!attrs)
+        return '';
+
+    let result = '';
+    for (const key of Object.keys(attrs)) {
+        const value = attrs[key];
+        if (value === null || value === undefined)
+            continue;
+        result += ` ${key}="${escapeXml(value)}"`;
+    }
+    return result;
 }
 
 module.exports = {
@@ -125,5 +144,5 @@ module.exports = {
     nodeText,
     parsePipeTriple,
     escapeXml,
-    escapeAttr
+    renderAttrs
 };

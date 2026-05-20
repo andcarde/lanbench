@@ -63,9 +63,9 @@ describe('database health', () => {
 });
 
 /**
- * Crea un stub minimo del cliente mysql para probar conectividad.
- * @param {*} connectError - Error que devolvera connection.connect.
- * @returns {*} Cliente mysql simulado.
+ * Creates a minimal mysql client stub to test connectivity.
+ * @param {*} connectError - Error that connection.connect will return.
+ * @returns {*} Simulated mysql client.
  */
 function createMysqlClientStub(connectError) {
     return {

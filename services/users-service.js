@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * @file Users service — registro y autenticacion.
+ * @file Users service — registration and authentication.
  *
- * Centraliza el flujo de alta de usuarios (normal y como moderador, este
- * ultimo consumiendo un `register_code`) y el flujo de login, incluido el
- * `re-hash` automatico cuando la contrasena almacenada estaba en texto plano.
+ * Centralizes the user sign-up flow (normal and as a moderator, the latter
+ * consuming a `register_code`) and the login flow, including the automatic
+ * `re-hash` when the stored password was in plain text.
  *
  * @typedef {import('../types/typedefs').UserDTO} UserDTO
  *
@@ -21,12 +21,10 @@ const { createUsersRepository } = require('../repositories/users-repository');
 const { createRegisterCodesRepository } = require('../repositories/register-codes-repository');
 const { createPasswordHasher } = require('./password-hasher');
 const { ServiceError } = require('./service-error');
-
-/** Patron canonico de los codigos de registro de moderador (16 alfanumericos). */
-const REGISTER_CODE_PATTERN = /^[A-Za-z0-9]{16}$/;
+const { REGISTER_CODE_PATTERN } = require('../constants/users');
 
 /**
- * Construye el servicio de usuarios.
+ * Builds the users service.
  *
  * @param {UsersServiceDeps} [options]
  */
@@ -39,8 +37,8 @@ function createUsersService({ usersRepository, passwordHasher, registerCodesRepo
     };
 
     /**
-     * Crea el usuario tras hashear la contrasena. Centraliza el camino comun
-     * de registro normal y registro como moderador para evitar divergencias.
+     * Creates the user after hashing the password. Centralizes the common path
+     * of normal registration and moderator registration to avoid divergences.
      *
      * @param {{ email:string, password:string, isModerator?: boolean }} input
      * @returns {Promise<Record<string, any>>}
@@ -56,30 +54,30 @@ function createUsersService({ usersRepository, passwordHasher, registerCodesRepo
     }
 
     /**
-     * Da de alta a un usuario normal (no moderador). Falla si el email ya
-     * existe.
+     * Registers a normal (non-moderator) user. Fails if the email already
+     * exists.
      *
      * @param {{ email:string, password:string }} input
      * @returns {Promise<Record<string, any>>}
-     * @throws {ServiceError} `409 email_taken` si el email ya esta registrado.
+     * @throws {ServiceError} `409 email_taken` if the email is already registered.
      */
     async function registerUser({ email, password }) {
         const existingUser = await deps.usersRepository.findByEmail(email);
         if (existingUser)
-            throw new ServiceError('Email already registered.', { status: 409, code: 'email_taken' });
+            throw ServiceError.emailTaken();
 
         return createUserCore({ email, password });
     }
 
     /**
-     * Registra un usuario con `isModerator=true`, consumiendo un
-     * `register_code` valido. El codigo solo se borra si el alta puede
-     * completarse (email libre + codigo presente en BD).
+     * Registers a user with `isModerator=true`, consuming a valid
+     * `register_code`. The code is only deleted if the sign-up can be
+     * completed (free email + code present in the DB).
      *
      * @param {{ email:string, password:string, code:string }} input
      * @returns {Promise<Record<string, any>>}
-     * @throws {ServiceError} `400 invalid_register_code` si el codigo es
-     *   invalido o ya consumido; `409 email_taken` si el email existe.
+     * @throws {ServiceError} `400 invalid_register_code` if the code is invalid
+     *   or already consumed; `409 email_taken` if the email exists.
      */
     async function registerModeratorUser({ email, password, code }) {
         if (typeof code !== 'string' || !REGISTER_CODE_PATTERN.test(code)) {
@@ -91,7 +89,7 @@ function createUsersService({ usersRepository, passwordHasher, registerCodesRepo
 
         const existingUser = await deps.usersRepository.findByEmail(email);
         if (existingUser)
-            throw new ServiceError('Email already registered.', { status: 409, code: 'email_taken' });
+            throw ServiceError.emailTaken();
 
         const consumed = await deps.registerCodesRepository.consumeCode(code);
         if (!consumed) {
@@ -105,14 +103,14 @@ function createUsersService({ usersRepository, passwordHasher, registerCodesRepo
     }
 
     /**
-     * Autentica un usuario por email + password. Tras verificar, si la
-     * contrasena estaba en texto plano (`needsRehash`), la rehashea y
-     * actualiza en BD; un fallo del rehash no bloquea el login.
+     * Authenticates a user by email + password. After verifying, if the
+     * password was in plain text (`needsRehash`), it rehashes it and updates
+     * the DB; a rehash failure does not block the login.
      *
      * @param {{ email:string, password:string }} input
      * @returns {Promise<UserDTO>}
-     * @throws {ServiceError} `401 invalid_credentials` si no hay usuario o
-     *   la contrasena no coincide.
+     * @throws {ServiceError} `401 invalid_credentials` if there is no user or
+     *   the password does not match.
      */
     async function authenticateUser({ email, password }) {
         const user = await deps.usersRepository.findByEmail(email);
@@ -136,9 +134,9 @@ function createUsersService({ usersRepository, passwordHasher, registerCodesRepo
                 const upgradedPasswordHash = await deps.passwordHasher.hashPassword(password);
                 await deps.usersRepository.updatePassword(user.id, upgradedPasswordHash);
             } catch (caughtError) {
-                // La autenticacion ya fue validada; no bloqueamos el login si
-                // el upgrade falla, pero registramos el fallo para detectar
-                // problemas persistentes.
+                // Authentication was already validated; we do not block the
+                // login if the upgrade fails, but we log the failure to detect
+                // persistent problems.
                 const error = /** @type {any} */ (caughtError);
                 const message = error?.message ? String(error.message) : String(error);
                 if (typeof deps.logger?.warn === 'function')

@@ -3,14 +3,14 @@
 /**
  * @file File-based request log middleware.
  *
- * Escribe en `logs/YYYY-MM-DD-HH.txt` el metodo, ruta y payload de cada
- * peticion con body util, y en `logs/YYYY-MM-DD-error.txt` cada respuesta
- * `500`. La escritura es asincrona y serializada por instancia (cola interna)
- * para evitar carreras entre peticiones.
+ * Writes to `logs/YYYY-MM-DD-HH.txt` the method, route and payload of each
+ * request with a useful body, and to `logs/YYYY-MM-DD-error.txt` every `500`
+ * response. Writing is asynchronous and serialized per instance (internal
+ * queue) to avoid races between requests.
  *
- * Contrato con controllers: en sus capturas de error, deben setear
- * `response.locals.serverErrorReason` con la razon original. Si falta, se
- * cae a `response.statusMessage`.
+ * Contract with controllers: in their error catches, they must set
+ * `response.locals.serverErrorReason` with the original reason. If missing, it
+ * falls back to `response.statusMessage`.
  *
  * @typedef {import('express').Request}       ExpressRequest
  * @typedef {import('express').Response}      ExpressResponse
@@ -27,9 +27,9 @@ const DEFAULT_LOGS_DIRECTORY = path.join(__dirname, '..', 'logs');
 const DEFAULT_SERVER_ERROR_REASON = 'Error interno del servidor genérico';
 
 /**
- * Crea el middleware de logging por fichero. Encola escrituras para evitar
- * carreras y aisla la cola por instancia, de forma que distintas
- * configuraciones (por ejemplo en tests) no compartan estado.
+ * Creates the file-based logging middleware. It queues writes to avoid races
+ * and isolates the queue per instance, so different configurations (for
+ * example in tests) do not share state.
  *
  * @param {{ logsDirectory?: string }} [options]
  * @returns {ExpressMiddleware}
@@ -39,8 +39,8 @@ function createRequestLogMiddleware({ logsDirectory = DEFAULT_LOGS_DIRECTORY } =
     let writeQueue = Promise.resolve();
 
     /**
-     * Encola una escritura `appendFile` garantizando primero que el fichero
-     * existe. Devuelve la promesa de la cola.
+     * Queues an `appendFile` write, first ensuring the file exists. Returns the
+     * queue promise.
      *
      * @param {string} filePath
      * @param {string} content
@@ -85,7 +85,7 @@ function createRequestLogMiddleware({ logsDirectory = DEFAULT_LOGS_DIRECTORY } =
 }
 
 /**
- * Acolcha un numero con ceros a la izquierda hasta `size` caracteres.
+ * Pads a number with leading zeros up to `size` characters.
  *
  * @param {number|string} value
  * @param {number} [size]
@@ -94,7 +94,7 @@ function createRequestLogMiddleware({ logsDirectory = DEFAULT_LOGS_DIRECTORY } =
 const pad = (value, size = 2) => String(value).padStart(size, '0');
 
 /**
- * Descompone una fecha en sus partes formateadas (string con padding).
+ * Decomposes a date into its formatted parts (padded strings).
  *
  * @param {Date} date
  * @returns {{ year:string, month:string, day:string, hour:string, minute:string, second:string, millisecond:string }}
@@ -110,7 +110,7 @@ const getDateParts = (date) => ({
 });
 
 /**
- * Resuelve la ruta del fichero de log horario (`YYYY-MM-DD-HH.txt`).
+ * Resolves the path of the hourly log file (`YYYY-MM-DD-HH.txt`).
  *
  * @param {string} logsDirectory
  * @param {Date} date
@@ -122,7 +122,7 @@ const getHourlyLogFilePath = (logsDirectory, date) => {
 };
 
 /**
- * Resuelve la ruta del fichero de errores diario (`YYYY-MM-DD-error.txt`).
+ * Resolves the path of the daily error file (`YYYY-MM-DD-error.txt`).
  *
  * @param {string} logsDirectory
  * @param {Date} date
@@ -134,7 +134,7 @@ const getErrorLogFilePath = (logsDirectory, date) => {
 };
 
 /**
- * Devuelve un timestamp legible con resolucion de milisegundos.
+ * Returns a human-readable timestamp with millisecond resolution.
  *
  * @param {Date} date
  * @returns {string}
@@ -145,7 +145,7 @@ const getTimestamp = (date) => {
 };
 
 /**
- * Crea una copia del payload con campos sensibles enmascarados.
+ * Creates a copy of the payload with sensitive fields masked.
  *
  * @param {unknown} payload
  * @returns {unknown}
@@ -167,7 +167,7 @@ const sanitizePayload = (payload) => {
 };
 
 /**
- * Formatea el payload con `util.inspect` indentando con 4 espacios.
+ * Formats the payload with `util.inspect`, indenting with 4 spaces.
  *
  * @param {unknown} payload
  * @returns {string}
@@ -185,7 +185,7 @@ const formatPayload = (payload) => {
 };
 
 /**
- * Devuelve la razon si es una cadena util, en otro caso el mensaje generico.
+ * Returns the reason if it is a useful string, otherwise the generic message.
  *
  * @param {unknown} reason
  * @returns {string}
@@ -197,9 +197,9 @@ const normalizeReason = (reason) => {
 };
 
 /**
- * Determina si la peticion entrante merece ser registrada en el log horario.
- * Solo se loguean payloads `application/json` o `x-www-form-urlencoded`
- * que tengan algun campo util.
+ * Determines whether the incoming request deserves to be recorded in the
+ * hourly log. Only `application/json` or `x-www-form-urlencoded` payloads that
+ * have some useful field are logged.
  *
  * @param {ExpressRequest} request
  * @returns {boolean}
@@ -223,9 +223,9 @@ const shouldLogIncomingRequest = (request) => {
 };
 
 /**
- * Garantiza que `logsDirectory` existe y que `filePath` contiene al menos
- * un salto de linea inicial, para que las apends posteriores no concatenen
- * al primer byte.
+ * Ensures that `logsDirectory` exists and that `filePath` contains at least an
+ * initial newline, so that subsequent appends do not concatenate at the first
+ * byte.
  *
  * @param {string} logsDirectory
  * @param {string} filePath

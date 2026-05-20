@@ -1,12 +1,11 @@
 'use strict';
 
 /**
- * @file Users controller — endpoints HTTP de registro/login.
+ * @file Users controller — HTTP endpoints for registration/login.
  *
- * Todas las respuestas de error usan el envelope unificado
- * `{ error, message, code }` via `respondWithApiError` / `respondInvalidPayload`,
- * lo que ademas garantiza que los 500 fijen `response.locals.serverErrorReason`
- * para el logger.
+ * All error responses use the unified envelope `{ error, message, code }` via
+ * `respondWithApiError` / `respondInvalidPayload`, which also guarantees that
+ * 500s set `response.locals.serverErrorReason` for the logger.
  *
  * @typedef {import('express').Request}  ExpressRequest
  * @typedef {import('express').Response} ExpressResponse
@@ -27,12 +26,11 @@ const {
     respondWithApiError,
     respondInvalidPayload
 } = require('../utils/api-error-payload');
-
-/** Patron de los codigos de registro de moderador (16 alfanumericos). */
-const REGISTER_CODE_PATTERN = /^[A-Za-z0-9]{16}$/;
+const { trimmedOr } = require('../utils/validators');
+const { REGISTER_CODE_PATTERN } = require('../constants/users');
 
 /**
- * Construye el controlador HTTP de usuarios.
+ * Builds the users HTTP controller.
  *
  * @param {UsersControllerDeps} [options]
  */
@@ -40,7 +38,7 @@ function createUsersController({ usersService } = {}) {
     const service = usersService || createUsersService();
 
     /**
-     * `POST /register` — Alta de un usuario normal.
+     * `POST /register` — Registers a normal user.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -59,7 +57,7 @@ function createUsersController({ usersService } = {}) {
         if (validationError)
             return respondInvalidPayload(response, validationError);
 
-        const email = toTrimmedString(payload.email).toLowerCase();
+        const email = trimmedOr(payload.email, '').toLowerCase();
         try {
             await service.registerUser({
                 email,
@@ -76,8 +74,8 @@ function createUsersController({ usersService } = {}) {
     }
 
     /**
-     * `POST /register-moderator` — Alta como moderador consumiendo un
-     * `register_code` valido.
+     * `POST /register-moderator` — Registers as a moderator by consuming a
+     * valid `register_code`.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -100,7 +98,7 @@ function createUsersController({ usersService } = {}) {
         if (typeof code !== 'string' || !REGISTER_CODE_PATTERN.test(code))
             return respondInvalidPayload(response, 'Invalid moderator register code.');
 
-        const email = toTrimmedString(payload.email).toLowerCase();
+        const email = trimmedOr(payload.email, '').toLowerCase();
         try {
             await service.registerModeratorUser({
                 email,
@@ -118,16 +116,16 @@ function createUsersController({ usersService } = {}) {
     }
 
     /**
-     * `POST /login` — Autentica al usuario y persiste su payload en
-     * `request.session.user` antes de redirigir a `/tasks`.
+     * `POST /login` — Authenticates the user and persists their payload in
+     * `request.session.user` before redirecting to `/tasks`.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
      * @returns {Promise<*>}
      */
     async function login(request, response) {
-        const email = toTrimmedString(request.body.email).toLowerCase();
-        const password = toTrimmedString(request.body.password);
+        const email = trimmedOr(request.body.email, '').toLowerCase();
+        const password = trimmedOr(request.body.password, '');
 
         if (!isValidEmail(email) || !isValidPassword(password))
             return respondInvalidPayload(response, 'Invalid login payload.');
@@ -151,8 +149,8 @@ function createUsersController({ usersService } = {}) {
 }
 
 /**
- * Valida un payload de registro. Devuelve un mensaje de error explicativo o
- * `null` si el payload es valido.
+ * Validates a registration payload. Returns an explanatory error message, or
+ * `null` if the payload is valid.
  *
  * @param {RegisterPayload} payload
  * @returns {string|null}
@@ -179,7 +177,7 @@ function validateRegisterPayload(payload) {
 }
 
 /**
- * Indica si `value` es una cadena alfabetica de 1..64 caracteres.
+ * Indicates whether `value` is an alphabetic string of 1..64 characters.
  *
  * @param {unknown} value
  * @param {RegExp} alphaRegex
@@ -193,9 +191,9 @@ function isValidAlphabeticField(value, alphaRegex) {
 }
 
 /**
- * Validacion de email defensiva (no usa regex laxas): comprueba presencia
- * de `@` unica, longitud razonable, dominio con punto interno y partes no
- * vacias sin espacios.
+ * Defensive email validation (does not use lax regexes): checks for a single
+ * `@`, reasonable length, a domain with an internal dot, and non-empty parts
+ * without whitespace.
  *
  * @param {unknown} value
  * @returns {boolean}
@@ -218,8 +216,8 @@ function isValidEmail(value) {
 }
 
 /**
- * Comprueba que la parte (local o dominio) no este vacia ni contenga
- * `@` o caracteres en blanco.
+ * Checks that the part (local or domain) is not empty and does not contain
+ * `@` or whitespace characters.
  *
  * @param {string} value
  * @returns {boolean}
@@ -230,7 +228,7 @@ function isValidEmailPart(value) {
 }
 
 /**
- * Politica de password: 9..64 caracteres.
+ * Password policy: 9..64 characters.
  *
  * @param {unknown} value
  * @returns {boolean}
@@ -239,18 +237,6 @@ function isValidPassword(value) {
     return typeof value === 'string'
         && value.length > 8
         && value.length <= 64;
-}
-
-/**
- * Devuelve `value.trim()` o `''` si no es string.
- *
- * @param {unknown} value
- * @returns {string}
- */
-function toTrimmedString(value) {
-    if (typeof value !== 'string')
-        return '';
-    return value.trim();
 }
 
 module.exports = {

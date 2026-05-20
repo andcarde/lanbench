@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * @file Reviews controller — endpoints HTTP del flujo de revision.
+ * @file Reviews controller — HTTP endpoints of the review flow.
  *
- * Cubre: peticion de la siguiente review, avance por criterios, cierre y
- * listado de feedback recibido por el anotador.
+ * Covers: requesting the next review, advancing through criteria, closure and
+ * listing the feedback received by the annotator.
  *
  * @typedef {import('express').Request}  ExpressRequest
  * @typedef {import('express').Response} ExpressResponse
@@ -23,7 +23,7 @@ const { resolveSessionUserId } = require('../middlewares/auth');
 const { toPositiveInteger } = require('../utils/validators');
 
 /**
- * Construye el controlador de revisiones.
+ * Builds the reviews controller.
  *
  * @param {ReviewsControllerDeps} [options]
  */
@@ -31,8 +31,8 @@ function createReviewsController({ reviewsService } = {}) {
     const service = reviewsService || createReviewsService();
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function requestNext(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -51,8 +51,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function getContext(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -72,8 +72,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function submitDecision(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -100,8 +100,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function submitCorrection(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -129,8 +129,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function finalize(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -150,8 +150,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function release(request, response) {
         const reviewerId = resolveSessionUserId(request);
@@ -171,8 +171,8 @@ function createReviewsController({ reviewsService } = {}) {
     }
 
     /**
-     * @param {*} request - Peticion HTTP con los datos de entrada.
-     * @param {*} response - Respuesta HTTP usada para devolver el resultado.
+     * @param {*} request - HTTP request with the input data.
+     * @param {*} response - HTTP response used to return the result.
      */
     async function feedbackForAnnotator(request, response) {
         const annotatorId = resolveSessionUserId(request);

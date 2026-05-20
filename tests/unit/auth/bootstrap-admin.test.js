@@ -9,9 +9,9 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * Crea un hasher falso que registra las llamadas para verificar interacciones.
- * @param {*} _expectedPlain - Texto plano esperado (no usado, documentativo).
- * @returns {*} Hasher fake con calls registradas.
+ * Creates a fake hasher that records calls to verify interactions.
+ * @param {*} _expectedPlain - Expected plain text (unused, documentary).
+ * @returns {*} Fake hasher with recorded calls.
  */
 function makeHasher(_expectedPlain) {
     /** @type {any[]} */

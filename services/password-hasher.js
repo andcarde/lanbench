@@ -1,15 +1,14 @@
 'use strict';
 
 /**
- * @file Password hasher — wrapper sobre `scrypt` con un formato textual
- * autocontenido.
+ * @file Password hasher — wrapper over `scrypt` with a self-contained textual
+ * format.
  *
- * El hash producido tiene la forma:
+ * The produced hash has the form:
  *   `scrypt$<N>$<r>$<p>$<saltBase64>$<keyBase64>`
  *
- * Acepta tambien contrasenas en texto plano almacenadas por el sistema
- * antiguo y senala `needsRehash` cuando un login con texto plano deberia
- * ser re-hasheado.
+ * It also accepts plain-text passwords stored by the old system and signals
+ * `needsRehash` when a plain-text login should be re-hashed.
  */
 
 const { promisify } = require('node:util');
@@ -20,12 +19,12 @@ const { randomBytes, scrypt, timingSafeEqual } = require('node:crypto');
  */
 const scryptAsync = promisify(scrypt);
 
-/** Prefijo del formato textual usado para reconocer un hash propio. */
+/** Prefix of the textual format used to recognize one of our own hashes. */
 const HASH_PREFIX = 'scrypt';
 
 /**
- * Parametros scrypt por defecto. `N` es coste CPU; `r` coste memoria; `p`
- * paralelismo; `keyLength` longitud del hash final en bytes.
+ * Default scrypt parameters. `N` is CPU cost; `r` memory cost; `p`
+ * parallelism; `keyLength` the length of the final hash in bytes.
  *
  * @type {{ N:number, r:number, p:number, keyLength:number }}
  */
@@ -37,15 +36,15 @@ const DEFAULT_SCRYPT_PARAMS = {
 };
 
 /**
- * Resultado de `verifyPassword`.
+ * Result of `verifyPassword`.
  *
  * @typedef {Object} VerifyResult
- * @property {boolean} matches      - `true` si las contrasenas coinciden.
- * @property {boolean} needsRehash  - `true` si el hash almacenado deberia regenerarse.
+ * @property {boolean} matches      - `true` if the passwords match.
+ * @property {boolean} needsRehash  - `true` if the stored hash should be regenerated.
  */
 
 /**
- * Hashea una contrasena con scrypt y la devuelve en formato textual.
+ * Hashes a password with scrypt and returns it in textual format.
  *
  * @param {string} password
  * @returns {Promise<string>}
@@ -66,8 +65,8 @@ async function hashPassword(password) {
 }
 
 /**
- * Comprueba que `password` corresponde a `storedPassword` (hash scrypt o
- * texto plano legacy).
+ * Checks that `password` corresponds to `storedPassword` (scrypt hash or
+ * legacy plain text).
  *
  * @param {string} password
  * @param {string} storedPassword
@@ -104,7 +103,8 @@ async function verifyPassword(password, storedPassword) {
             matches: timingSafeEqual(derivedKey, parsedHash.expectedKey),
             needsRehash: false
         };
-    } catch (_error) {
+    } catch (error) {
+        console.error('[password-hasher] verifyPassword failed:', error);
         return {
             matches: false,
             needsRehash: false
@@ -113,7 +113,7 @@ async function verifyPassword(password, storedPassword) {
 }
 
 /**
- * Construye una fachada con `hashPassword`/`verifyPassword`/`isPasswordHash`.
+ * Builds a facade with `hashPassword`/`verifyPassword`/`isPasswordHash`.
  *
  * @returns {{
  *   hashPassword: typeof hashPassword,
@@ -130,7 +130,7 @@ function createPasswordHasher() {
 }
 
 /**
- * Deriva una clave a partir de `password` y `salt` con `scrypt`.
+ * Derives a key from `password` and `salt` with `scrypt`.
  *
  * @param {string} password
  * @param {Buffer} salt
@@ -148,7 +148,7 @@ async function deriveKey(password, salt, params) {
 }
 
 /**
- * Devuelve `true` si `value` tiene la forma reconocida del hash scrypt.
+ * Returns `true` if `value` has the recognized scrypt hash form.
  *
  * @param {unknown} value
  * @returns {boolean}
@@ -158,11 +158,11 @@ function isPasswordHash(value) {
 }
 
 /**
- * Parsea el formato textual y extrae los parametros + buffers.
+ * Parses the textual format and extracts the parameters + buffers.
  *
  * @param {string} value
  * @returns {{ N:number, r:number, p:number, salt:Buffer, expectedKey:Buffer }}
- * @throws {Error} Si el formato es invalido.
+ * @throws {Error} If the format is invalid.
  */
 function parseStoredHash(value) {
     const parts = String(value).split('$');
@@ -185,7 +185,7 @@ function parseStoredHash(value) {
 }
 
 /**
- * Compara dos cadenas en tiempo constante (defensa contra timing attacks).
+ * Compares two strings in constant time (defense against timing attacks).
  *
  * @param {string} storedPassword
  * @param {string} candidatePassword
@@ -204,7 +204,7 @@ function safeComparePlaintext(storedPassword, candidatePassword) {
 }
 
 /**
- * Garantiza que la contrasena sea una cadena (vacia si no lo es).
+ * Ensures the password is a string (empty if it is not).
  *
  * @param {unknown} value
  * @returns {string}
