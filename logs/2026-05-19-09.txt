@@ -1,8 +1,0 @@
-
-2026.05.19.09.10.04.481 POST /api/annotations/check {
-    sentences: [
-      'hola'
-    ],
-    entryContext: null
-}
-

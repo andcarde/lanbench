@@ -1,9 +1,0 @@
-
-2026.05.17.23.00.01.426 POST /register {
-    surname: 'Surname',
-    lastName: 'Lastname',
-    email: 'user@domain.com',
-    password: '[REDACTED]',
-    repeatPassword: '[REDACTED]'
-}
-
