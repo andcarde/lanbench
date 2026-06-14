@@ -80,6 +80,22 @@ describe('admin api integration (E5)', function () {
             updateEvaluationCriterion(_request, response) {
                 calls.push('criteria-update');
                 return response.status(200).json({ id: 1, version: 2 });
+            },
+            /**
+             * Mock controller for listing users (US-22).
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
+             */
+            listUsers(_request, response) {
+                return response.status(200).json([]);
+            },
+            /**
+             * Mock controller for updating a user's role (US-22).
+             * @param {*} _request - HTTP request (unused).
+             * @param {*} response - HTTP response.
+             */
+            updateUserRole(_request, response) {
+                return response.status(200).json({});
             }
         });
 
@@ -134,7 +150,93 @@ describe('admin api integration (E5)', function () {
             await server.close();
         }
     });
+
+    it('US-22 — un moderador lista usuarios y promueve a otro a moderador', async () => {
+        const adminController = buildRealAdminControllerWithUsers();
+        const server = await startApp(true, adminController);
+
+        try {
+            const listResponse = await fetch(`${server.baseUrl}/api/admin/users`);
+            assert.equal(listResponse.status, 200);
+            const users = await listResponse.json();
+            assert.deepEqual(users, [
+                { id: 1, email: 'mod@example.com', isModerator: true },
+                { id: 2, email: 'annot@example.com', isModerator: false }
+            ]);
+
+            const promote = await fetch(`${server.baseUrl}/api/admin/users/2`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isModerator: true })
+            });
+            assert.equal(promote.status, 200);
+            assert.deepEqual(await promote.json(), { id: 2, email: 'annot@example.com', isModerator: true });
+        } finally {
+            await server.close();
+        }
+    });
+
+    it('US-22 — el moderador no puede auto-degradarse (409)', async () => {
+        const adminController = buildRealAdminControllerWithUsers();
+        const server = await startApp(true, adminController);
+
+        try {
+            // The session user injected by startApp is id=1.
+            const response = await fetch(`${server.baseUrl}/api/admin/users/1`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isModerator: false })
+            });
+            assert.equal(response.status, 409);
+            assert.equal((await response.json()).code, 'cannot_self_demote');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it('US-22 — un usuario normal no puede listar usuarios (403)', async () => {
+        const server = await startApp(false, buildRealAdminControllerWithUsers());
+
+        try {
+            const response = await fetch(`${server.baseUrl}/api/admin/users`);
+            assert.equal(response.status, 403);
+            assert.equal((await response.json()).code, 'forbidden_role');
+        } finally {
+            await server.close();
+        }
+    });
 });
+
+/**
+ * Builds the REAL admin controller + service wired to an in-memory users
+ * repository, so the US-22 endpoints are exercised through the full router →
+ * controller → service → repository chain (only persistence is stubbed).
+ * @returns {*} A real admin controller.
+ */
+function buildRealAdminControllerWithUsers() {
+    const { createAdminController } = require('../../../controllers/admin-controller');
+    const { createAdminService } = require('../../../services/admin-service');
+
+    const usersById = new Map([
+        [1, { id: 1, email: 'mod@example.com', isModerator: true }],
+        [2, { id: 2, email: 'annot@example.com', isModerator: false }]
+    ]);
+
+    const usersRepository = {
+        async listUsers() {
+            return [...usersById.values()].map(u => ({ ...u }));
+        },
+        async setIsModerator(/** @type {number} */ userId, /** @type {boolean} */ isModerator) {
+            const user = usersById.get(userId);
+            if (!user)
+                throw Object.assign(new Error('not found'), { code: 'P2025' });
+            user.isModerator = isModerator;
+            return { ...user };
+        }
+    };
+
+    return createAdminController({ adminService: createAdminService({ usersRepository }) });
+}
 
 /**
  * Boots the app with a session user according to isModerator.
@@ -189,6 +291,22 @@ async function startApp(isModerator, adminController = null) {
                  * @param {*} response - HTTP response.
                  */
                 updateEvaluationCriterion(_request, response) {
+                    return response.status(200).json({});
+                },
+                /**
+                 * Mock controller for listing users (US-22).
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 */
+                listUsers(_request, response) {
+                    return response.status(200).json([]);
+                },
+                /**
+                 * Mock controller for updating a user's role (US-22).
+                 * @param {*} _request - HTTP request (unused).
+                 * @param {*} response - HTTP response.
+                 */
+                updateUserRole(_request, response) {
                     return response.status(200).json({});
                 }
             }

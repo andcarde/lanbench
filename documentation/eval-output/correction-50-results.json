@@ -1,0 +1,664 @@
+{
+  "kind": "correction-quality",
+  "size": 50,
+  "runs": [
+    {
+      "providerKey": "gemini",
+      "label": "Google AI Studio Gemini Flash",
+      "model": "gemini-2.5-flash",
+      "size": 50,
+      "matches": 20,
+      "total": 50,
+      "agreementPct": 40,
+      "llmFailures": 28,
+      "confusionMatrix": {
+        "ok": {
+          "ok": 20,
+          "warning": 1,
+          "error": 0
+        },
+        "warning": {
+          "ok": 0,
+          "warning": 0,
+          "error": 1
+        },
+        "error": {
+          "ok": 0,
+          "warning": 0,
+          "error": 0
+        }
+      },
+      "mismatches": [
+        {
+          "eid": 1,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "warning",
+          "candidate": "Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.",
+          "rationale": "Faithful active/passive verbalization of leaderTitle.",
+          "alerts": [
+            "warning:imprecise_entity_name:La relacion principal esta cubierta, pero la denominacion de la asamblea puede ser mas precisa."
+          ]
+        },
+        {
+          "eid": 7,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Albert Einstein recibió el Premio Nobel de Física.",
+          "rationale": "Correct award verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 14,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "William Shakespeare fue dramaturgo.",
+          "rationale": "Correct occupation verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 16,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Lyon es una ciudad de Francia.",
+          "rationale": "Correct country verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 21,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Portugal es Lisboa.",
+          "rationale": "Correct capital verbalization with translated entity.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 22,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Leonardo da Vinci nació en Vinci.",
+          "rationale": "Correct birthPlace verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 23,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La hamburguesa contiene carne de res.",
+          "rationale": "Correct ingredient verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 26,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Salvador Dalí fue pintor.",
+          "rationale": "Correct occupation verbalization.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 27,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Alemania es Berlín.",
+          "rationale": "Correct capital verbalization with translated entities.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 30,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Diego Velázquez nació en Sevilla.",
+          "rationale": "Correct birthPlace verbalization with translated entity.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 31,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La kapital de Francia es París.",
+          "rationale": "Spelling error: 'kapital' instead of 'capital'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 32,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La hamburgesa contiene carne de res.",
+          "rationale": "Spelling error: 'hamburgesa' instead of 'hamburguesa'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 33,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Barzelona está en España.",
+          "rationale": "Spelling error: 'Barzelona' instead of 'Barcelona'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 34,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Arjentina es Buenos Aires.",
+          "rationale": "Spelling error: 'Arjentina' instead of 'Argentina'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 35,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Gabriel García Márquez fue colonbiano.",
+          "rationale": "Spelling error: 'colonbiano' instead of 'colombiano'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 36,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Miguel de Cervantes nacio en Alcala de Henares.",
+          "rationale": "Missing accents on 'nació' and 'Alcalá'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 37,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Mexico es Ciudad de Mexico.",
+          "rationale": "Missing accents on 'México'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 38,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Frida Kahlo nacio en Coyoacan.",
+          "rationale": "Missing accents on 'nació' and 'Coyoacán'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 39,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Pablo Neruda fue chílenó.",
+          "rationale": "Spurious accents on 'chileno'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 40,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Tokio está en Japon.",
+          "rationale": "Missing accent on 'Japón'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 41,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Ámsterdam realiza su localización en los Países Bajos.",
+          "rationale": "'realiza su localización' is unidiomatic for a country relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 42,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Portugal viene a ser Lisboa.",
+          "rationale": "'viene a ser' is colloquial/unnatural for a factual statement.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 43,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Leonardo da Vinci se dedicaba al arte.",
+          "rationale": "'se dedicaba al arte' is broader than 'pintor'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 44,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Madrid efectúa su pertenencia geográfica con respecto a España.",
+          "rationale": "Verbose, unnatural phrasing for a country relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 45,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Albert Einstein hacía cosas relacionadas con la ciencia.",
+          "rationale": "Vague: 'hacía cosas relacionadas con la ciencia' instead of 'físico'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 46,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La Torre Eiffel procede a estar ubicada en París.",
+          "rationale": "'procede a estar' is awkward and unidiomatic.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 47,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Roma desempeña el rol de capital con relación a Italia.",
+          "rationale": "Pompous, unnatural phrasing for a simple capital relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 48,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "error",
+          "candidate": "La paella incorpora ciertos elementos vegetales.",
+          "rationale": "Vague: 'elementos vegetales' instead of 'arroz'.",
+          "alerts": [
+            "error:incomplete_sentence:La oracion es un fragmento y no verbaliza la relacion RDF.",
+            "error:semantic_mismatch:Error semántico: la traducción no refleja el significado del triple: La candidata menciona 'ciertos elementos vegetales' en lugar de 'arroz', que es el ingrediente específico del triple."
+          ]
+        },
+        {
+          "eid": 49,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Marie Curie trabajaba en cosas de laboratorio.",
+          "rationale": "Vague: 'cosas de laboratorio' instead of 'química'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 50,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Berlín lleva a cabo el hecho de estar dentro de Alemania.",
+          "rationale": "'lleva a cabo el hecho de estar' is verbose and unidiomatic.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        }
+      ]
+    },
+    {
+      "providerKey": "groq",
+      "label": "Groq Llama-3.x 70B",
+      "model": "llama-3.3-70b-versatile",
+      "size": 50,
+      "matches": 32,
+      "total": 50,
+      "agreementPct": 64,
+      "llmFailures": 15,
+      "confusionMatrix": {
+        "ok": {
+          "ok": 28,
+          "warning": 0,
+          "error": 2
+        },
+        "warning": {
+          "ok": 0,
+          "warning": 0,
+          "error": 0
+        },
+        "error": {
+          "ok": 1,
+          "warning": 0,
+          "error": 4
+        }
+      },
+      "mismatches": [
+        {
+          "eid": 16,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "error",
+          "candidate": "Lyon es una ciudad de Francia.",
+          "rationale": "Correct country verbalization.",
+          "alerts": [
+            "error:relation_missing:Falta informacion del triple Lyon | country | France."
+          ]
+        },
+        {
+          "eid": 30,
+          "expectedSeverity": "ok",
+          "expectedCodes": [],
+          "producedSeverity": "error",
+          "candidate": "Diego Velázquez nació en Sevilla.",
+          "rationale": "Correct birthPlace verbalization with translated entity.",
+          "alerts": [
+            "error:missing_triple:Falta informacion del triple Diego_Velázquez | birthPlace | Seville."
+          ]
+        },
+        {
+          "eid": 32,
+          "expectedSeverity": "error",
+          "expectedCodes": [
+            "spelling_error"
+          ],
+          "producedSeverity": "ok",
+          "candidate": "La hamburgesa contiene carne de res.",
+          "rationale": "Spelling error: 'hamburgesa' instead of 'hamburguesa'.",
+          "alerts": []
+        },
+        {
+          "eid": 36,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Miguel de Cervantes nacio en Alcala de Henares.",
+          "rationale": "Missing accents on 'nació' and 'Alcalá'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 37,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Mexico es Ciudad de Mexico.",
+          "rationale": "Missing accents on 'México'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 38,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Frida Kahlo nacio en Coyoacan.",
+          "rationale": "Missing accents on 'nació' and 'Coyoacán'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 39,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Pablo Neruda fue chílenó.",
+          "rationale": "Spurious accents on 'chileno'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 40,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "accent_error"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Tokio está en Japon.",
+          "rationale": "Missing accent on 'Japón'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 41,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Ámsterdam realiza su localización en los Países Bajos.",
+          "rationale": "'realiza su localización' is unidiomatic for a country relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 42,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La capital de Portugal viene a ser Lisboa.",
+          "rationale": "'viene a ser' is colloquial/unnatural for a factual statement.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 43,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Leonardo da Vinci se dedicaba al arte.",
+          "rationale": "'se dedicaba al arte' is broader than 'pintor'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 44,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Madrid efectúa su pertenencia geográfica con respecto a España.",
+          "rationale": "Verbose, unnatural phrasing for a country relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 45,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Albert Einstein hacía cosas relacionadas con la ciencia.",
+          "rationale": "Vague: 'hacía cosas relacionadas con la ciencia' instead of 'físico'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 46,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La Torre Eiffel procede a estar ubicada en París.",
+          "rationale": "'procede a estar' is awkward and unidiomatic.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 47,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Roma desempeña el rol de capital con relación a Italia.",
+          "rationale": "Pompous, unnatural phrasing for a simple capital relation.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 48,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "La paella incorpora ciertos elementos vegetales.",
+          "rationale": "Vague: 'elementos vegetales' instead of 'arroz'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 49,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "vague_translation"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Marie Curie trabajaba en cosas de laboratorio.",
+          "rationale": "Vague: 'cosas de laboratorio' instead of 'química'.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        },
+        {
+          "eid": 50,
+          "expectedSeverity": "warning",
+          "expectedCodes": [
+            "unnatural_expression"
+          ],
+          "producedSeverity": "LLM_FAIL",
+          "candidate": "Berlín lleva a cabo el hecho de estar dentro de Alemania.",
+          "rationale": "'lleva a cabo el hecho de estar' is verbose and unidiomatic.",
+          "alerts": [
+            "LLM call failed after retries; pipeline fell back to rule-only."
+          ]
+        }
+      ]
+    }
+  ],
+  "generatedAt": "2026-06-11T04:25:06.165Z"
+}

@@ -1,0 +1,218 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="Place" eid="1" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="" lang="ru" lid="Id1">Пенджаб, Пакистан, возглавляется Провинциальной ассамблеей Пенджаба.</lex>
+      <lex comment="" lang="en" lid="Id2">Punjab, Pakistan is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="" lang="ru" lid="Id2">Пенджаб, Пакистан возглавляется Провинциальной ассамблеей Пенджаба.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Punjab,_Pakistan | sameAs | Пенджаб_(Пакистан)</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Provincial Assembly of the Punjab | sameAs | Провинциальная ассамблея Пенджаба</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="2" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="" lang="ru" lid="Id1">Сан-Себастьян-де-лос-Рейес является частью Сообщества Мадрида.</lex>
+      <lex comment="" lang="en" lid="Id2">San Sebastián de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="" lang="ru" lid="Id2">Сан-Себастьян-де-лос-Рейес входит в состав Мадрида.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">San_Sebastián_de_los_Reyes | sameAs | Сан-Себастьян-де-лос-Рейес</dbpedialink>
+        <dbpedialink direction="en2ru">Community_of_Madrid | sameAs | Мадрид_(автономное_сообщество)</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="3" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | leaderParty | People's_Party_(Spain)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | leaderParty | People's_Party_(Spain)</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The People's Party is the lead party of San Sebastian de los Reyes, Spain.</lex>
+      <lex comment="" lang="ru" lid="Id1">Народная партия - ведущая партия Сан-Себастьян-де-лос-Рейеса, Испания.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">People's_Party_(Spain) | sameAs | Народная_партия_(Испания)</dbpedialink>
+        <dbpedialink direction="en2ru">San_Sebastián_de_los_Reyes | sameAs | Сан-Себастьян-де-лос-Рейес</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="4" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Saranac_Lake,_New_York | country | United_States</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Saranac_Lake,_New_York | country | United_States</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Saranac Lake, New York is located in the U.S.</lex>
+      <lex comment="" lang="ru" lid="Id1">Саранак-Лейк, штат Нью-Йорк находится в США.</lex>
+      <lex comment="" lang="en" lid="Id2">Saranac Lake New York is located in the United States.</lex>
+      <lex comment="" lang="ru" lid="Id2">Саранак-Лейк, штат Нью-Йорк, находится в США.</lex>
+      <lex comment="" lang="en" lid="Id3">Saranac Lake, New York is located in the United States.</lex>
+      <lex comment="" lang="ru" lid="Id3">Саранак-Лейк, штат Нью-Йорк, находится в США.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">United_States | sameAs | Соединённые_Штаты_Америки</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Saranac Lake, New York | includes | Саранак-Лейк</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="5" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Saranac Lake, New York is part of Essex County, New York.</lex>
+      <lex comment="" lang="ru" lid="Id1">Саранак-Лейк, штат Нью-Йорк, является частью округа Эссекс, штат Нью-Йорк.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Essex_County,_New_York | sameAs | Эссекс_(округ,_Нью-Йорк)</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Saranac Lake, New York | includes | Саранак-Лейк</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="6" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>Saranac_Lake,_New_York | subdivisionName | Harrietstown,_New_York</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Saranac Lake, New York is part of Harrietstown, New York.</lex>
+      <lex comment="" lang="ru" lid="Id1">Саранак-Лейк, штат Нью-Йорк, является частью Хэрритстауна, штат Нью-Йорк.</lex>
+      <lex comment="" lang="en" lid="Id2">Saranac Lake, New York, is part of Harrietstown, New York.</lex>
+      <lex comment="" lang="ru" lid="Id2">Саранак-Лейк, штат Нью-Йорк, является частью Хэрритстауна, штат Нью-Йорк.</lex>
+      <links>
+        <link direction="en2ru">Saranac Lake, New York | includes | Саранак-Лейк</link>
+        <link direction="en2ru">Harrietstown, New York | includes | Хэрритстаун</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="7" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>South_Jersey_Transportation_Authority | leader | Stephen_Dilts</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>South_Jersey_Transportation_Authority | leader | Stephen_Dilts</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">South Jersey Transportation Authority's leader name is Stephen Dilts.</lex>
+      <lex comment="" lang="ru" lid="Id1">Лидером Транспортного управления Саус Джерси является Стивен Дилтс.</lex>
+      <lex comment="" lang="en" lid="Id2">Stephen Dilts is the head of the South Jersey Transportation Authority.</lex>
+      <lex comment="" lang="ru" lid="Id2">Стивен Дилтс - глава транспортного управления Саус Джерси.</lex>
+      <lex comment="" lang="en" lid="Id3">Stephen Dilts is the leader of the South Jersey Transportation Authority.</lex>
+      <lex comment="" lang="ru" lid="Id3">Стивен Дилтс - лидер Транспортного управления Саус Джерси.</lex>
+      <links>
+        <link direction="en2ru">South Jersey Transportation Authority | sameAs | Транспортное управление Саус Джерси</link>
+        <link direction="en2ru">Stephen Dilts | sameAs | Стивен Дилтс</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="8" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>São_José_dos_Pinhais | isPartOf | Paraná_(state)</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>São_José_dos_Pinhais | subdivisionName | Paraná_(state)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>São_José_dos_Pinhais | isPartOf | Paraná_(state)</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">São José dos Pinhais is part Of Paraná (state).</lex>
+      <lex comment="" lang="ru" lid="Id1">Сан-Жозе-дус-Пиньяйс входит в состав Параны (штат).</lex>
+      <lex comment="" lang="en" lid="Id2">São José dos Pinhais is part of the state of Paraná.</lex>
+      <lex comment="" lang="ru" lid="Id2">Сан-Жозе-дус-Пиньяйс является частью штата Парана.</lex>
+      <lex comment="" lang="en" lid="Id3">Sao Jose dos Pinhais is part of Parana.</lex>
+      <lex comment="" lang="ru" lid="Id3">Сан-Жозе-дус-Пиньяйс - часть Параны.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">São_José_dos_Pinhais | sameAs | Сан-Жозе-дус-Пиньяйс</dbpedialink>
+        <dbpedialink direction="en2ru">Paraná_(state) | sameAs | Парана_(штат)</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="9" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>São_José_dos_Pinhais | isPartOf | South_Region,_Brazil</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>São_José_dos_Pinhais | subdivisionName | South_Region,_Brazil</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>São_José_dos_Pinhais | isPartOf | South_Region,_Brazil</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">São José dos Pinhais is part of the south region of Brazil.</lex>
+      <lex comment="" lang="ru" lid="Id1">Сан-Жозе-дус-Пиньяйс является частью Южного региона Бразилии.</lex>
+      <lex comment="" lang="en" lid="Id2">Sao Jose dos Pinhais is part of the South Region, Brazil.</lex>
+      <lex comment="" lang="ru" lid="Id2">Сан-Жозе-дус-Пиньяйс - часть Южного региона, Бразилия.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">São_José_dos_Pinhais | sameAs | Сан-Жозе-дус-Пиньяйс</dbpedialink>
+        <dbpedialink direction="en2ru">South_Region,_Brazil | sameAs | Южный_регион_(Бразилия)</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="10" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | capital | Austin,_Texas</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | capital | Austin,_Texas</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Austin is the capital of Texas.</lex>
+      <lex comment="" lang="ru" lid="Id1">Остин - столица Техаса.</lex>
+      <lex comment="" lang="en" lid="Id2">The capital of Texas is Austin.</lex>
+      <lex comment="" lang="ru" lid="Id2">Столица Техаса - Остин.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Austin,_Texas | sameAs | Остин_(Техас)</dbpedialink>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="11" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | country | United_States</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | country | United_States</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Texas is in the United States.</lex>
+      <lex comment="" lang="ru" lid="Id1">Техас находится в США.</lex>
+      <lex comment="" lang="en" lid="Id2">Texas is located in the United States.</lex>
+      <lex comment="" lang="ru" lid="Id2">Техас находится в США.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">United_States | sameAs | Соединённые_Штаты_Америки</dbpedialink>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="12" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | demonym | Tejano</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | demonym | Tejano</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Texas demonym is Tejano.</lex>
+      <lex comment="" lang="ru" lid="Id1">Демоним Техаса - техасец.</lex>
+      <lex comment="" lang="en" lid="Id2">The inhabitants of Texas have the demonym of Tejano.</lex>
+      <lex comment="" lang="ru" lid="Id2">У жителей Техаса есть демоним «техасцы».</lex>
+      <lex comment="" lang="en" lid="Id3">A Tejano is a demonym term used in Texas.</lex>
+      <lex comment="" lang="ru" lid="Id3">Техасец - это этнохороним, используемый в Техасе.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Tejano | sameAs | техасец</link>
+      </links>
+    </entry>
+  </entries>
+</benchmark>

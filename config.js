@@ -60,6 +60,24 @@ loadEnvFile(resolve(__dirname, '.env'));
  */
 
 /**
+ * Google AI Studio (Gemini) provider configuration. Used by the multi-provider
+ * eval harnesses; talks to the OpenAI-compatible endpoint already wired in
+ * `utils/llm-client.js` (`provider: 'google-ai-studio'`).
+ *
+ * @typedef {Object} GeminiConfig
+ * @property {string} apiBase
+ * @property {string} model
+ * @property {string} apiKey
+ * @property {number} requestTimeoutMs
+ */
+
+/**
+ * Per-dataset LLM credentials configuration (US-31).
+ * @typedef {Object} CredentialsConfig
+ * @property {string} encryptionKey
+ */
+
+/**
  * Global application configuration.
  * @typedef {Object} AppConfig
  * @property {MysqlConfig} mysql
@@ -68,6 +86,8 @@ loadEnvFile(resolve(__dirname, '.env'));
  * @property {'local'|'cloud'} model
  * @property {OllamaConfig} ollama
  * @property {GroqConfig} groq
+ * @property {GeminiConfig} gemini
+ * @property {CredentialsConfig} credentials
  * @property {boolean} debugMode
  * @property {boolean} isProduction
  */
@@ -107,6 +127,23 @@ const config = {
         model: trimmedOr(process.env.GROQ_MODEL, 'llama-3.3-70b-versatile'),
         apiKey: trimmedOr(process.env.GROQ_API_KEY, ''),
         requestTimeoutMs: normalizePositiveInteger(process.env.GROQ_TIMEOUT_MS, 60000)
+    },
+
+    // Google AI Studio (Gemini) provider for the multi-provider eval harness.
+    // The apiBase points to the OpenAI-compatibility endpoint so the generic
+    // openai-compatible client can drive it without a dedicated adapter.
+    gemini: {
+        apiBase: trimmedOr(process.env.GEMINI_API_BASE, 'https://generativelanguage.googleapis.com/v1beta/openai'),
+        model: trimmedOr(process.env.GEMINI_MODEL, 'gemini-2.5-flash'),
+        apiKey: trimmedOr(process.env.GEMINI_API_KEY, ''),
+        requestTimeoutMs: normalizePositiveInteger(process.env.GEMINI_TIMEOUT_MS, 60000)
+    },
+
+    // Per-dataset LLM credentials (US-31): secret used to derive the AES key
+    // for at-rest encryption. Falls back to SESSION_SECRET so a single stable
+    // secret can serve both purposes; empty when neither is configured.
+    credentials: {
+        encryptionKey: trimmedOr(process.env.CREDENTIALS_ENCRYPTION_KEY, trimmedOr(process.env.SESSION_SECRET, '')) || ''
     },
 
     debugMode: toBoolean(process.env.DEBUG_MODE, true),

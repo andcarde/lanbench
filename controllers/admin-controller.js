@@ -16,6 +16,7 @@
 
 const { createAdminService } = require('../services/admin-service');
 const { toPositiveInteger } = require('../utils/validators');
+const { resolveSessionUserId } = require('../middlewares/auth');
 const {
     respondWithApiError,
     respondInvalidPayload
@@ -140,12 +141,62 @@ function createAdminController({ adminService } = {}) {
         }
     }
 
+    /**
+     * `GET /api/admin/users` — Lists every user with their server role (US-22).
+     *
+     * @param {ExpressRequest} _request
+     * @param {ExpressResponse} response
+     * @returns {Promise<void>}
+     */
+    async function listUsers(_request, response) {
+        try {
+            const users = await service.listUsers();
+            response.status(200).json(users);
+            return;
+        } catch (caughtError) {
+            respondWithApiError(response, /** @type {any} */ (caughtError));
+            return;
+        }
+    }
+
+    /**
+     * `PATCH /api/admin/users/:id` — Promotes/demotes a user's server role
+     * (`isModerator`). The acting moderator is taken from the session so the
+     * service can refuse self-demotion (US-22).
+     *
+     * @param {ExpressRequest} request
+     * @param {ExpressResponse} response
+     * @returns {Promise<void>}
+     */
+    async function updateUserRole(request, response) {
+        const userId = toPositiveInteger(request.params.id);
+        if (userId === null) {
+            respondInvalidPayload(response, 'El id de usuario es inválido.');
+            return;
+        }
+
+        try {
+            const updated = await service.setUserModerator({
+                actorId: resolveSessionUserId(request),
+                userId,
+                isModerator: /** @type {*} */ (request.body)?.isModerator
+            });
+            response.status(200).json(updated);
+            return;
+        } catch (caughtError) {
+            respondWithApiError(response, /** @type {any} */ (caughtError));
+            return;
+        }
+    }
+
     return {
         listDatasetSummaries,
         exportDataset,
         listEvaluationCriteria,
         createEvaluationCriterion,
-        updateEvaluationCriterion
+        updateEvaluationCriterion,
+        listUsers,
+        updateUserRole
     };
 }
 

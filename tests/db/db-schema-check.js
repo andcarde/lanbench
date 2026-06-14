@@ -42,7 +42,8 @@ const EXPECTED_TABLES = new Set([
     'reviews',
     'review_decisions',
     'review_comments',
-    'register_codes'
+    'register_codes',
+    'dataset_llm_credentials'
 ]);
 
 // Each column: { name, nullable, default? }
@@ -195,6 +196,8 @@ const EXPECTED_COLUMNS = {
         { name: 'annotator_id',              nullable: false },
         { name: 'status',                    nullable: false, default: 'pending' },
         { name: 'current_criterion_index',   nullable: false, default: '0' },
+        { name: 'round_index',               nullable: false, default: '0' },
+        { name: 'clean_round',               nullable: false, default: '0' },
         { name: 'assigned_at',               nullable: false },
         { name: 'expires_at',                nullable: false },
         { name: 'time_spent_seconds',        nullable: false, default: '0' },
@@ -221,6 +224,18 @@ const EXPECTED_COLUMNS = {
     register_codes: [
         { name: 'code',       nullable: false },
         { name: 'created_at', nullable: false }
+    ],
+    dataset_llm_credentials: [
+        { name: 'id',             nullable: false },
+        { name: 'dataset_id',     nullable: false },
+        { name: 'provider',       nullable: false },
+        { name: 'api_base',       nullable: true  },
+        { name: 'model',          nullable: false },
+        { name: 'api_key_cipher', nullable: false },
+        { name: 'key_last4',      nullable: false },
+        { name: 'is_active',      nullable: false, default: '0' },
+        { name: 'created_at',     nullable: false },
+        { name: 'updated_at',     nullable: false }
     ]
 };
 
@@ -239,9 +254,10 @@ const EXPECTED_INDEXES = {
     active_sessions:            ['idx_active_sessions_user'],
     annotation_alert_decisions: ['idx_annotation_alert_decisions_entry', 'idx_annotation_alert_decisions_user'],
     evaluation_criteria:        ['idx_evaluation_criteria_active_order'],
-    reviews:                    ['idx_reviews_entry', 'idx_reviews_reviewer', 'idx_reviews_annotator', 'idx_reviews_status'],
+    reviews:                    ['idx_reviews_entry', 'idx_reviews_reviewer', 'idx_reviews_annotator', 'idx_reviews_status', 'idx_reviews_entry_round'],
     review_decisions:           ['uq_review_decisions_review_criterion', 'idx_review_decisions_review'],
-    review_comments:            ['idx_review_comments_review']
+    review_comments:            ['idx_review_comments_review'],
+    dataset_llm_credentials:    ['uq_dataset_llm_credentials_dataset_provider', 'idx_dataset_llm_credentials_dataset']
 };
 
 // ── Output helpers ───────────────────────────────────────────────────────────

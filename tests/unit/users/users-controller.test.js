@@ -123,7 +123,7 @@ describe('users-controller', () => {
             email: 'test@example.com',
             isModerator: false
         });
-        assert.deepEqual(recorder.payload, { redirectUrl: '/tasks' });
+        assert.deepEqual(recorder.payload, { redirectUrl: '/datasets' });
     });
 
     it('login devuelve 401 cuando el servicio rechaza las credenciales', async () => {

@@ -94,7 +94,8 @@ describe('datasets-service', () => {
                 canReview: false,
                 showReviewButton: false,
                 reviewAvailable: false,
-                reviewableCount: 0
+                reviewableCount: 0,
+                blockedBySelfAnnotation: false
             },
             options: {
                 llmMode: 'none',
@@ -487,6 +488,134 @@ describe('datasets-service', () => {
         await assert.rejects(
             service.getAccessibleDatasetAnnotatedXmlDownload(7, 11),
             (/** @type {any} */ err) => err?.status === 404 && err?.code === 'dataset_without_entries'
+        );
+    });
+
+    it('createDataset persiste la descripcion cuando es valida y la propaga al DTO', async () => {
+        /** @type {any} */
+        let capturedDatasetData = null;
+        const service = createDatasetsService(/** @type {any} */ ({
+            readDataset() {
+                return { entries: [{ eid: 1 }] };
+            },
+            readFileAsBuffer() {
+                return Buffer.from('<benchmark />');
+            },
+            parseDatasetImport() {
+                return { entries: [] };
+            },
+            datasetsRepository: {
+                async createOwnedDataset(/** @type {*} */ payload) {
+                    capturedDatasetData = payload.datasetData;
+                    return {
+                        id: 21,
+                        name: payload.datasetData.name,
+                        description: payload.datasetData.description,
+                        totalEntries: payload.datasetData.totalEntries,
+                        languages: payload.datasetData.languages,
+                        sectionsCompleted: 0,
+                        sectionsInReview: 0,
+                        sectionsPending: 1,
+                        llmMode: 'none',
+                        isReviewEnabled: false,
+                        hasAdditionalReviews: false,
+                        colorClass: 'dataset-purple'
+                    };
+                }
+            }
+        }));
+
+        const payload = await service.createDataset(
+            7,
+            { filename: 'tmp.xml', originalname: 'Con descripcion.xml' },
+            { description: '  Un dataset de prueba con descripcion  ' }
+        );
+
+        assert.equal(capturedDatasetData.description, 'Un dataset de prueba con descripcion');
+        assert.equal(payload.dataset.description, 'Un dataset de prueba con descripcion');
+    });
+
+    it('createDataset persiste description = null cuando se omite o esta vacia', async () => {
+        /** @type {any[]} */
+        const captured = [];
+        const service = createDatasetsService(/** @type {any} */ ({
+            readDataset() {
+                return { entries: [{ eid: 1 }] };
+            },
+            readFileAsBuffer() {
+                return Buffer.from('<benchmark />');
+            },
+            parseDatasetImport() {
+                return { entries: [] };
+            },
+            datasetsRepository: {
+                async createOwnedDataset(/** @type {*} */ payload) {
+                    captured.push(payload.datasetData);
+                    return {
+                        id: 22,
+                        name: payload.datasetData.name,
+                        description: payload.datasetData.description,
+                        totalEntries: payload.datasetData.totalEntries,
+                        languages: payload.datasetData.languages,
+                        sectionsCompleted: 0,
+                        sectionsInReview: 0,
+                        sectionsPending: 1,
+                        llmMode: 'none',
+                        isReviewEnabled: false,
+                        hasAdditionalReviews: false,
+                        colorClass: 'dataset-purple'
+                    };
+                }
+            }
+        }));
+
+        const omitted = await service.createDataset(
+            7,
+            { filename: 'a.xml', originalname: 'Sin descripcion.xml' }
+        );
+        const blank = await service.createDataset(
+            7,
+            { filename: 'b.xml', originalname: 'Solo espacios.xml' },
+            { description: '   \n\t  ' }
+        );
+
+        assert.equal(captured[0].description, null);
+        assert.equal(captured[1].description, null);
+        assert.equal(omitted.dataset.description, undefined);
+        assert.equal(blank.dataset.description, undefined);
+    });
+
+    it('createDataset rechaza con 400 dataset_description_too_long cuando supera 512 caracteres', async () => {
+        const service = createDatasetsService(/** @type {any} */ ({
+            readDataset() {
+                return { entries: [{ eid: 1 }] };
+            },
+            readFileAsBuffer() {
+                return Buffer.from('<benchmark />');
+            },
+            parseDatasetImport() {
+                return { entries: [] };
+            },
+            datasetsRepository: {
+                async createOwnedDataset() {
+                    throw new Error('No deberia llegar al repositorio.');
+                }
+            }
+        }));
+
+        const tooLong = 'A'.repeat(513);
+
+        await assert.rejects(
+            () => service.createDataset(
+                7,
+                { filename: 'tmp.xml', originalname: 'Excedida.xml' },
+                { description: tooLong }
+            ),
+            (/** @type {any} */ error) => {
+                assert.equal(error.status, 400);
+                assert.equal(error.code, 'dataset_description_too_long');
+                return true;
+            }
         );
     });
 

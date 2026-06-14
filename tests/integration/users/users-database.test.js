@@ -88,7 +88,7 @@ describe('users database integration', function () {
 
         assert.equal(loginResponse.status, 200);
         const loginPayload = await loginResponse.json();
-        assert.equal(loginPayload.redirectUrl, '/tasks');
+        assert.equal(loginPayload.redirectUrl, '/datasets');
 
         const sessionCookie = getSessionCookie(loginResponse);
         assert.ok(sessionCookie, 'No se recibio cookie de sesion en el login.');
@@ -108,7 +108,7 @@ describe('users database integration', function () {
             redirectTo: '/login'
         });
 
-        const protectedResponseAfterLogout = await fetch(`${baseUrl}/tasks`, {
+        const protectedResponseAfterLogout = await fetch(`${baseUrl}/datasets`, {
             method: 'GET',
             headers: {
                 cookie: sessionCookie
@@ -118,7 +118,7 @@ describe('users database integration', function () {
 
         assert.ok(
             [302, 303].includes(protectedResponseAfterLogout.status),
-            `Estado inesperado accediendo a /tasks tras logout: ${protectedResponseAfterLogout.status}`
+            `Estado inesperado accediendo a /datasets tras logout: ${protectedResponseAfterLogout.status}`
         );
         assert.equal(protectedResponseAfterLogout.headers.get('location'), '/login');
 

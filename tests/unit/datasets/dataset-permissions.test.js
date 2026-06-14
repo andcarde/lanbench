@@ -42,6 +42,7 @@ describe('dataset permissions administration', () => {
                     return [];
                 }
             },
+            datasetLlmCredentialsRepository: {},
             usersRepository: {}
         });
 
@@ -51,7 +52,8 @@ describe('dataset permissions administration', () => {
             canReview: true,
             showReviewButton: true,
             reviewAvailable: true,
-            reviewableCount: 2
+            reviewableCount: 2,
+            blockedBySelfAnnotation: false
         });
     });
 
@@ -82,6 +84,7 @@ describe('dataset permissions administration', () => {
                     return [{ entry: { datasetId: 5 } }];
                 }
             },
+            datasetLlmCredentialsRepository: {},
             usersRepository: {}
         });
 

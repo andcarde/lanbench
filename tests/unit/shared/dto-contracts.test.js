@@ -38,6 +38,12 @@ describe('dto contracts', () => {
             'remainPercent'
         ]);
         assert.equal(schema.$defs.DatasetList.properties.withoutReviewPercent.description.startsWith('Opcional.'), true);
+        // `description` is optional (US-34); the contract caps it at 512 chars
+        // and documents it as opcional so the field never becomes required.
+        assert.equal(schema.$defs.DatasetList.properties.description.maxLength, 512);
+        assert.equal(schema.$defs.DatasetList.properties.description.type, 'string');
+        assert.equal(schema.$defs.DatasetList.properties.description.description.startsWith('Opcional.'), true);
+        assert.equal(schema.$defs.DatasetList.required.includes('description'), false);
         assert.deepEqual(schema.$defs.EntryContext.required, [
             'entryId',
             'triples',

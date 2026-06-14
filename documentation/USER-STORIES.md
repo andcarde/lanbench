@@ -190,6 +190,10 @@ This sequence reduces ambiguity, avoids contradictions, and improves the maintai
 - `US-22`: As an administrator, I want to manage user roles.
 - `US-23`: As an administrator, I want to monitor user activity.
 - `US-24`: As an administrator, I want to configure custom evaluation criteria.
+- `US-31`: As a dataset administrator, I want to register, activate and check my own AI provider API keys for a dataset so its AI-assisted validation uses my credential instead of the global one.
+- `US-32`: As a dataset administrator, I want to name a dataset on creation (defaulting to the file name) and rename it later from the administration page, with names kept unique per owner, so datasets stay identifiable.
+- `US-34`: As a dataset administrator, I want to attach an optional short description to a dataset on creation so the visualization page shows what the dataset is about under its name.
+- `US-35`: As a dataset administrator, I want to pick the AI model from a live list of the provider's available models (Groq, Google AI Studio) instead of typing it by hand, with clear errors when the provider's catalog is unavailable.
 
 ### 9.5 Operation and audit
 
@@ -277,7 +281,7 @@ XML parser, persistence of entries, and dataset DTOs.
 #### `US-04` Segmentation of the dataset into work sections
 
 **Description**  
-The dataset must be divided into blocks of 10 entries to organize the work.
+The dataset must be divided into blocks of a declarative, per-dataset section size (default 10 entries) to organize the work.
 
 **Value delivered**  
 Makes the task manageable and favors multi-user operation.
@@ -287,7 +291,7 @@ Dataset loading, entry counting, and sectioning logic.
 
 **Specific functional rules**
 
-- The dataset is divided into sections of 10 entries each.
+- The dataset is divided into sections of `Dataset.sectionSize` entries each (the value chosen on the *Nuevo dataset* form, defaulting to 10).
 - The section is the minimum unit of work assigned to an annotator.
 - The sectioning mechanism guarantees exclusive access to a subset of the dataset, preventing overlap in multi-user environments where several annotators work in parallel on the same dataset.
 
@@ -299,9 +303,9 @@ Dataset loading, entry counting, and sectioning logic.
 
 **Section size and count**
 
-- Each section generally groups 10 entries.
-- The dataset is divided into `ceil(entries / 10)` sections (integer division rounded up).
-- If the number of entries is a multiple of 10, all sections have 10 entries; otherwise, the last section contains the remainder.
+- The **section size** is a declarative, optional input on the *Nuevo dataset* form: a positive integer, **defaulting to 10**, persisted per dataset (`Dataset.sectionSize`). Missing / non-positive values are coerced to 10, and legacy datasets without the column fall back to 10 (`constants/datasets.js#resolveSectionSize`).
+- The dataset is divided into `ceil(entries / sectionSize)` sections (integer division rounded up).
+- If the number of entries is a multiple of `sectionSize`, all sections have that many entries; otherwise, the last section contains the remainder.
 
 **Functional flow when pressing "continue" on a dataset**
 
@@ -318,20 +322,31 @@ When pressing "continue" on the tasks page, the server evaluates the state of th
 
 - If the current entry is **not** the last one in the section, the next entry of the section is loaded.
 - If it **is** the last one, the user's active session over that section is closed and a message appears congratulating the user for finishing the session, with two options:
-  - **Exit**: redirects to `/tasks`.
+  - **Exit**: redirects to `/datasets`.
   - **Continue**: opens a new session over the next available section of the same dataset. The "Continue" button does not appear when there are no more available sections.
 
 **Entry point to annotation from the dataset view page**
 
-- The dataset view page (`/datasets/:id/view`) exposes the "Abrir anotación" button as the entry point to the annotation flow for that dataset.
-- When the dataset is 100% completed (`sectionsCompleted === ceil(totalEntries / 10) && sectionsPending === 0`), the button is rendered as disabled (visually inactive, not focusable, no navigation) because no entries remain to annotate. The tooltip explains the reason.
-- When the dataset is below 100%, the button is enabled and navigates to `/annotations` with the dataset context, regardless of whether the current user still has unassigned sections (server-side `Case 3` of this story handles that with a modal message).
+- The dataset view page (`/datasets/:id/view`) is a read-only viewer of the XML content; it no longer exposes an "Abrir anotación" entry point. The annotation flow is launched exclusively from the dataset list (`/datasets`) via the **Anotar** button on each dataset card, which carries the per-dataset rules (LLM mode, credential availability, completion state).
+
+**Annotation blocked for `generation` datasets**
+
+- When the dataset's `llmMode === 'generation'`, the manual annotation flow is disabled for every user regardless of their annotation permission: those entries are produced by the LLM (see `US-33`), not by humans.
+- Attempting to reserve a section (`POST /api/annotations/:datasetId/continue`) returns `409 llm_generation_blocks_annotation` with the message *"Este dataset se anota automáticamente por IA; la anotación manual no está disponible."*. The same error fires when the annotation page (`/annotations?datasetId=...`) tries to resolve the active session, so the page cannot enter the editing flow.
+- The dataset list reflects the block by repurposing the **Anotar** button to launch the automatic-annotation modal (US-33) instead of the manual flow.
 
 > Implementation details (tables, keys, assignment algorithm) are documented in [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md).
 
 **Lifecycle of an entry**
 
-`Entry.status` starts at `pending` (schema default) and is only modified when closing a review: `reviews-service.finalizeReview` leaves it at `reviewed` (if all criteria are `accepted`) or `disputed` (if any is `rejected` or `needs_fix`). The review queue queries (`repositories/reviews-repository.js`, `repositories/datasets-repository.js:findReviewableEntryDatasetIds`) filter by `status: 'annotated'`, and the `constants/entry-status.js` catalog also enumerates `in_progress` and `under_review`, but **no production flow applies them today**: they are planned states without a writer. While that transition does not exist, eligibility for review depends on populating `Entry.status = 'annotated'` by some other path (manual or future).
+`Entry.status` starts at `pending` (schema default). The transitions actually applied by production code today are:
+
+- **`pending` → `annotated`**: when an annotation is saved with at least one sentence. The transition runs inside the same transaction that persists the rows (`repositories/annotations-repository.js#replaceForAccessibleEntry`); clearing every sentence reverts the entry to `pending`. This is what makes an entry eligible for the review queue.
+- **`annotated` → `reviewed` / `disputed`**: when closing a review. `reviews-service.finalizeReview` leaves it at `reviewed` (all criteria `accepted`) or `disputed` (any `rejected`/`needs_fix`).
+
+The review queue queries (`repositories/reviews-repository.js#findReviewableEntries`, `repositories/datasets-repository.js#findReviewableEntryDatasetIds`) filter by `status: 'annotated'` **and** `dataset.isReviewEnabled = true`, so only annotated entries of review-enabled datasets are offered. The `constants/entry-status.js` catalog also enumerates `in_progress` and `under_review`, but **no production flow applies those two today**: they remain planned states without a writer.
+
+> Re-annotating an entry that was already `reviewed`/`disputed` sets it back to `annotated`, but the queue still excludes it while a terminal `Review` row exists, so a closed review is never silently re-opened.
 
 #### `US-19` Upload of RDF datasets by the administrator
 
@@ -350,6 +365,28 @@ Administrator role, file upload, XML parser, repository, and database.
 - The system validates that the XML is correct and contains entries.
 - The system persists dataset, entries, triples, and relevant metadata.
 - Import errors are reported in a controlled way.
+
+**Dataset name (Nuevo dataset form)**
+
+The form asks for a **Nombre del dataset** (`name`):
+
+- The field **defaults to the uploaded file name** (without the `.xml` extension); the administrator may edit it before creating.
+- A dataset name must be **unique per owner**: creating (or renaming, see `US-32`) to a name already used by another dataset **owned by the same user** is rejected with a controlled message (`409 duplicate_dataset_name`); the form keeps open and surfaces the reason inline.
+- When no name is provided (e.g. a non-UI client), the server falls back to the file-derived name.
+
+**Creation options (Nuevo dataset form)**
+
+The form exposes four declarative options, persisted on the dataset:
+
+- **Tamaño de sección** (`sectionSize`): positive integer, default `10` (see `US-04`).
+- **Uso de LLMs** (`llmMode`): `none` / `generation` / `correction`.
+- **Revisión** (`isReviewEnabled`): enables the review workflow.
+- **Revisiones adicionales tras corrección** (`hasAdditionalReviews`).
+
+The last three are **coupled by two invariants**, enforced both in the UI (show/hide + lock the controls on change) and **defensively on the server** (`services/datasets-service.js#normalizeDatasetCreationOptions`). Policy: **NORMALISE, never reject** — a crafted request that violates the rules is silently coerced to the valid combination, so an illegal state can never be persisted.
+
+- **R1** — When *Revisión* is **No**, *Revisiones adicionales* is meaningless: it is hidden in the form and forced to `false` in the payload. When *Revisión* is **Activa**, the field is shown.
+- **R2** — When *Uso de LLMs* is **Corrección por IA** (`llmMode = 'correction'`), *Revisión* is forced to `true` and *Revisiones adicionales* is forced to `true`; both are shown but **locked** (not alterable).
 
 #### `US-20` Export of dataset progress
 
@@ -511,7 +548,7 @@ Entry representation, contextual validation, and business rules.
 **Current status**
 
 - Basic textual and contextual validation exists.
-- **Deterministic per-triple verification** (an explicit verdict of covered / missing / uncertain for each triple) was attempted as `business/triple-coverage-checker.js`; it was removed in the same cleanup described in [doc-planning/AUDITORY-3.md](../doc-planning/AUDITORY-3.md) (finding #9). It is not pursued in the current roadmap: validation stays at the sentence level and delegates full coverage to the contextual LLM.
+- **Deterministic per-triple verification** (an explicit verdict of covered / missing / uncertain for each triple) was attempted as `business/triple-coverage-checker.js`; it was removed in a prior cleanup (the `AUDITORY-3.md` snapshot that documented it is no longer in the tree — see `PROBLEMS.md §4`). It is not pursued in the current roadmap: validation stays at the sentence level and delegates full coverage to the contextual LLM.
 
 #### `US-10` Correction of linguistic and reference errors
 
@@ -563,27 +600,60 @@ Role-based authentication, access to annotations, review flow, and persistence o
 
 **Specific functional rules**
 
-- Acceptance of criteria is mandatory criterion by criterion: it helps keep focus on correctness.
-- Each check is a correction phase; until the current criterion is marked, neither the next criterion nor its check option appears. Trying to send a decision for a criterion not yet active is rejected with `code: 'criterion_locked'`.
-- Decisions other than `accepted` (`rejected`, `needs_fix`) require a non-empty comment; without it, the server rejects the decision with `code: 'comment_required'`.
-- If the reviewer corrects the text of a sentence, the justifying comment is mandatory (also with `code: 'comment_required'`). The comment is used both for re-correction and to return feedback to the annotator.
-- The wizard allows **going back and rewriting** a decision already made on a previous criterion; it only blocks moving forward to future criteria before resolving the current one.
-- A reviewer **cannot review their own annotations**: the review queue excludes any entry whose annotator matches the requesting reviewer. It is a governance rule that prevents self-review, not a visible UI restriction.
-- The review is exclusive: once assigned, no other reviewer receives the same entry. The assignment expires by default after **2 hours**; upon expiration it becomes available again to other reviewers.
+- Evaluation is **per phrase**: every annotated sentence of the entry is judged independently against the five per-phrase criteria — Naturalidad, Fluidez, Adecuación, Completitud, Cobertura. Each phrase keeps its own decision per criterion, so switching between phrases never loses state. Clicking a phrase (or focusing it and pressing Enter/Space) drives the criteria panel for *that* phrase.
+- There is **one review-level criterion**, Diversidad, decided **once for the whole entry** (it is inherently comparative across phrases). It only applies when the entry has more than one phrase; with a single phrase it is shown inert ("no aplica") and excluded from the finalize gate.
+- Within a phrase the criteria are a **sequential wizard**: until the current criterion is decided, the next one stays locked. Sending a decision for a criterion of that phrase whose earlier criteria are not yet decided is rejected with `code: 'criterion_locked'`. The wizard allows **going back and rewriting** a decision already made on an earlier criterion of the same phrase.
+- The decision is **binary**: **Sí** (`accepted`) commits immediately; **No** (`rejected`) reveals a mandatory **Motivo** (≤ 280 characters) and a *Siguiente* to commit. A `rejected` decision without a motivo is rejected with `code: 'comment_required'`.
+- A phrase criterion marked **No** requires the reviewer to **correct that phrase** inline. The corrected text is mandatory and must differ from the original (`code: 'invalid_correction'` otherwise). The correction itself does **not** carry its own comment — the justification lives in the rejected criterion's Motivo, which is what is returned as feedback to the annotator.
+- A reviewer **cannot review their own annotations**: the review queue excludes any entry whose annotator matches the requesting reviewer. It is a governance rule that prevents self-review. When this exclusion is the *only* reason a reviewer has nothing to review on a dataset (the dataset card carries `review.blockedBySelfAnnotation = true`), the disabled **Revisión** button explains it via tooltip ("Todas las entradas pendientes han sido anotadas por ti. Otra persona debe ser el revisor.") instead of the generic "no sections pending review" — so a single annotator-reviewer understands they need a second person to review.
+- The review is exclusive: once assigned, no other reviewer receives the same entry. The assignment expires by default after **2 hours**; upon expiration it becomes available again to other reviewers. The reviewer can also **release** an in-progress review back to the queue.
+- **Finalization is automatic**: once every phrase has its five criteria decided **and** the review-level Diversidad is resolved (when it applies), the review closes to `completed` (everything `accepted`) or `disputed` (any `rejected`), propagating to `Entry.status`. Attempting to finalize earlier is rejected with `code: 'criteria_incomplete'`.
 
 **Current status**
 
-- Review flow implemented end to end: exclusive queue, sequential wizard by criteria, commented editing, and closure with terminal mark in `Entry.status`.
-- Catalog of criteria persisted in `EvaluationCriterion` and manageable via API (US-24).
+- Per-phrase review flow implemented end to end: dataset-scoped or global queue, exclusive assignment with expiry, per-phrase sequential wizard, the review-level Diversidad criterion, inline corrections, automatic closure with terminal mark in `Entry.status`, and release back to the queue.
+- The reviewer page (`/reviewer`) consumes `phraseCriteria` / `reviewCriteria` from the review context and posts decisions carrying the evaluated `sentenceIndex` (`null` for the review-level criterion). See [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md) §4.2.
 
-#### `US-14` Reviewer statistics
+#### `US-14` Personal statistics (annotator + reviewer)
 
 **Description**  
-The reviewer must see metrics about their activity.
+Each user must see metrics about their own activity — both annotation and
+review — so they know their progress. This unifies `US-11` (annotator
+statistics) and `US-14` (reviewer statistics) into a single "Mis estadísticas"
+page available to every authenticated user.
+
+**Value delivered**  
+Gives each user a self-service view of their throughput and pace without
+exposing anyone else's data, and surfaces the average time per task that the
+dataset administrator also relies on (`US-21`).
+
+**Dependencies**  
+Per-user `Annotation` rows, terminal `Review` rows, and the time accumulators
+recorded during work: `SectionAssignment.timeSpentSeconds` for annotation and
+`Review.timeSpentSeconds` for review (see [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md) §10).
+
+**Specific functional rules**
+
+- The page (`/my-stats`) and its data source (`GET /api/me/stats`) always derive
+  the user **from the session**, never from the request; one user can never read
+  another's statistics.
+- **Global totals**: total annotations (distinct annotated entries), total
+  reviews (terminal: `completed`/`disputed`), number of datasets annotated, number
+  of datasets reviewed, and the **average time per annotation** and **per review**.
+- **Per-dataset breakdown**: one row per dataset where the user has **at least
+  one** annotation or review (`> 0`), with that dataset's counts and per-task
+  average times. Datasets with no activity for the user are omitted.
+- Averages are *total seconds ÷ task count*, floored, and shown as `—` when there
+  is no activity. Annotation time recorded with no saved annotation does not skew
+  the average (it is excluded from the numerator).
 
 **Current status**
 
-- No complete functional implementation is observed in this version.
+- Implemented end to end: prototype (`prototypes/own-stads`), the live page
+  (`public/own-stads.html`, linked as "Mis estadísticas" in the toolbar for every
+  user), `GET /api/me/stats` (`me-controller` → `me-statistics-service` →
+  `me-statistics-repository`), and the time recording wired into the annotation
+  `send` and review `finalize` flows.
 
 ### 10.5 AI and smart assistance block
 
@@ -597,7 +667,7 @@ Increases production speed and serves as an editable base.
 
 **Current status: discarded**
 
-A draft generator (`business/spanish-draft-generator.js`) and the HTTP surface `POST /api/annotations/drafts` were attempted. The iteration was reverted and the piece was removed from the repository. Reason documented in [doc-planning/AUDITORY-3.md](../doc-planning/AUDITORY-3.md) (finding #9: semantic helpers removed). By default, reintroducing it is not pursued. If it is taken up again in the future, it should start from a new `EPIC-<n>-PLAN.md` and not from the old E3 plan.
+A draft generator (`business/spanish-draft-generator.js`) and the HTTP surface `POST /api/annotations/drafts` were attempted. The iteration was reverted and the piece was removed from the repository (semantic helpers removed in a prior cleanup; the `AUDITORY-3.md` snapshot that documented it is no longer in the tree — see `PROBLEMS.md §4`). By default, reintroducing it is not pursued. If it is taken up again in the future, it should start from a new `EPIC-<n>-PLAN.md` and not from the old E3 plan.
 
 #### `US-16` Automatic translation generation
 
@@ -627,18 +697,224 @@ The system should flag excessive similarities between sentences.
 
 **Current status: discarded**
 
-`business/diversity-checker.js` was attempted to compare sentences within the same entry. It was removed in the same cleanup as US-15/US-16 (see [doc-planning/AUDITORY-3.md](../doc-planning/AUDITORY-3.md), finding #9). Current validation is sentence by sentence and a multi-sentence layer is not pursued as long as there is no firm use case.
+`business/diversity-checker.js` was attempted to compare sentences within the same entry. It was removed in the same cleanup as US-15/US-16 (the `AUDITORY-3.md` snapshot is no longer in the tree — see `PROBLEMS.md §4`). Current validation is sentence by sentence and a multi-sentence layer is not pursued as long as there is no firm use case.
+
+#### `US-31` Per-dataset AI credentials (dataset administrator)
+
+**Description**  
+A dataset administrator can register and manage one or more AI provider API keys (Groq, any OpenAI-compatible provider, or a native provider such as Anthropic) for their dataset, choose which one is active, and "check" each one, so that the AI-assisted validation of that dataset uses their own credential instead of the global one configured for the whole application.
+
+**Value delivered**  
+Decouples AI usage from the single global key in `config.js`: each dataset can run its assisted validation against its own provider and quota, without affecting other datasets or the global configuration.
+
+**Dependencies**  
+Dataset admin authorization (`Permit.isAdmin`/`isOwned`, reused via `assertDatasetAdminPermission`), the OpenAI-compatible LLM client, at-rest secret encryption (`utils/secret-crypto.js`), and the per-dataset `llm_mode` metadata. See [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md) §9.
+
+**Specific functional rules**
+
+- Only a dataset administrator (admin or owner) can list, create, activate, delete or check the dataset's AI credentials. A non-admin receives the same authorization error as any other admin-only dataset endpoint.
+- A dataset holds at most **one active credential**. Activating one credential deactivates the others atomically; uniqueness is `(datasetId, provider)`.
+- The API key is **never** stored in clear text (AES-256-GCM at rest) and is **never** returned to the client: responses expose only `provider`, `apiBase`, `model`, `keyLast4` (last 4 characters) and `isActive`. The key never appears in logs.
+- The credential panel (form + existing credentials) is **hidden when `Uso de LLMs` = `Ninguna` (`llm_mode = 'none'`)**, both in the UI and in the backend listing. This is applied defensively even though `llm_mode` is fixed at creation today: the listing returns an empty list and write/check operations are rejected under `llm_mode = 'none'`.
+- The credential governs *which provider/key* is used; `llm_mode` governs *whether* there is AI assistance. The active credential is consumed by the dataset's `/check` flow; with no active credential the global provider is used (no regression).
+- Each credential has a **"check"** action: the server calls the model with the prompt `Respond "I'm <model> and I am ready to work"` (substituting the credential's `model`) using the decrypted key, and returns the text received from the model, which the UI shows in a modal.
+
+**Acceptance criteria**
+
+- A dataset admin can create, list (masked), activate, delete and check credentials for their dataset; a non-admin cannot and receives a permissions error.
+- No response, log line or DTO ever contains the clear or encrypted key; only the masked form (`••••last4`) is shown.
+- With an active credential of provider X, `POST /api/annotations/check` for that dataset calls provider X with the decrypted key; with no active credential the global provider (`config.model`) is used.
+- With `llm_mode = 'none'`, the listing is empty, the panel is hidden, and write/check operations are rejected.
+- The "check" action returns the model's message and the UI shows it in a modal (success or error), without leaking the key.
+
+#### `US-32` Dataset naming and rename
+
+**Description**  
+The administrator names a dataset when creating it (the field defaults to the
+uploaded file name) and can rename it later from the dataset administration
+page. Names are kept unique per owner.
+
+**Value delivered**  
+Keeps datasets identifiable and lets admins fix or improve a name without
+re-importing the data.
+
+**Dependencies**  
+Dataset admin authorization (`Permit.isAdmin`/`isOwned`, reused via
+`assertDatasetAdminPermission`), dataset ownership (`Permit.isOwned`) and the
+`Dataset.name` column. See [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md).
+
+**Specific functional rules**
+
+- On creation, the **Nuevo dataset** form pre-fills the name with the file name (without `.xml`); the admin may edit it. With no name supplied (non-UI client), the server derives it from the file.
+- Renaming is exposed on the administration page and is **admin-only** (`PATCH /api/datasets/:id`), enforced server-side like deletion.
+- The name is **trimmed**, must be **non-empty** (`400 invalid_dataset_name`) and at most **128 characters** (`400 dataset_name_too_long`).
+- A name must be **unique among datasets owned by the same user**. The collision check runs against the *dataset's owner* on rename (not necessarily the acting admin), preserving the invariant "no owner has two datasets with the same name". A collision is rejected with `409 duplicate_dataset_name` and a controlled message; the form stays open and shows the reason inline.
+
+**Acceptance criteria**
+
+- Creating a dataset asks for a name defaulting to the file name; an empty or duplicated (per-owner) name is reported with a clear message instead of silently creating.
+- A dataset admin can rename a dataset from the administration page; the new name is reflected in the list and the admin header.
+- A non-admin cannot rename a dataset and receives the same authorization error as other admin-only dataset endpoints.
+- Renaming to a name already owned by the same owner is rejected (`409`) without changing the dataset.
+
+#### `US-34` Optional dataset description on creation and visualization
+
+**Description**  
+The administrator may attach a short, free-text description to a dataset when
+creating it. The description is shown immediately under the dataset name on the
+visualization page (`/datasets/:id/view`), so users opening the view understand
+what the dataset is about. The field is optional: an empty description leaves
+no subtitle under the name.
+
+**Value delivered**  
+Gives administrators a place to write the intent or scope of a dataset
+(provenance, domain, version notes, etc.) and gives every user with access a
+one-glance explanation of what they are looking at, replacing the static
+"endpoint AJAX" placeholder and the unused "server mode" badge that previously
+sat in that area.
+
+**Dependencies**  
+The new `Dataset.description` column (`VARCHAR(512)?`), the *Nuevo dataset*
+form (`US-32`), the dataset summary endpoint (`GET /api/datasets/:id`,
+already consumed by the visualization page to gate the extended-download
+button), and the visualization page (`public/dataset-view.html`).
+
+**Specific functional rules**
+
+- The *Nuevo dataset* form exposes an **optional** `Descripción` textarea below
+  the name input. The user may leave it empty.
+- Length cap is **512 characters** and is enforced on **both** sides:
+  - Client: HTML `maxlength="512"` (blocks typing past 512), an `input` listener
+    that hard-truncates to 512 (defensive fallback) and a `paste` listener that
+    intercepts the paste event and clips the merged value to 512 characters
+    (covers the "paste over selection" scenario where the merged text would
+    otherwise exceed the limit).
+  - Server: `assertValidDatasetDescription` rejects any trimmed value longer
+    than 512 with `400 dataset_description_too_long`. The existing inline error
+    banner inside the new-dataset modal (`#newDatasetMessage`) surfaces the
+    message; no separate error modal is introduced.
+- The value is **trimmed** on the server. A blank/whitespace-only description
+  is persisted as `NULL` and treated identically to no description at all.
+- Existing datasets created before this story have `description = NULL` and
+  therefore render no subtitle under the name (no migration backfill needed).
+- The visualization page (`/datasets/:id/view`) renders the description verbatim
+  under the dataset name. When the description is `NULL` or empty, the subtitle
+  paragraph is hidden — nothing appears under the name.
+- The previous "Modo servidor preparado" pill on the visualization header is
+  **removed**: it never carried information for users.
+
+**Acceptance criteria**
+
+- The *Nuevo dataset* form accepts an empty description and creates the dataset
+  with `description = NULL`.
+- A description of 1–512 characters is persisted as-is (post-trim) and shown
+  under the name on the visualization page.
+- Typing or pasting more than 512 characters into the description never lets
+  the field hold a value longer than 512 characters.
+- A crafted request with `description.length > 512` is rejected by the API with
+  `400 dataset_description_too_long`; the modal stays open and surfaces the
+  message in its existing red banner.
+- Opening the visualization page for a dataset with `description = NULL`
+  renders no subtitle and no "server mode" pill in the header.
+
+#### `US-33` Automatic annotation by AI ("Generación por IA")
+
+**Description**
+A dataset created with `llm_mode = 'generation'` reuses the **Anotar** button on the dataset list to launch an *automatic* annotation: instead of opening the manual annotation page, the system asks the user how many sections to annotate, locks those sections, and asks the active per-dataset LLM credential (US-31) to produce the Spanish sentences entry by entry. The user is freed and can keep working while the job runs in the background.
+
+**Value delivered**
+For generation-mode datasets, the human becomes a consumer of the AI output instead of a producer. A single click annotates N sections; failures are recoverable (retry / cancel) without losing the sections that already completed.
+
+**Dependencies**
+The per-dataset AI credential (`US-31`), the dataset-options panel that sets `llm_mode` at creation (`US-32` form), the section assignment service (`SectionAssignment`, reused as locks), the annotation persistence path (`annotations-service.saveSentences`) and the OpenAI-compatible client (`utils/openai-compatible-client.js`). See [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md) §10.
+
+**Specific functional rules**
+
+- Only datasets with `llm_mode = 'generation'` change the **Anotar** behaviour. For `correction` and `none` the manual page is still opened (no regression).
+- The modal asks for `Número de secciones a anotar`. The input accepts only digits (`0-9`), enforces `maxLength = 3` (max `999`) and strips a leading `0` when the user types a new digit. Value `0` is rejected inline with the message **Mínimo 1**.
+- If the dataset has **no active AI credential**, the `Confirmar` button is disabled and the message **No hay API activa. Configúrela para continuar.** is shown in red. The check is exposed by the new endpoint `GET /api/datasets/:id/llm-credentials/active-status`, which is readable by any user with a `Permit` (not admin-only): the dataset annotator needs to know whether to enable the button.
+- The N sections to annotate are the **next N globally non-completed sections** of the dataset (same `maxSectionIndex + 1..N` rule the **continue** flow uses for case 5). All N sections are **locked atomically** before any LLM call. If any cannot be locked the job is aborted with a single error message — partial locking is never observable to the user.
+- The job runs **asynchronously**. The start request returns as soon as the locks are taken; the **Anotar** button switches to **En curso** on the dataset row. The user can leave the page and come back: the state is read on demand from the server.
+- Entries are annotated **one by one** (one prompt → one response → one persist). The completed-section counters and the `SectionAssignment.status` transitions reuse the same path the manual flow uses (`section_assignments` to `completed`, `Dataset.sectionsPending` decremented, `sectionsCompleted` or `sectionsInReview` incremented depending on `isReviewEnabled`).
+- Clicking the **En curso** button while the job is healthy shows a modal with title **Anotación en curso**, the running progress (`Entries: x de total`, `Secciones: y de total_secciones`) and a single **Cerrar** button.
+- On an LLM failure (`Fallo de conexión`, `Salida inesperada`, etc.) the job pauses on the failing entry. The **En curso** modal then shows the error message and exposes two buttons: **Reintentar** resumes from the failed entry; **Cancelar** discards the entries already persisted for the partially-annotated current section (`Annotation` rows are deleted for those entries and the section assignment is `released`), keeps every previously-completed section as **definitive**, and frees the **Anotar** button.
+- A dataset can have at most one active auto-annotation job at a time. A second start attempt while a job is running is rejected with a controlled message; the user is invited to open the **En curso** modal.
+
+**Acceptance criteria**
+
+- For a `generation` dataset, **Anotar** opens the automatic-annotation modal with the spec'd field validation; for `correction` and `none` the manual annotation page still opens.
+- With no active credential, the modal disables **Confirmar** and shows the configured message.
+- Submitting a valid N locks N sections inside a single transaction (all-or-nothing) and returns immediately; the **Anotar** button switches to **En curso** while the job runs in the background.
+- Each entry is annotated by an individual LLM call and persisted as soon as it returns. Completed sections survive **server restarts** because they are persisted via the same path the manual flow uses; the running job's in-memory state does not.
+- An LLM failure leaves the job in a `failed` state. Clicking **En curso** shows the error and the two recovery buttons (**Reintentar** / **Cancelar**). **Reintentar** resumes from the failing entry. **Cancelar** rolls back the half-annotated current section and frees the **Anotar** button. All sections completed before the failure remain persisted.
+
+#### `US-35` Model picker fed by the provider's live catalog (dataset administrator)
+
+**Description**  
+On the dataset administration page, the **Modelo** field of the AI-credentials form is no longer a bare free-text input: for providers that expose a public model-listing API (**Groq** and **Google AI Studio**), the administrator picks the model from a dropdown populated live from the provider, with a manual-entry fallback that is always available. Google AI Studio also becomes a first-class provider selectable in the form.
+
+**Value delivered**  
+Removes the main friction of US-31: administrators no longer need to leave the page to look up exact model identifiers (and no longer mistype them). Catalog errors (invalid key, rate limit, provider down) are surfaced inline with actionable messages instead of failing later at "check" time.
+
+**Dependencies**  
+The per-dataset AI credentials surface (`US-31`: service, controller, routes, panel), the shared LLM HTTP helper (`utils/llm-http.js`, for timeouts and LLM logging) and the provider catalog endpoints: Groq `GET /openai/v1/models` and Google AI Studio `GET /v1beta/models`. See [TECHNICAL-DESIGN.md](TECHNICAL-DESIGN.md) §9.9.
+
+**Specific functional rules**
+
+- Both provider catalogs **require an API key** (verified: Groq answers `401 invalid_api_key` and Google `403 PERMISSION_DENIED` without one); there is no anonymous listing. The dropdown therefore loads only when a key is available: the one typed in the form or, failing that, the key already stored for that provider in the dataset (decrypted **server-side only**).
+- The browser never calls the providers directly: a new admin-only endpoint `POST /api/datasets/:id/llm-credentials/models` proxies the catalog request. The key travels in the request **body** (never in the URL or query string) and is never echoed back.
+- The picker applies to `groq` and `google-ai-studio`. For `anthropic` and `openai-compatible` the model field remains free text (no catalog contract is assumed for them).
+- The Google catalog is filtered to models supporting `generateContent` (chat-capable) and the `models/` prefix is stripped from ids; the Groq catalog is filtered to active, chat-capable models (audio/TTS/guard entries are excluded). Lists are sorted alphabetically.
+- A **manual-entry option** ("Otro (escribir manualmente)") is always offered, so saving a credential is never blocked by a catalog outage or by a model missing from the listing.
+- Catalog failures are reported inline distinguishing: invalid/unauthorized key, rate limit, and provider unavailable (HTTP 5xx, network failure or timeout). The error message never contains the key.
+- The catalog response is cached client-side per provider+key while the page is open; the refresh button forces a reload. Switching provider re-populates the dropdown (from cache or live).
+- `google-ai-studio` becomes a valid provider end-to-end: selectable in the form, accepted by the JSON importer (aliases `google-ai-studio`, `google`, `ai-studio`, `gemini`), and routed by the LLM dispatcher through the OpenAI-compatible client against Google's OpenAI-compatibility endpoint, so "Comprobar" and the annotation `/check` flow work unchanged.
+
+**Acceptance criteria**
+
+- With a valid Groq key typed in the form, choosing **Groq** populates the dropdown with that account's chat models; the saved credential stores the picked id.
+- With a valid Google AI Studio key, choosing **Google AI Studio** populates the dropdown with `generateContent`-capable Gemini models (ids without the `models/` prefix) and "Comprobar" on the saved credential returns the model's reply.
+- With an invalid key, the panel shows the invalid-key message inline; with the provider unreachable (network error/5xx/timeout), it shows the service-unavailable message. In both cases manual entry still allows saving the credential.
+- A non-admin calling `POST /api/datasets/:id/llm-credentials/models` receives the same authorization error as the rest of the credentials surface; with `llm_mode = 'none'` the call is rejected (`409 llm_disabled`).
+- No response, log line or error message ever contains the clear key.
 
 ### 10.6 Administration and governance block
 
-#### `US-21` Global administration statistics
+#### `US-21` Per-dataset administration statistics
 
 **Description**  
-The administrator must consult coverage, fixed errors, and dispute states.
+A dataset administrator must consult, for their dataset, who annotated and who
+reviewed, each user's individual average time (separated by annotation and
+review), and the dataset's overall pace.
+
+**Value delivered**  
+Gives dataset admins per-user accountability and a single dataset-wide figure to
+track throughput, reusing the same time accumulators as the personal view
+(`US-14`).
+
+**Dependencies**  
+Dataset access (`findAccessibleById`), the statistics graph
+(`datasets-statistics-repository`), and the recorded time accumulators
+(`SectionAssignment.timeSpentSeconds`, `Review.timeSpentSeconds`).
+
+**Specific functional rules**
+
+- Served by `GET /api/datasets/:id/statistics`, available to every user with
+  access to the dataset (the dataset's admins in practice), with two tables —
+  **annotation** and **review**.
+- Each table lists, **per user**, their task count, percentage of the dataset,
+  **individual average time** and first-pass precision.
+- Each table also shows a **weighted general average** time: `Σ time ÷ Σ tasks`
+  across all users, so a user with more tasks contributes proportionally (e.g.
+  A = 3 min × 10 reviews and B = 6 min × 5 reviews ⇒ `((3·10)+(6·5))/15 = 4 min`).
+- Annotation time comes from the user's `SectionAssignment` accumulators; review
+  time from each `Review`. Both are now recorded by the work flows (§10).
 
 **Current status**
 
-- No complete functional implementation is observed in this version.
+- Implemented: per-user annotation/review tables in `public/dataset-admin.html`
+  (US-21), now complemented by the dataset-wide **weighted general average**
+  footer and backed by the time recorded during annotation and review.
 
 #### `US-22` Role management
 
@@ -647,8 +923,12 @@ The administrator must be able to assign and modify roles.
 
 **Current status**
 
-- The system handles roles in the data model and access control.
-- A complete administrative interface or flow for role management is not yet in place.
+- **Dataset roles** (`Permit` flags) are fully manageable by a dataset admin through `GET/POST/PATCH /api/datasets/:id/permissions` and the dataset-admin UI.
+- **Server roles** (`isModerator`) are now manageable by a moderator through the admin API:
+  - `GET /api/admin/users` — lists every user with `{ id, email, isModerator }` (never the password hash).
+  - `PATCH /api/admin/users/:id` with `{ isModerator: boolean }` — promotes/demotes a user. `isModerator` must be a real boolean (strict). A moderator **cannot** demote their own account (`409 cannot_self_demote`), which prevents a single-moderator base from locking itself out. An unknown user id yields `404 user_not_found`.
+- Both endpoints are behind `requireApiModerator()`; a non-moderator receives `403 forbidden_role`.
+- A dedicated front-end roster page is not yet built; the endpoints are backend-complete and tested. Registering directly as a moderator with a single-use code remains the other supported path (`US-27`).
 
 #### `US-23` Activity monitoring
 
@@ -875,17 +1155,16 @@ Note: this use case is functionally defined, but its complete implementation is 
 
 ## 12. What the system does not do today
 
-In its current state, `lanbench` does not yet fully cover:
+> This list was corrected on 2026-05-21: several items it previously listed as missing (the human review flow, personal/admin statistics, exclusive section assignment, the dispute flow) are in fact implemented — see `§10.4` (US-13/US-14), `§10.6` (US-21) and `TECHNICAL-DESIGN.md §3`/`§4`. The remaining genuine gaps are below.
 
-- a complete functional flow of human review with persistence of evaluation by criteria
-- comprehensive automatic generation of texts or translations ready for editing
-- analysis of linguistic diversity between sentences
-- advanced statistics for annotators, reviewers, and administrators
-- complete administrative management of roles from a dedicated interface or API
-- consolidated functional monitoring of user activity
-- dynamic configuration of evaluation criteria
-- a closed dispute flow between annotation and review
-- an explicit and visible mechanism of persistent exclusive section assignment to annotators
+In its current state, `lanbench` does not yet cover:
+
+- comprehensive automatic generation of texts or translations ready for editing (US-15/US-16, **discarded** — see `§10.5`).
+- analysis of linguistic diversity between sentences (US-18, **discarded**).
+- **dynamic configuration of evaluation criteria** (US-24): the `EvaluationCriterion` admin CRUD exists but the reviewer still uses the fixed criteria in `constants/review-criterion.js`; the catalogue has no consumer and cannot yet express the phrase/review-level split (see `PROBLEMS.md §3`).
+- **consolidated functional monitoring of user activity** (US-23): request/error logs are written, but there is no panel or endpoint to browse them or aggregate per-user activity.
+- a **front-end** for server-role management: the moderator-only `GET/PATCH /api/admin/users` endpoints exist (US-22) but no roster page consumes them yet.
+- a second/additional review round driven by `Dataset.hasAdditionalReviews` (the column is persisted but inert).
 
 ## 13. Recommended future extensions
 

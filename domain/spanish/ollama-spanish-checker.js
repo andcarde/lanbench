@@ -27,7 +27,8 @@ async function check(sentence, context = {}) {
     const prompt = buildCheckPrompt(sentence, context);
     const response = await ollamaClient.generateJson({
         system: getSystemPrompt(),
-        prompt
+        prompt,
+        ...providerConfigOption(context)
     });
 
     return normalizeOllamaResult(response, sentence);
@@ -46,7 +47,8 @@ async function checkBatch(sentences, context = {}) {
     const prompt = buildBatchCheckPrompt(normalizedSentences, context);
     const response = await ollamaClient.generateJson({
         system: getBatchSystemPrompt(),
-        prompt
+        prompt,
+        ...providerConfigOption(context)
     });
 
     return normalizeBatchOllamaResult(response, normalizedSentences);
@@ -68,10 +70,23 @@ async function proposeCorrectionsBatch(sentences, context = {}, validations = []
 
     const response = await ollamaClient.generateJson({
         system: getCorrectionProposalSystemPrompt(),
-        prompt
+        prompt,
+        ...providerConfigOption(context)
     });
 
     return normalizeCorrectionProposalResult(response, normalizedSentences);
+}
+
+/**
+ * Returns `{ providerConfig }` when the context carries a per-dataset AI
+ * credential (US-31), or an empty object so the dispatcher keeps the global
+ * provider. Spread into the `generateJson` options.
+ *
+ * @param {Record<string, any>} [context]
+ * @returns {{ providerConfig?: Record<string, any> }}
+ */
+function providerConfigOption(context) {
+    return context && context.providerConfig ? { providerConfig: context.providerConfig } : {};
 }
 
 /**
@@ -106,6 +121,7 @@ function getBatchSystemPrompt() {
         'No marques relation_inverted cuando la candidata conserva el significado con voz activa/pasiva equivalente; por ejemplo "X is led by Y" puede verbalizarse como "Y lidera/gobierna X".',
         'Para predicados nominales como leaderTitle ("titulo del lider"), prefiere voz activa ("Y gobierna/dirige X"). La pasiva "X esta dirigido por Y" describe la accion de liderar y NO verbaliza correctamente el titulo: marcala como semantic_mismatch.',
         'Usa warning solo si el significado principal esta cubierto pero hay denominacion imprecisa, vaguedad o estilo mejorable.',
+        'Distingue dos casos ortograficos: (a) si la unica incidencia es la ausencia de tildes/acentos y las letras son correctas (por ejemplo "nacio" en vez de "nació", o "Mexico"/"Fisica" en vez de "México"/"Física"), marcala como accent_error con severity warning, nunca como error de bloqueo; (b) los errores de letras (omitir, cambiar o anadir letras, por ejemplo "kapital" por "capital" o "hamburgesa" por "hamburguesa") SIGUEN siendo spelling_error con severity error.',
         `Codigos permitidos: ${allowedCodes}.`,
         'IMPORTANTE: El campo "code" debe ser EXACTAMENTE uno de los codigos permitidos. El campo "explanation" debe contener SOLO la parte variable del problema (entidad concreta, palabra con falta ortografica, etc.), en una frase corta. NO uses el campo "message": usa "explanation" en su lugar.',
         'Ejemplo ortografia: {"code":"spelling_error","explanation":"uevo en lugar de huevo","severity":"error","suggestion":"..."}',

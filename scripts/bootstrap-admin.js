@@ -71,7 +71,7 @@ async function bootstrapAdmin({ email, password, deps } = {}) {
     return {
         created: true,
         promoted: false,
-        userId: created && created.id,
+        userId: created?.id,
         email: normalisedEmail,
         isModerator: true
     };
@@ -110,7 +110,7 @@ if (require.main === module) {
     runFromEnv()
         .then(() => process.exit(0))
         .catch(error => {
-            console.error(`bootstrap-admin failed: ${error && error.message ? error.message : error}`);
+            console.error(`bootstrap-admin failed: ${error?.message ? error.message : error}`);
             process.exit(1);
         });
 }

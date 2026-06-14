@@ -2,12 +2,15 @@
 /**
  * @file own-stads — UI logic of the "Mis estadísticas" prototype.
  *
- * Self-contained: no backend, no dependency on the reviewer prototype. The
- * figures are GLOBAL on purpose — they are NOT broken down by dataset nor by
- * task type (annotation vs review); they summarize the person's whole activity.
+ * Action-agnostic: it drives the page through whatever `window.OwnStadsActions`
+ * is loaded (mock or real) and renders the user's personal statistics:
  *
- * In a real backend this would consume a single `GET /api/me/stats` endpoint
- * returning the same shape produced by `buildStats()` below.
+ *   - global totals: annotations, reviews, datasets annotated / reviewed, and
+ *     the average time per annotation and per review,
+ *   - a per-dataset breakdown limited to datasets where the user has at least
+ *     one annotation or review, with the per-dataset averages.
+ *
+ * Mirrors the UMD + `window.*Actions` convention of the shipped pages.
  */
 'use strict';
 
@@ -19,35 +22,13 @@
     else
         root.OwnStadsUI = api;
 
-    if (typeof document !== 'undefined') {
+    if (typeof document !== 'undefined' && typeof window !== 'undefined') {
         if (document.readyState === 'loading')
-            document.addEventListener('DOMContentLoaded', api.bootstrap);
+            document.addEventListener('DOMContentLoaded', () => api.bootstrap(window.OwnStadsActions));
         else
-            api.bootstrap();
+            api.bootstrap(window.OwnStadsActions);
     }
 })(typeof self !== 'undefined' ? self : this, function () {
-    /**
-     * Global, task-agnostic statistics (front-mock). One flat summary — no
-     * `datasetId`, no annotation/review split.
-     * @returns {object} The stats payload consumed by `renderStats`.
-     */
-    function buildStats() {
-        return {
-            completed: 128,        // tareas cerradas correctamente (anotación + revisión)
-            disputed: 19,          // revisiones cerradas en disputa
-            acceptanceRate: 87,    // % aceptado a la primera
-            avgMinutes: 6,         // tiempo medio por tarea
-            pending: 23,           // tareas pendientes en cola
-            recent: [
-                { outcome: 'completed', label: 'Revisión · entry 4012', finishedAt: 'hace 1 h' },
-                { outcome: 'disputed', label: 'Revisión · entry 4090', finishedAt: 'hace 3 h' },
-                { outcome: 'completed', label: 'Anotación · entry 7781', finishedAt: 'ayer' },
-                { outcome: 'completed', label: 'Revisión · entry 3815', finishedAt: 'ayer' },
-                { outcome: 'completed', label: 'Anotación · entry 3801', finishedAt: 'hace 2 días' }
-            ]
-        };
-    }
-
     /**
      * Escapes HTML for safe insertion into the DOM.
      * @param {*} value - Value to escape.
@@ -64,60 +45,142 @@
     }
 
     /**
-     * Renders the stat cards and the recent-activity list.
-     * @param {object} stats - Stats payload (see `buildStats`).
-     * @param {{cards:HTMLElement, recent:HTMLElement}} el - Target elements.
+     * Formats an average duration in seconds as `Xm YYs` (or `Ys` under a
+     * minute). Returns `—` when there is no activity (`null`/`0`).
+     * @param {?number} seconds - Average seconds, or null.
+     * @returns {string} Human-readable duration.
+     */
+    function formatDuration(seconds) {
+        const value = Number(seconds);
+        if (!Number.isFinite(value) || value <= 0)
+            return '—';
+        const total = Math.floor(value);
+        const minutes = Math.floor(total / 60);
+        const rest = total % 60;
+        return minutes > 0
+            ? `${minutes}m ${String(rest).padStart(2, '0')}s`
+            : `${rest}s`;
+    }
+
+    /**
+     * Builds the ordered list of summary cards from the totals block.
+     * @param {object} totals - The `totals` section of the stats payload.
+     * @returns {Array<{label:string, value:(string|number), cls:string}>} Cards.
+     */
+    function buildSummaryCards(totals) {
+        const t = totals || {};
+        return [
+            { label: 'Anotaciones totales', value: Number(t.annotations || 0), cls: 'value-annotation' },
+            { label: 'Revisiones totales', value: Number(t.reviews || 0), cls: 'value-review' },
+            { label: 'Datasets anotados', value: Number(t.datasetsAnnotated || 0), cls: '' },
+            { label: 'Datasets revisados', value: Number(t.datasetsReviewed || 0), cls: '' },
+            { label: 'Tiempo medio · anotación', value: formatDuration(t.avgAnnotationSeconds), cls: 'value-annotation' },
+            { label: 'Tiempo medio · revisión', value: formatDuration(t.avgReviewSeconds), cls: 'value-review' }
+        ];
+    }
+
+    /**
+     * Renders the summary cards and the per-dataset table.
+     * @param {object} stats - Stats payload (`{ user, totals, datasets }`).
+     * @param {{cards:HTMLElement, table:HTMLElement, who:HTMLElement}} el - Targets.
      * @returns {void}
      */
     function renderStats(stats, el) {
-        const cards = [
-            { label: 'Tareas completadas', value: stats.completed, cls: 'value-accepted' },
-            { label: 'Cerradas en disputa', value: stats.disputed, cls: 'value-disputed' },
-            { label: '% aceptación a la primera', value: `${stats.acceptanceRate}%`, cls: '' },
-            { label: 'Tiempo medio (min)', value: stats.avgMinutes, cls: '' },
-            { label: 'Pendientes en cola', value: stats.pending, cls: '' }
-        ];
+        const data = stats || {};
+        const totals = data.totals || {};
+        const datasets = Array.isArray(data.datasets) ? data.datasets : [];
+
+        if (el.who)
+            el.who.textContent = data.user && data.user.email ? data.user.email : '';
 
         if (el.cards) {
-            el.cards.innerHTML = cards.map(c => `
-                <div class="col-6 col-md-4 col-lg">
-                    <div class="proto-stat-card">
-                        <div class="proto-stat-value ${c.cls}">${escapeHtml(c.value)}</div>
-                        <div class="proto-stat-label">${escapeHtml(c.label)}</div>
+            el.cards.innerHTML = buildSummaryCards(totals).map(c => `
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-value ${c.cls}">${escapeHtml(c.value)}</div>
+                        <div class="stat-label">${escapeHtml(c.label)}</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        if (el.recent) {
-            const rows = stats.recent || [];
-            el.recent.innerHTML = rows.length
-                ? rows.map(r => `
-                    <div class="stats-recent-row">
-                        <span class="outcome ${escapeHtml(r.outcome)}">${r.outcome === 'completed' ? 'completada' : 'disputa'}</span>
-                        <span>${escapeHtml(r.label)}</span>
-                        <span class="meta">${escapeHtml(r.finishedAt)}</span>
-                    </div>`).join('')
-                : '<p class="text-muted mb-0">Aún no hay actividad registrada.</p>';
+        if (el.table) {
+            el.table.innerHTML = datasets.length
+                ? `<div class="table-responsive">
+                       <table class="table table-sm align-middle stats-table mb-0">
+                           <thead>
+                               <tr>
+                                   <th>Dataset</th>
+                                   <th class="text-end">Anotaciones</th>
+                                   <th class="text-end">T. medio anot.</th>
+                                   <th class="text-end">Revisiones</th>
+                                   <th class="text-end">T. medio rev.</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                               ${datasets.map(d => `
+                                   <tr>
+                                       <td>${escapeHtml(d.datasetName || `#${d.datasetId}`)}</td>
+                                       <td class="text-end">${Number(d.annotations || 0)}</td>
+                                       <td class="text-end">${escapeHtml(formatDuration(d.avgAnnotationSeconds))}</td>
+                                       <td class="text-end">${Number(d.reviews || 0)}</td>
+                                       <td class="text-end">${escapeHtml(formatDuration(d.avgReviewSeconds))}</td>
+                                   </tr>
+                               `).join('')}
+                           </tbody>
+                       </table>
+                   </div>`
+                : '<p class="text-muted mb-0">Aún no hay actividad registrada en ningún dataset.</p>';
         }
     }
 
     /**
-     * Entry point: wires the refresh button and paints the initial stats.
+     * Extracts a human-readable message from an action result.
+     * @param {*} res - Result `{ ok, status, data }`.
+     * @returns {string} Message to display.
+     */
+    function messageFromResult(res) {
+        if (!res) return 'Error desconocido';
+        const data = res.data;
+        if (data && typeof data === 'object' && (data.message || data.code))
+            return data.message || data.code;
+        return `HTTP ${res ? res.status : '?'}`;
+    }
+
+    /**
+     * Entry point: wires the refresh button and loads the stats.
+     * @param {*} actions - Implementation of `window.OwnStadsActions`.
      * @returns {void}
      */
-    function bootstrap() {
-        if (typeof document === 'undefined') return;
+    function bootstrap(actions) {
+        if (typeof document === 'undefined' || !actions) return;
+
         const el = {
             cards: document.getElementById('statsCards'),
-            recent: document.getElementById('statsRecent'),
+            table: document.getElementById('statsByDataset'),
+            who: document.getElementById('statsUser'),
+            status: document.getElementById('statsStatus'),
             refreshBtn: document.getElementById('btnRefreshStats')
         };
 
-        const paint = () => renderStats(buildStats(), el);
-        if (el.refreshBtn) el.refreshBtn.addEventListener('click', paint);
-        paint();
+        function setStatus(text) {
+            if (el.status) el.status.textContent = text || '';
+        }
+
+        async function load() {
+            setStatus('Cargando estadísticas...');
+            const res = await actions.fetchMyStats();
+            if (!res || !res.ok) {
+                setStatus(`No se pudieron cargar las estadísticas: ${messageFromResult(res)}`);
+                return;
+            }
+            renderStats(res.data, el);
+            setStatus('');
+        }
+
+        if (el.refreshBtn) el.refreshBtn.addEventListener('click', load);
+        load();
     }
 
-    return { bootstrap, buildStats, renderStats, escapeHtml };
+    return { bootstrap, buildSummaryCards, renderStats, formatDuration, messageFromResult, escapeHtml };
 });

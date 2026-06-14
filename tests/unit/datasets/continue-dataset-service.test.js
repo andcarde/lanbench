@@ -62,11 +62,17 @@ function buildService(overrides = {}) {
         ...overrides.datasetsRepository
     };
 
+    const datasetLlmCredentialsRepository = {
+        async findActiveByDataset() { return null; },
+        ...overrides.datasetLlmCredentialsRepository
+    };
+
     return {
         service: createContinueDatasetService({
             activeSessionsRepository,
             sectionAssignmentsRepository,
             datasetsRepository,
+            datasetLlmCredentialsRepository,
             assignmentDurationMs: 1000
         }),
         activeSessionCalls,
@@ -156,6 +162,65 @@ describe('continue-dataset-service', () => {
         assert.equal(result.entryPosition, 3);
         assert.equal(result.entryId, 103);
         assert.equal(activeSessionCalls.upserts[0].entryNumber, 3);
+    });
+
+    it('bloquea con 409 llm_credential_required cuando llmMode=correction y no hay credencial activa', async () => {
+        const { service } = buildService({
+            datasetsRepository: {
+                async findAccessibleById() {
+                    return { id: 5, totalEntries: 25, sectionsPending: 3, sectionsInReview: 0, llmMode: 'correction' };
+                }
+            }
+        });
+
+        await assert.rejects(
+            () => service.continueDataset(7, 5),
+            (/** @type {any} */ error) => {
+                assert.equal(error.status, 409);
+                assert.equal(error.code, 'llm_credential_required');
+                assert.match(error.message, /credencial de IA activa en Administración/i);
+                return true;
+            }
+        );
+    });
+
+    it('bloquea con 409 llm_generation_blocks_annotation cuando llmMode=generation', async () => {
+        const { service, assignmentCalls, activeSessionCalls } = buildService({
+            datasetsRepository: {
+                async findAccessibleById() {
+                    return { id: 5, totalEntries: 25, sectionsPending: 3, sectionsInReview: 0, llmMode: 'generation' };
+                }
+            }
+        });
+
+        await assert.rejects(
+            () => service.continueDataset(7, 5),
+            (/** @type {any} */ error) => {
+                assert.equal(error.status, 409);
+                assert.equal(error.code, 'llm_generation_blocks_annotation');
+                assert.match(error.message, /se anota automáticamente por IA/i);
+                return true;
+            }
+        );
+
+        assert.equal(assignmentCalls.creates.length, 0, 'no debe asignar secciones');
+        assert.equal(activeSessionCalls.upserts.length, 0, 'no debe crear sesión activa');
+    });
+
+    it('procede normalmente cuando llmMode=correction y hay una credencial activa', async () => {
+        const { service } = buildService({
+            datasetsRepository: {
+                async findAccessibleById() {
+                    return { id: 5, totalEntries: 25, sectionsPending: 3, sectionsInReview: 0, llmMode: 'correction' };
+                }
+            },
+            datasetLlmCredentialsRepository: {
+                async findActiveByDataset() { return { id: 1, datasetId: 5, isActive: true }; }
+            }
+        });
+
+        const result = await service.continueDataset(7, 5);
+        assert.equal(result.caseNumber, 5);
     });
 
     it('advanceSession borra la sesion al terminar la seccion e indica si se puede seguir', async () => {

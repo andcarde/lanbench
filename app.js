@@ -33,17 +33,25 @@ const { createDatasetsApiRouter } = require('./routes/datasets-api');
 const { createAnnotationsRouter } = require('./routes/annotations-api');
 const { createSessionApiRouter } = require('./routes/session-api');
 const { createReviewerRouter } = require('./routes/reviewer');
+const { createMeRouter } = require('./routes/me');
 const { createAdminApiRouter } = require('./routes/admin-api');
 const { createReviewsRouter } = require('./routes/reviews-api');
+const { createMeApiRouter } = require('./routes/me-api');
 const {
     createAnnotationsController,
 } = require('./controllers/annotations-controller');
+const { createAutoAnnotationController } = require('./controllers/auto-annotation-controller');
 const { createDatasetsController } = require('./controllers/datasets-controller');
+const { createDatasetLlmCredentialsController } = require('./controllers/dataset-llm-credentials-controller');
 const { createAdminController } = require('./controllers/admin-controller');
 const { createUsersController } = require('./controllers/users-controller');
 const { createReviewsController } = require('./controllers/reviews-controller');
+const { createMeController } = require('./controllers/me-controller');
 const { createAnnotationsService } = require('./services/annotations-service');
+const { createAutoAnnotationService } = require('./services/auto-annotation-service');
+const { createMeStatisticsService } = require('./services/me-statistics-service');
 const { createDatasetsService } = require('./services/datasets-service');
+const { createDatasetLlmCredentialsService } = require('./services/dataset-llm-credentials-service');
 const { createDatasetsPermissionsService } = require('./services/datasets-permissions-service');
 const { createDatasetsStatisticsService } = require('./services/datasets-statistics-service');
 const { createAdminService } = require('./services/admin-service');
@@ -69,16 +77,22 @@ const {
 const {
     createDatasetsStatisticsRepository,
 } = require('./repositories/datasets-statistics-repository');
+const {
+    createDatasetLlmCredentialsRepository,
+} = require('./repositories/dataset-llm-credentials-repository');
 const { warnIfDatabaseInactive } = require('./utils/database-health');
 
 /**
  * Collection of controllers wired with their dependencies.
  * @typedef {Object} ControllerBundle
  * @property {ReturnType<typeof createAnnotationsController>} annotationsController
+ * @property {ReturnType<typeof createAutoAnnotationController>} autoAnnotationController
  * @property {ReturnType<typeof createDatasetsController>} datasetsController
+ * @property {ReturnType<typeof createDatasetLlmCredentialsController>} datasetLlmCredentialsController
  * @property {ReturnType<typeof createAdminController>} adminController
  * @property {ReturnType<typeof createReviewsController>} reviewsController
  * @property {ReturnType<typeof createUsersController>} usersController
+ * @property {ReturnType<typeof createMeController>} meController
  */
 
 /**
@@ -93,6 +107,7 @@ const { warnIfDatabaseInactive } = require('./utils/database-health');
  * @typedef {Object} CreateAppOptions
  * @property {ControllerOverrides} [controllers]
  * @property {ExpressRequestHandler} [sessionMiddleware]
+ * @property {ExpressRequestHandler} [requestLogMiddleware]
  */
 
 /**
@@ -111,7 +126,12 @@ function createControllers(overrides = {}) {
     const datasetsRepository = createDatasetsRepository();
     const datasetsPermissionsRepository = createDatasetsPermissionsRepository();
     const datasetsStatisticsRepository = createDatasetsStatisticsRepository();
-    const datasetsService = createDatasetsService({ datasetsRepository, datasetsPermissionsRepository });
+    const datasetLlmCredentialsRepository = createDatasetLlmCredentialsRepository();
+    const datasetsService = createDatasetsService({
+        datasetsRepository,
+        datasetsPermissionsRepository,
+        datasetLlmCredentialsRepository,
+    });
     const datasetsPermissionsService = createDatasetsPermissionsService({ datasetsPermissionsRepository });
     const datasetsStatisticsService = createDatasetsStatisticsService({ datasetsRepository, datasetsStatisticsRepository });
     const continueDatasetService = createContinueDatasetService({
@@ -119,6 +139,12 @@ function createControllers(overrides = {}) {
         sectionAssignmentService,
         datasetsRepository,
         datasetsService,
+        datasetLlmCredentialsRepository,
+    });
+
+    const datasetLlmCredentialsService = createDatasetLlmCredentialsService({
+        datasetsPermissionsRepository,
+        credentialsRepository: datasetLlmCredentialsRepository,
     });
 
     return {
@@ -133,12 +159,29 @@ function createControllers(overrides = {}) {
                 }),
                 continueDatasetService,
             }),
+        autoAnnotationController:
+            overrides.autoAnnotationController ||
+            createAutoAnnotationController({
+                autoAnnotationService: createAutoAnnotationService({
+                    datasetsPermissionsRepository,
+                    datasetLlmCredentialsService,
+                    datasetsService,
+                    datasetsRepository,
+                    sectionAssignmentsRepository,
+                    sectionAssignmentService,
+                }),
+            }),
         datasetsController:
             overrides.datasetsController ||
             createDatasetsController({
                 datasetsService,
                 datasetsPermissionsService,
                 datasetsStatisticsService,
+            }),
+        datasetLlmCredentialsController:
+            overrides.datasetLlmCredentialsController ||
+            createDatasetLlmCredentialsController({
+                datasetLlmCredentialsService,
             }),
         adminController:
             overrides.adminController ||
@@ -148,9 +191,14 @@ function createControllers(overrides = {}) {
         reviewsController:
             overrides.reviewsController ||
             createReviewsController({
-                reviewsService: createReviewsService({ reviewsRepository }),
+                reviewsService: createReviewsService({ reviewsRepository, datasetsPermissionsRepository }),
             }),
         usersController: overrides.usersController || createUsersController(),
+        meController:
+            overrides.meController ||
+            createMeController({
+                meStatisticsService: createMeStatisticsService(),
+            }),
     };
 }
 
@@ -165,6 +213,7 @@ function createControllers(overrides = {}) {
 function createApp({
     controllers: controllerOverrides,
     sessionMiddleware,
+    requestLogMiddleware,
 } = {}) {
     const app = express();
     app.disable('x-powered-by'); // don't disclose framework/version via the X-Powered-By header
@@ -177,7 +226,7 @@ function createApp({
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.use(createRequestLogMiddleware());
+    app.use(requestLogMiddleware || createRequestLogMiddleware());
     app.use(express.static(publicDirectory));
     app.use(sessionMiddleware || createSessionMiddleware());
 
@@ -192,6 +241,7 @@ function createApp({
         '/api/datasets',
         createDatasetsApiRouter({
             datasetsController: controllers.datasetsController,
+            datasetLlmCredentialsController: controllers.datasetLlmCredentialsController,
         })
     );
     app.use(
@@ -203,6 +253,7 @@ function createApp({
         '/api/annotations',
         createAnnotationsRouter({
             annotationsController: controllers.annotationsController,
+            autoAnnotationController: controllers.autoAnnotationController,
         })
     );
     app.use(
@@ -211,10 +262,15 @@ function createApp({
             reviewsController: controllers.reviewsController,
         })
     );
+    app.use(
+        '/api/me',
+        createMeApiRouter({ meController: controllers.meController })
+    );
     app.use('/api/session', createSessionApiRouter({
         usersController: controllers.usersController
     }));
     app.use('/reviewer', createReviewerRouter());
+    app.use('/my-stats', createMeRouter());
     app.use(
         '/',
         createUsersRouter({ usersController: controllers.usersController })

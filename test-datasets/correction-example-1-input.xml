@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="City" eid="1" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab Pakistan es dirige por Asamblea Provincial.</lex>
+    </entry>
+    <entry category="City" eid="2" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">San Sebastián de los Reyes es parte de Comunidad Madrid.</lex>
+    </entry>
+  </entries>
+</benchmark>

@@ -19,7 +19,7 @@
             <div class="proto-toolbar-inner">
                 <span class="proto-toolbar-brand">Lanbench</span>
                 <div class="proto-toolbar-actions">
-                    <span class="proto-toolbar-badge" data-role="moderator">moderator</span>
+                    <span class="proto-toolbar-badge">mis estadísticas</span>
                     <span class="proto-toolbar-flag">prototipo · front-mock</span>
                 </div>
             </div>
@@ -30,8 +30,9 @@
                 <div>
                     <h1 class="h3 mb-1">Mis estadísticas</h1>
                     <p class="text-muted small mb-0">
-                        Resumen <strong>global</strong> de tu actividad — todas las tareas
-                        (anotación y revisión) y todos los datasets juntos.
+                        Tu actividad de <strong>anotación</strong> y <strong>revisión</strong>:
+                        totales y tiempos medios, en general y por dataset.
+                        <span id="statsUser" class="fw-semibold"></span>
                     </p>
                 </div>
                 <button id="btnRefreshStats" class="btn btn-sm btn-outline-secondary">
@@ -39,15 +40,30 @@
                 </button>
             </div>
 
+            <p id="statsStatus" class="text-muted small"></p>
+
             <div id="statsCards" class="row g-3"></div>
 
             <div class="card shadow-sm mt-3">
-                <div class="card-header"><h2 class="h6 mb-0">Actividad reciente</h2></div>
+                <div class="card-header">
+                    <h2 class="h6 mb-0">Por dataset</h2>
+                    <span class="text-muted small">Solo datasets con alguna anotación o revisión</span>
+                </div>
                 <div class="card-body">
-                    <div id="statsRecent" class="stats-recent"></div>
+                    <div id="statsByDataset"></div>
                 </div>
             </div>
         </main>
+
+        <!-- =================================================================
+             ACTION MODULE — both twins expose window.OwnStadsActions.
+             ACTIVE: front-mock (manual testing, no backend).
+             ================================================================= -->
+        <script src="js/actions/own-stads-actions.mock.js"></script>
+        <!-- REAL (decoupled): swap the line above for the one below to point at
+             /api/me/stats — needs the running app and a logged-in user.
+        <script src="js/actions/own-stads-actions.real.js"></script>
+        -->
 
         <script src="js/own-stads.js"></script>
     </body>

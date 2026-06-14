@@ -180,7 +180,8 @@ describe('annotations-controller', () => {
                 sentences: [
                     { sentence: 'Primera.', rejectionReason: null },
                     { sentence: 'Segunda.', rejectionReason: 'Demasiado literal' }
-                ]
+                ],
+                timeSpentSeconds: 0
             }
         ]);
     });

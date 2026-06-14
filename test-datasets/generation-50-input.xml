@@ -1,0 +1,617 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="Airport" eid="1" shape="(X (X))" shape_type="NA" size="1" source_eid="15">
+      <originaltripleset>
+        <otriple>Texas | language | Spanish_language</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | language | Spanish_language</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Spanish is spoken in Texas.</lex>
+    </entry>
+    <entry category="Airport" eid="2" shape="(X (X))" shape_type="NA" size="1" source_eid="19">
+      <originaltripleset>
+        <otriple>Turkmenistan_Airlines | headquarter | Ashgabat</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Turkmenistan_Airlines | headquarter | Ashgabat</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The headquarters of Turkmenistan Airlines are located in Ashgabat.</lex>
+    </entry>
+    <entry category="Airport" eid="3" shape="(X (X))" shape_type="NA" size="1" source_eid="33">
+      <originaltripleset>
+        <otriple>Uttar_Pradesh | isPartOf | Bundelkhand</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Uttar_Pradesh | isPartOf | Bundelkhand</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Uttar Pradesh is part of Bundelkhand.</lex>
+    </entry>
+    <entry category="Airport" eid="4" shape="(X (X))" shape_type="NA" size="1" source_eid="36">
+      <originaltripleset>
+        <otriple>Wilson_Township,_Alpena_County,_Michigan | isPartOf | United_States</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Wilson_Township,_Alpena_County,_Michigan | isPartOf | United_States</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Wilson Township, Alpena County, Michigan is part of the United States.</lex>
+    </entry>
+    <entry category="Airport" eid="5" shape="(X (X))" shape_type="NA" size="1" source_eid="38">
+      <originaltripleset>
+        <otriple>Ícolo_e_Bengo | isPartOf | Luanda_Province</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Ícolo_e_Bengo | isPartOf | Luanda_Province</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Ícolo e Bengo is in the Luanda Province.</lex>
+    </entry>
+    <entry category="Astronaut" eid="6" shape="(X (X))" shape_type="NA" size="1" source_eid="43">
+      <originaltripleset>
+        <otriple>William_Anders | status | &amp;quot;Retired&amp;quot;</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>William_Anders | status | &amp;quot;Retired&amp;quot;</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">William Anders is retired.</lex>
+    </entry>
+    <entry category="Building" eid="7" shape="(X (X))" shape_type="NA" size="1" source_eid="49">
+      <originaltripleset>
+        <otriple>New_York_City | isPartOf | New_York</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>New_York_City | isPartOf | New_York</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">New York City is part of New York.</lex>
+    </entry>
+    <entry category="Building" eid="8" shape="(X (X))" shape_type="NA" size="1" source_eid="61">
+      <originaltripleset>
+        <otriple>Sri_Lanka | capital | Sri_Jayawardenepura_Kotte</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Sri_Lanka | capital | Sri_Jayawardenepura_Kotte</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The capital of Sri Lanka is Sri Jayawardenepura Kotte.</lex>
+    </entry>
+    <entry category="Building" eid="9" shape="(X (X))" shape_type="NA" size="1" source_eid="68">
+      <originaltripleset>
+        <otriple>United_States | ethnicGroup | African_Americans</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>United_States | ethnicGroup | African_Americans</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">One of the ethnic groups of the United States are the African Americans.</lex>
+    </entry>
+    <entry category="CelestialBody" eid="10" shape="(X (X))" shape_type="NA" size="1" source_eid="77">
+      <originaltripleset>
+        <otriple>110_Lydia | temperature | 168.0 (kelvins)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>110_Lydia | temperature | 168.0 (kelvins)</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">110 Lydia has a temperature of 168 kelvins.</lex>
+    </entry>
+    <entry category="CelestialBody" eid="11" shape="(X (X))" shape_type="NA" size="1" source_eid="78">
+      <originaltripleset>
+        <otriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The apoapsis for 11264 Claudiomaccone is 475426000.0 (kilometres).</lex>
+    </entry>
+    <entry category="Food" eid="12" shape="(X (X))" shape_type="NA" size="1" source_eid="118">
+      <originaltripleset>
+        <otriple>Spain | ethnicGroup | Spaniards</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | ethnicGroup | Spaniards</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Spaniards are the ethnic group of Spain.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="13" shape="(X (X))" shape_type="NA" size="1" source_eid="173">
+      <originaltripleset>
+        <otriple>Stuart_Parker_(footballer) | club | Irlam_Town_F.C.</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Stuart_Parker_(footballer) | club | Irlam_Town_F.C.</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The footballer Stuart Parker is attached to Irlam Town Football Club.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="14" shape="(X (X))" shape_type="NA" size="1" source_eid="178">
+      <originaltripleset>
+        <otriple>Superleague_Greece | champions | Olympiacos_F.C.</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Superleague_Greece | champions | Olympiacos_F.C.</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Olympiacos FC are previous champions of the Superleague Greece.</lex>
+    </entry>
+    <entry category="Airport" eid="15" shape="(X (X))" shape_type="NA" size="2" source_eid="200">
+      <originaltripleset>
+        <otriple>Lake_Placid,_New_York | isPartOf | New_York</otriple>
+        <otriple>Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Lake_Placid,_New_York | isPartOf | New_York</mtriple>
+        <mtriple>Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Lake Placid, New York is part of New York and is served by the Adirondack Regional Airport.</lex>
+    </entry>
+    <entry category="Airport" eid="16" shape="(X (X))" shape_type="NA" size="2" source_eid="206">
+      <originaltripleset>
+        <otriple>Poaceae | order | Commelinids</otriple>
+        <otriple>Ardmore_Airport_(New_Zealand) | 2ndRunwaySurfaceType | Poaceae</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Poaceae | order | Commelinids</mtriple>
+        <mtriple>Ardmore_Airport_(New_Zealand) | 2ndRunwaySurfaceType | Poaceae</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Poaceae is the order of Commelinids, it is also the surface type of the second runway of Ardmore Airport, New Zealand.</lex>
+    </entry>
+    <entry category="Airport" eid="17" shape="(X (X))" shape_type="NA" size="2" source_eid="207">
+      <originaltripleset>
+        <otriple>Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York</otriple>
+        <otriple>Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York</mtriple>
+        <mtriple>Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Adirondack Regional Airport serves the city of Saranac Lake, Essex County, New York.</lex>
+    </entry>
+    <entry category="Astronaut" eid="18" shape="(X (X))" shape_type="NA" size="2" source_eid="212">
+      <originaltripleset>
+        <otriple>William_Anders | occupation | Fighter_pilot</otriple>
+        <otriple>William_Anders | mission | Apollo_8</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>William_Anders | occupation | Fighter_pilot</mtriple>
+        <mtriple>William_Anders | mission | Apollo_8</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">William Anders is a test pilot and member of Apollo 8's crew.</lex>
+    </entry>
+    <entry category="Building" eid="19" shape="(X (X))" shape_type="NA" size="2" source_eid="218">
+      <originaltripleset>
+        <otriple>Asser_Levy_Public_Baths | location | Manhattan</otriple>
+        <otriple>Manhattan | leader | Cyrus_Vance,_Jr.</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Asser_Levy_Public_Baths | location | Manhattan</mtriple>
+        <mtriple>Manhattan | leader | Cyrus_Vance,_Jr.</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Asser Levy Public Baths is located in Manhattan where Cyrus Vance Jr. is the leader.</lex>
+    </entry>
+    <entry category="ComicsCharacter" eid="20" shape="(X (X))" shape_type="NA" size="2" source_eid="256">
+      <originaltripleset>
+        <otriple>Duncan_Rouleau | nationality | Americans</otriple>
+        <otriple>Baymax | creator | Duncan_Rouleau</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Duncan_Rouleau | nationality | Americans</mtriple>
+        <mtriple>Baymax | creator | Duncan_Rouleau</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Duncan Rouleau is an American national who created Baymax.</lex>
+    </entry>
+    <entry category="Food" eid="21" shape="(X (X))" shape_type="NA" size="2" source_eid="268">
+      <originaltripleset>
+        <otriple>Indonesia | capital | Jakarta</otriple>
+        <otriple>Bakso | country | Indonesia</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Indonesia | capital | Jakarta</mtriple>
+        <mtriple>Bakso | country | Indonesia</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Bakso is a dish from the country of Indonesia, where Jakarta is the capital.</lex>
+    </entry>
+    <entry category="Food" eid="22" shape="(X (X))" shape_type="NA" size="2" source_eid="290">
+      <originaltripleset>
+        <otriple>Spain | currency | Euro</otriple>
+        <otriple>Arròs_negre | country | Spain</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | currency | Euro</mtriple>
+        <mtriple>Arròs_negre | country | Spain</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The Euro is the currency of Spain where arros negro comes from.</lex>
+    </entry>
+    <entry category="Food" eid="23" shape="(X (X))" shape_type="NA" size="2" source_eid="293">
+      <originaltripleset>
+        <otriple>Spain | leader | Felipe_VI_of_Spain</otriple>
+        <otriple>Ajoblanco | country | Spain</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | leader | Felipe_VI_of_Spain</mtriple>
+        <mtriple>Ajoblanco | country | Spain</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Ajoblanco originates from the country of Spain where the leader is Felipe VI of Spain.</lex>
+    </entry>
+    <entry category="University" eid="24" shape="(X (X))" shape_type="NA" size="2" source_eid="325">
+      <originaltripleset>
+        <otriple>School of Business and Social Sciences at the Aarhus University | latinName | &amp;quot;Universitas Aarhusiensis&amp;quot;</otriple>
+        <otriple>School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>School of Business and Social Sciences at the Aarhus University | latinName | &amp;quot;Universitas Aarhusiensis&amp;quot;</mtriple>
+        <mtriple>School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Universitas Aarhusiensis is the latin name of the School of Business and Social Sciences at the Aarhus University which is affiliated to the European University Association.</lex>
+    </entry>
+    <entry category="CelestialBody" eid="25" shape="(X (X))" shape_type="NA" size="3" source_eid="392">
+      <originaltripleset>
+        <otriple>11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)</otriple>
+        <otriple>11264_Claudiomaccone | discoverer | Nikolai_Chernykh</otriple>
+        <otriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)</mtriple>
+        <mtriple>11264_Claudiomaccone | discoverer | Nikolai_Chernykh</mtriple>
+        <mtriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Nikolai Chernykh discovered 11264 Claudiomaccone which has an apoapsis of 475426000.0 kilometres and an average speed of 18.29 km per sec.</lex>
+    </entry>
+    <entry category="CelestialBody" eid="26" shape="(X (X))" shape_type="NA" size="3" source_eid="393">
+      <originaltripleset>
+        <otriple>11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)</otriple>
+        <otriple>11264_Claudiomaccone | orbitalPeriod | 1513.722 (days)</otriple>
+        <otriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)</mtriple>
+        <mtriple>11264_Claudiomaccone | orbitalPeriod | 1513.722 (days)</mtriple>
+        <mtriple>11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The celestial body known as 11264 Claudiomaccone has an average speed of 18.29km/s. Its orbital period is 1513.722 days, and it has an apoapsis of, 475426000.0 kilometres.</lex>
+    </entry>
+    <entry category="CelestialBody" eid="27" shape="(X (X))" shape_type="NA" size="3" source_eid="394">
+      <originaltripleset>
+        <otriple>11264_Claudiomaccone | discoverer | Nikolai_Chernykh</otriple>
+        <otriple>11264_Claudiomaccone | epoch | 2005-11-26</otriple>
+        <otriple>11264_Claudiomaccone | periapsis | 296521000.0 (kilometres)</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>11264_Claudiomaccone | discoverer | Nikolai_Chernykh</mtriple>
+        <mtriple>11264_Claudiomaccone | epoch | 2005-11-26</mtriple>
+        <mtriple>11264_Claudiomaccone | periapsis | 296521000.0 (kilometres)</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Nikolai Chernykh was the discoverer of 11264 Claudiomaccone whose epoch date is November 26, 2005. The celestial body has a periapsis of 296521000.0 kilometres.</lex>
+    </entry>
+    <entry category="Food" eid="28" shape="(X (X))" shape_type="NA" size="3" source_eid="421">
+      <originaltripleset>
+        <otriple>Philippines | language | Arabic</otriple>
+        <otriple>Philippines | ethnicGroup | Zamboangans</otriple>
+        <otriple>Batchoy | country | Philippines</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Philippines | language | Arabic</mtriple>
+        <mtriple>Philippines | ethnicGroup | Zamboangans</mtriple>
+        <mtriple>Batchoy | country | Philippines</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Batchoy is eaten in the Philippines, where one of the ethnic groups is the Zamboangans and one of the languages is Arabic.</lex>
+    </entry>
+    <entry category="Food" eid="29" shape="(X (X))" shape_type="NA" size="3" source_eid="429">
+      <originaltripleset>
+        <otriple>Philippines | language | Philippine_Spanish</otriple>
+        <otriple>Batchoy | country | Philippines</otriple>
+        <otriple>Philippines | ethnicGroup | Ilocano_people</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Philippines | language | Philippine_Spanish</mtriple>
+        <mtriple>Batchoy | country | Philippines</mtriple>
+        <mtriple>Philippines | ethnicGroup | Ilocano_people</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The llocano people are an ethnic group from the Philippines, where the spoken language is Philippine Spanish. It is also where Batchoy comes from.</lex>
+    </entry>
+    <entry category="Food" eid="30" shape="(X (X))" shape_type="NA" size="3" source_eid="435">
+      <originaltripleset>
+        <otriple>Siomay | ingredient | Peanut_sauce</otriple>
+        <otriple>Shumai | dishVariation | Siomay</otriple>
+        <otriple>Batagor | dishVariation | Shumai</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Siomay | ingredient | Peanut_sauce</mtriple>
+        <mtriple>Shumai | dishVariation | Siomay</mtriple>
+        <mtriple>Batagor | dishVariation | Shumai</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Peanut sauce is an ingredient of Siomay, which is considered a variation on shumai, which is considered to be a variation of Batagor.</lex>
+    </entry>
+    <entry category="Food" eid="31" shape="(X (X))" shape_type="NA" size="3" source_eid="437">
+      <originaltripleset>
+        <otriple>Spain | language | Spanish_language</otriple>
+        <otriple>Ajoblanco | country | Spain</otriple>
+        <otriple>Spain | ethnicGroup | Spaniards</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | language | Spanish_language</mtriple>
+        <mtriple>Ajoblanco | country | Spain</mtriple>
+        <mtriple>Spain | ethnicGroup | Spaniards</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Spaniards are the ethnic group of Spain where the language is Spanish and where Ajoblanco is from.</lex>
+    </entry>
+    <entry category="Food" eid="32" shape="(X (X))" shape_type="NA" size="3" source_eid="446">
+      <originaltripleset>
+        <otriple>United_States | ethnicGroup | Native_Americans_in_the_United_States</otriple>
+        <otriple>United_States | leaderTitle | President_of_the_United_States</otriple>
+        <otriple>Baked_Alaska | country | United_States</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>United_States | ethnicGroup | Native_Americans_in_the_United_States</mtriple>
+        <mtriple>United_States | leaderTitle | President_of_the_United_States</mtriple>
+        <mtriple>Baked_Alaska | country | United_States</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The ethnic group of native Americans are from the United States where The president is the leader and baked Alaska is a dish.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="33" shape="(X (X))" shape_type="NA" size="3" source_eid="452">
+      <originaltripleset>
+        <otriple>Italy | leader | Pietro_Grasso</otriple>
+        <otriple>Italy | demonym | Italians</otriple>
+        <otriple>A.S._Gubbio_1910 | ground | Italy</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Italy | leader | Pietro_Grasso</mtriple>
+        <mtriple>Italy | demonym | Italians</mtriple>
+        <mtriple>A.S._Gubbio_1910 | ground | Italy</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The ground of A.S. Gubbio 1910 is located in Italy where Pietro Grasso is the leader of the Italians.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="34" shape="(X (X))" shape_type="NA" size="3" source_eid="460">
+      <originaltripleset>
+        <otriple>Massimo_Drago | club | U.S._Castrovillari_Calcio</otriple>
+        <otriple>A.C._Cesena | manager | Massimo_Drago</otriple>
+        <otriple>Massimo_Drago | club | Delfino_Pescara_1936</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Massimo_Drago | club | U.S._Castrovillari_Calcio</mtriple>
+        <mtriple>A.C._Cesena | manager | Massimo_Drago</mtriple>
+        <mtriple>Massimo_Drago | club | Delfino_Pescara_1936</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">A.C. Cesena's manager Massimo Drago was once a player for US Castrovillari Calcio and is now attached to the club Delfino Pescara 1936.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="35" shape="(X (X))" shape_type="NA" size="3" source_eid="470">
+      <originaltripleset>
+        <otriple>Serie_A | champions | Juventus_F.C.</otriple>
+        <otriple>A.S._Roma | ground | Rome</otriple>
+        <otriple>A.S._Roma | league | Serie_A</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Serie_A | champions | Juventus_F.C.</mtriple>
+        <mtriple>A.S._Roma | ground | Rome</mtriple>
+        <mtriple>A.S._Roma | league | Serie_A</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">AS Roma, who have a ground in Rome, play in Serie A alongside Juventus FC who are former champions.</lex>
+    </entry>
+    <entry category="SportsTeam" eid="36" shape="(X (X))" shape_type="NA" size="3" source_eid="471">
+      <originaltripleset>
+        <otriple>Serie_A | champions | Juventus_F.C.</otriple>
+        <otriple>A.S._Roma | ground | Stadio_Olimpico</otriple>
+        <otriple>A.S._Roma | league | Serie_A</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Serie_A | champions | Juventus_F.C.</mtriple>
+        <mtriple>A.S._Roma | ground | Stadio_Olimpico</mtriple>
+        <mtriple>A.S._Roma | league | Serie_A</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">AS Roma, whose ground is the Stadio Olimpico play in the Serie A League of which Juventus FC are former champions.</lex>
+    </entry>
+    <entry category="University" eid="37" shape="(X (X))" shape_type="NA" size="3" source_eid="476">
+      <originaltripleset>
+        <otriple>School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000</otriple>
+        <otriple>School of Business and Social Sciences at the Aarhus University | country | Denmark</otriple>
+        <otriple>School of Business and Social Sciences at the Aarhus University | established | 1928</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000</mtriple>
+        <mtriple>School of Business and Social Sciences at the Aarhus University | country | Denmark</mtriple>
+        <mtriple>School of Business and Social Sciences at the Aarhus University | established | 1928</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The School of Business and Social Sciences at the Aarhus University is located in Denmark, has 16,000 students and was established in 1928.</lex>
+    </entry>
+    <entry category="Airport" eid="38" shape="(X (X))" shape_type="NA" size="4" source_eid="499">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | leaderParty | People's_Party_(Spain)</otriple>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+        <otriple>Adolfo_Suárez_Madrid–Barajas_Airport | location | San_Sebastián_de_los_Reyes</otriple>
+        <otriple>San_Sebastián_de_los_Reyes | country | Spain</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | leaderParty | People's_Party_(Spain)</mtriple>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+        <mtriple>Adolfo_Suárez_Madrid–Barajas_Airport | location | San_Sebastián_de_los_Reyes</mtriple>
+        <mtriple>San_Sebastián_de_los_Reyes | country | Spain</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid, in Spain. It is where the Adolfo Suarez Madrid- Barajas airport is located and is led by the People's Party.</lex>
+    </entry>
+    <entry category="Building" eid="39" shape="(X (X))" shape_type="NA" size="4" source_eid="518">
+      <originaltripleset>
+        <otriple>Gujarat | leader | Anandiben_Patel</otriple>
+        <otriple>India | leader | T._S._Thakur</otriple>
+        <otriple>Amdavad_ni_Gufa | location | Gujarat</otriple>
+        <otriple>Amdavad_ni_Gufa | country | India</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Gujarat | leader | Anandiben_Patel</mtriple>
+        <mtriple>India | leader | T._S._Thakur</mtriple>
+        <mtriple>Amdavad_ni_Gufa | location | Gujarat</mtriple>
+        <mtriple>Amdavad_ni_Gufa | country | India</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Led by Anandiben Patel, Amdavad ni Gufa can be found in Gujarat, India, where India is led by T S Thakur.</lex>
+    </entry>
+    <entry category="Building" eid="40" shape="(X (X))" shape_type="NA" size="4" source_eid="520">
+      <originaltripleset>
+        <otriple>India | leader | T._S._Thakur</otriple>
+        <otriple>Amdavad_ni_Gufa | location | Ahmedabad</otriple>
+        <otriple>Amdavad_ni_Gufa | country | India</otriple>
+        <otriple>India | leader | Sumitra_Mahajan</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>India | leader | T._S._Thakur</mtriple>
+        <mtriple>Amdavad_ni_Gufa | location | Ahmedabad</mtriple>
+        <mtriple>Amdavad_ni_Gufa | country | India</mtriple>
+        <mtriple>India | leader | Sumitra_Mahajan</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Amdavad ni Gufa is located in Ahmedabad, India, a country which prevously had the leader T. S. Thakur and now has leader Sumitra Mahajan.</lex>
+    </entry>
+    <entry category="Building" eid="41" shape="(X (X))" shape_type="NA" size="4" source_eid="521">
+      <originaltripleset>
+        <otriple>India | leader | T._S._Thakur</otriple>
+        <otriple>Amdavad_ni_Gufa | location | Gujarat</otriple>
+        <otriple>Amdavad_ni_Gufa | country | India</otriple>
+        <otriple>India | leader | Sumitra_Mahajan</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>India | leader | T._S._Thakur</mtriple>
+        <mtriple>Amdavad_ni_Gufa | location | Gujarat</mtriple>
+        <mtriple>Amdavad_ni_Gufa | country | India</mtriple>
+        <mtriple>India | leader | Sumitra_Mahajan</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Amdavad ni Gufa is located in Gujarat, India. T. S. Thakur and Sumitra Mahajan have been leaders of India.</lex>
+    </entry>
+    <entry category="Building" eid="42" shape="(X (X))" shape_type="NA" size="4" source_eid="534">
+      <originaltripleset>
+        <otriple>United_States | leaderTitle | President_of_the_United_States</otriple>
+        <otriple>United_States | leader | Joe_Biden</otriple>
+        <otriple>250_Delaware_Avenue | location | United_States</otriple>
+        <otriple>United_States | ethnicGroup | Asian_Americans</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>United_States | leaderTitle | President_of_the_United_States</mtriple>
+        <mtriple>United_States | leader | Joe_Biden</mtriple>
+        <mtriple>250_Delaware_Avenue | location | United_States</mtriple>
+        <mtriple>United_States | ethnicGroup | Asian_Americans</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">250 Delaware Avenue is located in the United States (with an important ethnic group being Asian Americans), led by the President of the United States and also with Joe Biden in a leadership role.</lex>
+    </entry>
+    <entry category="ComicsCharacter" eid="43" shape="(X (X))" shape_type="NA" size="4" source_eid="559">
+      <originaltripleset>
+        <otriple>Sheldon_Moldoff | nationality | Americans</otriple>
+        <otriple>Black_Pirate | creator | Sheldon_Moldoff</otriple>
+        <otriple>Sheldon_Moldoff | award | Inkpot_Award</otriple>
+        <otriple>Black_Pirate | alternativeName | &amp;quot;Jon Valor&amp;quot;</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Sheldon_Moldoff | nationality | Americans</mtriple>
+        <mtriple>Black_Pirate | creator | Sheldon_Moldoff</mtriple>
+        <mtriple>Sheldon_Moldoff | award | Inkpot_Award</mtriple>
+        <mtriple>Black_Pirate | alternativeName | &amp;quot;Jon Valor&amp;quot;</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The Black Pirate, also know as Jon Valor, was created by the Inkpot Award winning American, Sheldon Moldoff.</lex>
+    </entry>
+    <entry category="Food" eid="44" shape="(X (X))" shape_type="NA" size="4" source_eid="575">
+      <originaltripleset>
+        <otriple>Philippines | ethnicGroup | Ilocano_people</otriple>
+        <otriple>Philippines | language | Arabic</otriple>
+        <otriple>Philippines | ethnicGroup | Zamboangans</otriple>
+        <otriple>Batchoy | country | Philippines</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Philippines | ethnicGroup | Ilocano_people</mtriple>
+        <mtriple>Philippines | language | Arabic</mtriple>
+        <mtriple>Philippines | ethnicGroup | Zamboangans</mtriple>
+        <mtriple>Batchoy | country | Philippines</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">Batchoy come from the Philippines, a country where one of the languages spoken is Arabic. Also where two of the ethnic groups are, the llocano people and the Zamboangans.</lex>
+    </entry>
+    <entry category="Food" eid="45" shape="(X (X))" shape_type="NA" size="4" source_eid="587">
+      <originaltripleset>
+        <otriple>Philippines | language | Philippine_Spanish</otriple>
+        <otriple>Batchoy | country | Philippines</otriple>
+        <otriple>Philippines | ethnicGroup | Igorot_people</otriple>
+        <otriple>Philippines | ethnicGroup | Chinese_Filipino</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Philippines | language | Philippine_Spanish</mtriple>
+        <mtriple>Batchoy | country | Philippines</mtriple>
+        <mtriple>Philippines | ethnicGroup | Igorot_people</mtriple>
+        <mtriple>Philippines | ethnicGroup | Chinese_Filipino</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">In the Philippines they speak Philippine Spanish, eat Batchoy and are home to the ethnic groups of Igorot people and the Chinese Filipino.</lex>
+    </entry>
+    <entry category="Monument" eid="46" shape="(X (X))" shape_type="NA" size="4" source_eid="601">
+      <originaltripleset>
+        <otriple>Turkey | leader | Ahmet_Davutoğlu</otriple>
+        <otriple>Turkey | largestCity | Istanbul</otriple>
+        <otriple>Turkey | currency | Turkish_lira</otriple>
+        <otriple>Atatürk_Monument_(İzmir) | location | Turkey</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Turkey | leader | Ahmet_Davutoğlu</mtriple>
+        <mtriple>Turkey | largestCity | Istanbul</mtriple>
+        <mtriple>Turkey | currency | Turkish_lira</mtriple>
+        <mtriple>Atatürk_Monument_(İzmir) | location | Turkey</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The Ataturk Monument (Izmir) is located in Turkey and the Turkish leader is Ahmet Davutoglu. The largest city is Istanbul and the currency is the Turkish lira.</lex>
+    </entry>
+    <entry category="University" eid="47" shape="(X (X))" shape_type="NA" size="4" source_eid="631">
+      <originaltripleset>
+        <otriple>Visvesvaraya_Technological_University | city | Belgaum</otriple>
+        <otriple>Acharya_Institute_of_Technology | numberOfPostgraduateStudents | 700</otriple>
+        <otriple>Acharya_Institute_of_Technology | campus | &amp;quot;In Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090.&amp;quot;</otriple>
+        <otriple>Acharya_Institute_of_Technology | affiliation | Visvesvaraya_Technological_University</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Visvesvaraya_Technological_University | city | Belgaum</mtriple>
+        <mtriple>Acharya_Institute_of_Technology | numberOfPostgraduateStudents | 700</mtriple>
+        <mtriple>Acharya_Institute_of_Technology | campus | &amp;quot;In Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090.&amp;quot;</mtriple>
+        <mtriple>Acharya_Institute_of_Technology | affiliation | Visvesvaraya_Technological_University</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">The Acharya Institute of Technology campus has 700 postgraduate students and is affiliated with the Visvesvaraya Technological University in the city of Belgaum. The campus is located at In Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090.</lex>
+    </entry>
+    <entry category="Astronaut" eid="48" shape="(X (X))" shape_type="NA" size="5" source_eid="662">
+      <originaltripleset>
+        <otriple>William_Anders | mission | Apollo_8</otriple>
+        <otriple>William_Anders | almaMater | &amp;quot;AFIT, M.S. 1962&amp;quot;</otriple>
+        <otriple>Apollo_8 | backupPilot | Buzz_Aldrin</otriple>
+        <otriple>Apollo_8 | crewMembers | Frank_Borman</otriple>
+        <otriple>Apollo_8 | operator | NASA</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>William_Anders | mission | Apollo_8</mtriple>
+        <mtriple>William_Anders | almaMater | &amp;quot;AFIT, M.S. 1962&amp;quot;</mtriple>
+        <mtriple>Apollo_8 | backupPilot | Buzz_Aldrin</mtriple>
+        <mtriple>Apollo_8 | crewMembers | Frank_Borman</mtriple>
+        <mtriple>Apollo_8 | operator | NASA</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">In 1962, William Anders received a M.S. from his alma Mater, AFIT. He was a crew member on Apollo 8 operated by NASA with Buzz Aldrin a the backup pilot and Frank Borman as a crew member.</lex>
+    </entry>
+    <entry category="Monument" eid="49" shape="(X (X))" shape_type="NA" size="6" source_eid="758">
+      <originaltripleset>
+        <otriple>Turkey | leaderTitle | President_of_Turkey</otriple>
+        <otriple>Atatürk_Monument_(İzmir) | designer | Pietro_Canonica</otriple>
+        <otriple>Turkey | leader | Ahmet_Davutoğlu</otriple>
+        <otriple>Turkey | capital | Ankara</otriple>
+        <otriple>Atatürk_Monument_(İzmir) | inaugurationDate | &amp;quot;1932-07-27&amp;quot;</otriple>
+        <otriple>Atatürk_Monument_(İzmir) | location | Turkey</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Turkey | leaderTitle | President_of_Turkey</mtriple>
+        <mtriple>Atatürk_Monument_(İzmir) | designer | Pietro_Canonica</mtriple>
+        <mtriple>Turkey | leader | Ahmet_Davutoğlu</mtriple>
+        <mtriple>Turkey | capital | Ankara</mtriple>
+        <mtriple>Atatürk_Monument_(İzmir) | inaugurationDate | &amp;quot;1932-07-27&amp;quot;</mtriple>
+        <mtriple>Atatürk_Monument_(İzmir) | location | Turkey</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">President Ahmet Davutoglu is the leader of Turkey. The capital city is Ankara, but it is in Izmir that the Ataturk monument designed by Pietro Canonica and inaugurated on 27 July 1932 is located.</lex>
+    </entry>
+    <entry category="Astronaut" eid="50" shape="(X (X))" shape_type="NA" size="7" source_eid="772">
+      <originaltripleset>
+        <otriple>William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;</otriple>
+        <otriple>William_Anders | selectedByNasa | 1963</otriple>
+        <otriple>William_Anders | nationality | United_States</otriple>
+        <otriple>William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;</otriple>
+        <otriple>William_Anders | occupation | Fighter_pilot</otriple>
+        <otriple>William_Anders | birthPlace | British_Hong_Kong</otriple>
+        <otriple>William_Anders | mission | Apollo_8</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;</mtriple>
+        <mtriple>William_Anders | selectedByNasa | 1963</mtriple>
+        <mtriple>William_Anders | nationality | United_States</mtriple>
+        <mtriple>William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;</mtriple>
+        <mtriple>William_Anders | occupation | Fighter_pilot</mtriple>
+        <mtriple>William_Anders | birthPlace | British_Hong_Kong</mtriple>
+        <mtriple>William_Anders | mission | Apollo_8</mtriple>
+      </modifiedtripleset>
+      <lex comment="reference" lang="en" lid="Id1">William Anders was born in October 17th 1933 in British Hong Kong. William was chosen by NASA in 1963 as a figter pilot for the Apollo 8 crew. He later retired in 1969.</lex>
+    </entry>
+  </entries>
+</benchmark>

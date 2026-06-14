@@ -45,7 +45,7 @@ describe('auth routing boundary', function () {
 
     it('redirige a /login cuando un navegador accede sin sesión a páginas privadas', async () => {
         const paths = [
-            '/tasks',
+            '/datasets',
             '/datasets/1/view',
             '/annotations'
         ];

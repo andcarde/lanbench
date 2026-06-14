@@ -96,6 +96,7 @@
  * @property {boolean} showReviewButton
  * @property {boolean} reviewAvailable
  * @property {NonNegativeInteger} reviewableCount
+ * @property {boolean} blockedBySelfAnnotation - Button is shown but disabled only because the reviewer annotated every candidate entry (self-review rule).
  */
 
 /**
@@ -212,8 +213,9 @@
  */
 
 /**
- * Criterion codes recognized in review.
- * @typedef {'criterion_grammar'|'criterion_coverage'|'criterion_diversity'|'criterion_semantic_fidelity'} ReviewCriterionCode
+ * Criterion codes recognized in review. The first five are per-phrase
+ * criteria; `diversity` is the review-level criterion (decided once per entry).
+ * @typedef {'naturalness'|'fluency'|'adequacy'|'completeness'|'coverage'|'diversity'} ReviewCriterionCode
  */
 
 /**

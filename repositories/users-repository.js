@@ -111,7 +111,22 @@ function createUsersRepository({ prisma } = {}) {
     async function setIsModerator(userId, isModerator) {
         return deps.prisma.user.update({
             where: { id: userId },
-            data: { isModerator: Boolean(isModerator) }
+            data: { isModerator: Boolean(isModerator) },
+            select: { id: true, email: true, isModerator: true }
+        });
+    }
+
+    /**
+     * Lists every user with the fields safe to expose to a moderator (no
+     * password). Ordered by id so the admin roster is stable. Backs US-22
+     * server-role management.
+     *
+     * @returns {Promise<UserRow[]>}
+     */
+    async function listUsers() {
+        return deps.prisma.user.findMany({
+            orderBy: { id: 'asc' },
+            select: { id: true, email: true, isModerator: true }
         });
     }
 
@@ -120,7 +135,8 @@ function createUsersRepository({ prisma } = {}) {
         findByExactEmail,
         createUser,
         updatePassword,
-        setIsModerator
+        setIsModerator,
+        listUsers
     };
 }
 

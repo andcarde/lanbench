@@ -28,6 +28,8 @@
                         id="btnNuevoDataset"
                         type="button"
                         class="btn btn-new-dataset"
+                        title="Solo los moderadores pueden crear datasets"
+                        disabled
                     >
                         NUEVO DATASET
                     </button>
@@ -73,7 +75,57 @@
                                 required
                             />
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="newDatasetName"
+                                >Nombre del dataset</label
+                            >
+                            <input
+                                class="form-control"
+                                type="text"
+                                id="newDatasetName"
+                                name="name"
+                                maxlength="128"
+                                required
+                            />
+                            <div class="form-text">
+                                Por defecto se usa el nombre del fichero.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label
+                                class="form-label"
+                                for="newDatasetDescription"
+                                >Descripción (opcional)</label
+                            >
+                            <textarea
+                                class="form-control"
+                                id="newDatasetDescription"
+                                name="description"
+                                maxlength="512"
+                                rows="3"
+                            ></textarea>
+                            <div class="form-text">
+                                Máximo 512 caracteres. Se mostrará bajo el
+                                nombre en la vista del dataset.
+                            </div>
+                        </div>
                         <div class="row g-3">
+                            <div class="col-12">
+                                <label
+                                    class="form-label"
+                                    for="newDatasetSectionSize"
+                                    >Tamaño de sección</label
+                                >
+                                <input
+                                    class="form-control"
+                                    type="number"
+                                    id="newDatasetSectionSize"
+                                    name="sectionSize"
+                                    min="1"
+                                    step="1"
+                                    value="10"
+                                />
+                            </div>
                             <div class="col-12">
                                 <label
                                     class="form-label"
@@ -109,7 +161,7 @@
                                     <option value="false" selected>No</option>
                                 </select>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12" id="newDatasetAdditionalReviewsField">
                                 <label
                                     class="form-label"
                                     for="newDatasetAdditionalReviews"
@@ -126,6 +178,11 @@
                                 </select>
                             </div>
                         </div>
+                        <div
+                            class="alert d-none mt-3 mb-0"
+                            id="newDatasetMessage"
+                            role="alert"
+                        ></div>
                     </div>
                     <div class="modal-footer">
                         <button
@@ -178,6 +235,143 @@
                             data-bs-dismiss="modal"
                         >
                             Aceptar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="modal fade"
+            id="autoAnnotationModal"
+            tabindex="-1"
+            aria-labelledby="autoAnnotationModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" id="autoAnnotationForm">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="autoAnnotationModalLabel">
+                            Anotación automática
+                        </h2>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            Se anotarán las entradas a través del modelo LLM dado.
+                        </p>
+                        <div class="mb-2">
+                            <label
+                                class="form-label"
+                                for="autoAnnotationSectionsCount"
+                            >Número de secciones a anotar:</label>
+                            <input
+                                class="form-control"
+                                type="text"
+                                id="autoAnnotationSectionsCount"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="3"
+                                placeholder="ej: 4"
+                                autocomplete="off"
+                            />
+                            <div
+                                class="text-danger small mt-1 d-none"
+                                id="autoAnnotationFieldError"
+                            ></div>
+                        </div>
+                        <div
+                            class="text-danger small d-none"
+                            id="autoAnnotationApiError"
+                        >No hay API activa. Configúrela para continuar.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="btnAutoAnnotationConfirm"
+                        >
+                            Confirmar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div
+            class="modal fade"
+            id="autoAnnotationStatusModal"
+            tabindex="-1"
+            aria-labelledby="autoAnnotationStatusModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2
+                            class="modal-title fs-5"
+                            id="autoAnnotationStatusModalLabel"
+                        >
+                            Anotación en curso
+                        </h2>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">
+                            Entries:
+                            <strong id="autoAnnotationStatusEntries">0</strong> de
+                            <strong id="autoAnnotationStatusTotalEntries">0</strong>.
+                        </p>
+                        <p class="mb-2">
+                            Secciones:
+                            <strong id="autoAnnotationStatusSections">0</strong> de
+                            <strong id="autoAnnotationStatusTotalSections">0</strong>.
+                        </p>
+                        <div
+                            class="alert alert-danger d-none"
+                            id="autoAnnotationStatusError"
+                            role="alert"
+                        ></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger d-none"
+                            id="btnAutoAnnotationCancel"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary d-none"
+                            id="btnAutoAnnotationRetry"
+                        >
+                            Reintentar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            id="btnAutoAnnotationStatusClose"
+                            data-bs-dismiss="modal"
+                        >
+                            Cerrar
                         </button>
                     </div>
                 </div>

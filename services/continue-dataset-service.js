@@ -16,13 +16,15 @@
  * @property {Record<string, any>} [sectionAssignmentService]
  * @property {Record<string, any>} [datasetsRepository]
  * @property {Record<string, any>} [datasetsService]
+ * @property {Record<string, any>} [datasetLlmCredentialsRepository]
  * @property {number}              [assignmentDurationMs]
  */
 
-const { SECTION_SIZE } = require('../constants/datasets');
+const { SECTION_SIZE, resolveSectionSize } = require('../constants/datasets');
 const { createActiveSessionsRepository } = require('../repositories/active-sessions-repository');
 const { createSectionAssignmentsRepository } = require('../repositories/section-assignments-repository');
 const { createDatasetsRepository } = require('../repositories/datasets-repository');
+const { createDatasetLlmCredentialsRepository } = require('../repositories/dataset-llm-credentials-repository');
 const { createSectionAssignmentService } = require('./section-assignment-service');
 const { ServiceError } = require('./service-error');
 
@@ -42,6 +44,7 @@ function createContinueDatasetService({
     sectionAssignmentService,
     datasetsRepository,
     datasetsService,
+    datasetLlmCredentialsRepository,
     assignmentDurationMs
 } = {}) {
     const sharedSectionAssignmentsRepository =
@@ -55,6 +58,7 @@ function createContinueDatasetService({
         sectionAssignmentsRepository: sharedSectionAssignmentsRepository,
         datasetsRepository: sharedDatasetsRepository,
         datasetsService: datasetsService || null,
+        datasetLlmCredentialsRepository: datasetLlmCredentialsRepository || createDatasetLlmCredentialsRepository(),
         sectionAssignmentService: sectionAssignmentService || createSectionAssignmentService({
             sectionAssignmentsRepository: sharedSectionAssignmentsRepository,
             datasetsRepository: sharedDatasetsRepository,
@@ -75,7 +79,11 @@ function createContinueDatasetService({
         if (!dataset)
             throw ServiceError.datasetNotFound();
 
-        const totalSections = Math.ceil(dataset.totalEntries / SECTION_SIZE);
+        assertNotGenerationMode(dataset);
+        await assertActiveCredentialIfCorrection(dataset, datasetId);
+
+        const sectionSize = resolveSectionSize(dataset);
+        const totalSections = Math.ceil(dataset.totalEntries / sectionSize);
         if (totalSections === 0)
             throw new ServiceError('El dataset no tiene entries.', {
                 status: 409,
@@ -101,14 +109,14 @@ function createContinueDatasetService({
                 sectionNumber: session.sectionNumber,
                 entryPosition: session.entryNumber,
                 entryId: entryData ? entryData.eid : null,
-                entryIndexInSection: session.entryNumber % SECTION_SIZE
+                entryIndexInSection: session.entryNumber % sectionSize
             };
         }
 
         const existingAssignment = await deps.sectionAssignmentsRepository.findActiveAssignment({ userId, datasetId });
         if (existingAssignment) {
             const sectionNumber = existingAssignment.sectionIndex;
-            const entryPosition = getSectionStartPosition(sectionNumber);
+            const entryPosition = getSectionStartPosition(sectionNumber, sectionSize);
             await deps.activeSessionsRepository.upsertSession({
                 datasetId,
                 userId,
@@ -129,7 +137,7 @@ function createContinueDatasetService({
 
         const maxSectionIndex = await findMaxSectionIndex(deps.sectionAssignmentsRepository, datasetId);
         const nextSectionIndex = maxSectionIndex + 1;
-        const nextSectionStartPosition = getSectionStartPosition(nextSectionIndex);
+        const nextSectionStartPosition = getSectionStartPosition(nextSectionIndex, sectionSize);
 
         if (nextSectionStartPosition >= dataset.totalEntries)
             return { caseNumber: 3 };
@@ -181,7 +189,8 @@ function createContinueDatasetService({
         if (!dataset)
             throw ServiceError.datasetNotFound();
 
-        const sectionEnd = session.sectionNumber * SECTION_SIZE;
+        const sectionSize = resolveSectionSize(dataset);
+        const sectionEnd = session.sectionNumber * sectionSize;
         const nextPosition = session.entryNumber + 1;
 
         if (nextPosition >= sectionEnd || nextPosition >= dataset.totalEntries) {
@@ -193,7 +202,7 @@ function createContinueDatasetService({
 
             const maxSectionIndex = await findMaxSectionIndex(deps.sectionAssignmentsRepository, datasetId);
             const nextSectionIndex = maxSectionIndex + 1;
-            const nextSectionStartPosition = getSectionStartPosition(nextSectionIndex);
+            const nextSectionStartPosition = getSectionStartPosition(nextSectionIndex, sectionSize);
             const moreSectionsAvailable = nextSectionStartPosition < dataset.totalEntries;
 
             return {
@@ -217,7 +226,7 @@ function createContinueDatasetService({
             sectionNumber: session.sectionNumber,
             entryPosition: nextPosition,
             entryId: nextEntry ? nextEntry.eid : null,
-            entryIndexInSection: nextPosition % SECTION_SIZE
+            entryIndexInSection: nextPosition % sectionSize
         };
     }
 
@@ -253,7 +262,8 @@ function createContinueDatasetService({
         );
 
         const entries = Array.isArray(sectionPayload?.entries) ? sectionPayload.entries : [];
-        const entryIndexInSection = session.entryNumber % SECTION_SIZE;
+        const sectionSize = resolveSectionSize({ sectionSize: sectionPayload?.sectionSize });
+        const entryIndexInSection = session.entryNumber % sectionSize;
         const entry = entries[entryIndexInSection];
 
         if (!entry)
@@ -277,6 +287,55 @@ function createContinueDatasetService({
         };
     }
 
+    /**
+     * Backend guard for datasets in `llmMode === 'generation'`: manual
+     * annotation is not allowed because those entries are produced by the LLM
+     * (US-33). Blocks both reserving a section and resuming an existing
+     * session, which together prevents the annotation page from entering the
+     * editing flow.
+     *
+     * @param {Record<string, any>} dataset - Dataset row already authorized.
+     * @returns {void}
+     */
+    function assertNotGenerationMode(dataset) {
+        const llmMode = typeof dataset?.llmMode === 'string' ? dataset.llmMode : 'none';
+        if (llmMode !== 'generation')
+            return;
+
+        throw new ServiceError(
+            'Este dataset se anota automáticamente por IA; la anotación manual no está disponible.',
+            { status: 409, code: 'llm_generation_blocks_annotation' }
+        );
+    }
+
+    /**
+     * Backend enforcement for datasets in `llmMode === 'correction'`: refuses
+     * to advance the annotation flow when there is no active LLM credential
+     * configured in Administración. Other modes (`generation`, `none`) are not
+     * gated here.
+     *
+     * @param {Record<string, any>} dataset - Dataset row already authorized.
+     * @param {number} datasetId - Same id, kept for the repository call.
+     * @returns {Promise<void>}
+     */
+    async function assertActiveCredentialIfCorrection(dataset, datasetId) {
+        const llmMode = typeof dataset?.llmMode === 'string' ? dataset.llmMode : 'none';
+        if (llmMode !== 'correction')
+            return;
+
+        const repo = deps.datasetLlmCredentialsRepository;
+        if (!repo || typeof repo.findActiveByDataset !== 'function')
+            return;
+
+        const active = await repo.findActiveByDataset(datasetId);
+        if (!active) {
+            throw new ServiceError(
+                'Configura una credencial de IA activa en Administración antes de anotar este dataset.',
+                { status: 409, code: 'llm_credential_required' }
+            );
+        }
+    }
+
     return {
         continueDataset,
         advanceSession,
@@ -288,10 +347,11 @@ function createContinueDatasetService({
 /**
  * Computes the initial global position of a 1-indexed section.
  * @param {number} sectionNumber - Section number.
+ * @param {number} [sectionSize] - Per-dataset section size (defaults to SECTION_SIZE).
  * @returns {number} 0-indexed position.
  */
-function getSectionStartPosition(sectionNumber) {
-    return (sectionNumber - 1) * SECTION_SIZE;
+function getSectionStartPosition(sectionNumber, sectionSize = SECTION_SIZE) {
+    return (sectionNumber - 1) * sectionSize;
 }
 
 /**

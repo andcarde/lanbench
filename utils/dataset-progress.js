@@ -8,7 +8,7 @@
  * the administrative export.
  */
 
-const { SECTION_SIZE } = require('../constants/datasets');
+const { SECTION_SIZE, resolveSectionSize } = require('../constants/datasets');
 
 /**
  * Calculates progress percentages combining section counters and, when
@@ -32,7 +32,8 @@ function calculatePercentagesFromSectionCounters({
     sectionsPending = 0,
     reviewEnabled = false,
     annotatedEntries = null,
-    totalEntries = null
+    totalEntries = null,
+    sectionSize = SECTION_SIZE
 } = {}) {
     const completedSections = nonNegativeInteger(sectionsCompleted);
     const inReviewSections = reviewEnabled ? nonNegativeInteger(sectionsInReview) : 0;
@@ -41,13 +42,15 @@ function calculatePercentagesFromSectionCounters({
 
     const totalEntryCount = nonNegativeInteger(totalEntries);
     const annotatedEntryCount = clampToCeiling(nonNegativeInteger(annotatedEntries), totalEntryCount);
+    const resolvedSectionSize = resolveSectionSize({ sectionSize });
 
     if (canUseEntryBasedMath(annotatedEntries, totalEntryCount))
         return computeEntryBasedPercentages({
             annotatedEntryCount,
             totalEntryCount,
             completedSections,
-            reviewEnabled
+            reviewEnabled,
+            sectionSize: resolvedSectionSize
         });
 
     if (totalSections === 0)
@@ -71,10 +74,11 @@ function computeEntryBasedPercentages(/** @type {*} */ {
     annotatedEntryCount,
     totalEntryCount,
     completedSections,
-    reviewEnabled
+    reviewEnabled,
+    sectionSize = SECTION_SIZE
 }) {
     const reviewedEntries = reviewEnabled
-        ? Math.min(completedSections * SECTION_SIZE, totalEntryCount)
+        ? Math.min(completedSections * sectionSize, totalEntryCount)
         : 0;
     const completedEntries = reviewEnabled
         ? reviewedEntries

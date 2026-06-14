@@ -1,15 +1,17 @@
 'use strict';
 
 /**
- * @file Groq client (`cloud` mode).
+ * @file Groq client (`cloud` mode) — thin alias over the generic
+ * OpenAI-compatible client.
  *
- * Implements `generateJson` against Groq's OpenAI-compatible endpoint, sharing
- * the HTTP/timeout/JSON-extract primitives with `ollama-client` (via
- * `llm-http`).
+ * Groq is just an OpenAI-compatible provider, so this module now forwards to
+ * {@link module:utils/openai-compatible-client} while keeping the historical
+ * `Groq` provider name in error messages and preserving the `config.groq.*`
+ * defaults. Kept as a named module so existing imports/log strings do not
+ * change.
  */
 
-const config = require('../config');
-const { removeTrailingSlashes, extractJsonPayload, fetchWithTimeout } = require('./llm-http');
+const openaiCompatibleClient = require('./openai-compatible-client');
 
 /** Provider name (for error messages and logs). */
 const PROVIDER_NAME = 'Groq';
@@ -19,46 +21,20 @@ const PROVIDER_NAME = 'Groq';
  * @param {*} options - system, prompt and optional overrides.
  * @returns {Promise<*>} Parsed JSON of the response.
  */
-async function generateJson({ system, prompt, model, apiBase, apiKey, timeoutMs }) {
-    const normalizedApiBase = removeTrailingSlashes(String(apiBase || config.groq.apiBase));
-    const normalizedModel = model || config.groq.model;
-    const normalizedApiKey = apiKey || config.groq.apiKey;
-    const normalizedTimeout = timeoutMs || config.groq.requestTimeoutMs;
+async function generateJson(options) {
+    return openaiCompatibleClient.generateJson({ ...options, providerName: PROVIDER_NAME });
+}
 
-    if (!normalizedApiKey)
-        throw new Error('Falta GROQ_API_KEY: configura la API key de Groq en .env o variable de entorno.');
-
-    const response = await fetchWithTimeout({
-        url: `${normalizedApiBase}/chat/completions`,
-        init: {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${normalizedApiKey}`
-            },
-            body: JSON.stringify({
-                model: normalizedModel,
-                messages: [
-                    { role: 'system', content: system },
-                    { role: 'user', content: prompt }
-                ],
-                response_format: { type: 'json_object' },
-                temperature: 0.1
-            })
-        },
-        timeoutMs: normalizedTimeout,
-        providerName: PROVIDER_NAME
-    });
-
-    const payload = await response.json();
-    const content = payload?.choices?.[0]?.message?.content;
-
-    if (typeof content !== 'string')
-        throw new Error('La respuesta de Groq no contiene un campo choices[0].message.content válido.');
-
-    return extractJsonPayload(content, PROVIDER_NAME);
+/**
+ * Calls Groq in free-text mode and returns the raw model string.
+ * @param {*} options - system, prompt and optional overrides.
+ * @returns {Promise<string>} Raw text returned by the model.
+ */
+async function generateText(options) {
+    return openaiCompatibleClient.generateText({ ...options, providerName: PROVIDER_NAME });
 }
 
 module.exports = {
-    generateJson
+    generateJson,
+    generateText
 };

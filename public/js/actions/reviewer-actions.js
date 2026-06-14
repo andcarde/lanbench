@@ -100,11 +100,19 @@
     }
 
     /**
-     * Finalizes (closes) the given review.
+     * Finalizes (closes) the given review, recording the elapsed time.
      * @param {number} reviewId - Review id.
+     * @param {number} [timeSpentSeconds] - Seconds the reviewer spent on it.
      */
-    function finalizeReview(reviewId) {
-        return callJson(`${BASE}/${encodeURIComponent(reviewId)}/finalize`, { method: 'POST' });
+    function finalizeReview(reviewId, timeSpentSeconds) {
+        const seconds = Number(timeSpentSeconds);
+        const body = Number.isFinite(seconds) && seconds > 0
+            ? JSON.stringify({ timeSpentSeconds: Math.floor(seconds) })
+            : undefined;
+        return callJson(`${BASE}/${encodeURIComponent(reviewId)}/finalize`, {
+            method: 'POST',
+            ...(body ? { body } : {})
+        });
     }
 
     /**

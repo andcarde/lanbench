@@ -1,0 +1,305 @@
+[
+  {
+    "eid": 1,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Punjab, Pakistan",
+        "predicate": "leaderTitle",
+        "object": "Provincial Assembly of the Punjab"
+      }
+    ],
+    "phrases_en": [
+      "The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.",
+      "Punjab, Pakistan is led by the Provincial Assembly of the Punjab."
+    ]
+  },
+  {
+    "eid": 2,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "San Sebastián de los Reyes",
+        "predicate": "isPartOf",
+        "object": "Community of Madrid"
+      }
+    ],
+    "phrases_en": [
+      "San Sebastian de los Reyes is part of the Community of Madrid.",
+      "San Sebastián de los Reyes is part of the Community of Madrid."
+    ]
+  },
+  {
+    "eid": 3,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "San Sebastián de los Reyes",
+        "predicate": "leaderParty",
+        "object": "People's Party (Spain)"
+      }
+    ],
+    "phrases_en": [
+      "The People's Party is the lead party of San Sebastian de los Reyes, Spain."
+    ]
+  },
+  {
+    "eid": 4,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Saranac Lake, New York",
+        "predicate": "country",
+        "object": "United States"
+      }
+    ],
+    "phrases_en": [
+      "Saranac Lake, New York is located in the U.S.",
+      "Saranac Lake New York is located in the United States.",
+      "Saranac Lake, New York is located in the United States."
+    ]
+  },
+  {
+    "eid": 5,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Saranac Lake, New York",
+        "predicate": "isPartOf",
+        "object": "Essex County, New York"
+      }
+    ],
+    "phrases_en": [
+      "Saranac Lake, New York is part of Essex County, New York."
+    ]
+  },
+  {
+    "eid": 6,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Saranac Lake, New York",
+        "predicate": "isPartOf",
+        "object": "Harrietstown, New York"
+      }
+    ],
+    "phrases_en": [
+      "Saranac Lake, New York is part of Harrietstown, New York.",
+      "Saranac Lake, New York, is part of Harrietstown, New York."
+    ]
+  },
+  {
+    "eid": 7,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "South Jersey Transportation Authority",
+        "predicate": "leader",
+        "object": "Stephen Dilts"
+      }
+    ],
+    "phrases_en": [
+      "South Jersey Transportation Authority's leader name is Stephen Dilts.",
+      "Stephen Dilts is the head of the South Jersey Transportation Authority.",
+      "Stephen Dilts is the leader of the South Jersey Transportation Authority."
+    ]
+  },
+  {
+    "eid": 8,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "São José dos Pinhais",
+        "predicate": "isPartOf",
+        "object": "Paraná (state)"
+      }
+    ],
+    "phrases_en": [
+      "São José dos Pinhais is part Of Paraná (state).",
+      "São José dos Pinhais is part of the state of Paraná.",
+      "Sao Jose dos Pinhais is part of Parana."
+    ]
+  },
+  {
+    "eid": 9,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "São José dos Pinhais",
+        "predicate": "isPartOf",
+        "object": "South Region, Brazil"
+      }
+    ],
+    "phrases_en": [
+      "São José dos Pinhais is part of the south region of Brazil.",
+      "Sao Jose dos Pinhais is part of the South Region, Brazil."
+    ]
+  },
+  {
+    "eid": 10,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "capital",
+        "object": "Austin, Texas"
+      }
+    ],
+    "phrases_en": [
+      "Austin is the capital of Texas.",
+      "The capital of Texas is Austin."
+    ]
+  },
+  {
+    "eid": 11,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "country",
+        "object": "United States"
+      }
+    ],
+    "phrases_en": [
+      "Texas is in the United States.",
+      "Texas is located in the United States."
+    ]
+  },
+  {
+    "eid": 12,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "demonym",
+        "object": "Tejano"
+      }
+    ],
+    "phrases_en": [
+      "Texas demonym is Tejano.",
+      "The inhabitants of Texas have the demonym of Tejano.",
+      "A Tejano is a demonym term used in Texas."
+    ]
+  },
+  {
+    "eid": 13,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "demonym",
+        "object": "Texan"
+      }
+    ],
+    "phrases_en": [
+      "The people of Texas are known as Texans.",
+      "The inhabitants of Texas have the demonym Texan.",
+      "The people of Texas are called Texans."
+    ]
+  },
+  {
+    "eid": 14,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "language",
+        "object": "English language"
+      }
+    ],
+    "phrases_en": [
+      "English is spoken in Texas.",
+      "English is the language of Texas.",
+      "The language spoken in Texas is English."
+    ]
+  },
+  {
+    "eid": 15,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Texas",
+        "predicate": "language",
+        "object": "Spanish language"
+      }
+    ],
+    "phrases_en": [
+      "Spanish is spoken in Texas.",
+      "Spanish is a language spoken in Texas."
+    ]
+  },
+  {
+    "eid": 16,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Tirstrup",
+        "predicate": "country",
+        "object": "Denmark"
+      }
+    ],
+    "phrases_en": [
+      "Tirstrup is located in the country of Denmark.",
+      "Tirstrup is in the country of Denmark.",
+      "Tirstrup is in Denmark."
+    ]
+  },
+  {
+    "eid": 17,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Tirstrup",
+        "predicate": "isPartOf",
+        "object": "Central Denmark Region"
+      }
+    ],
+    "phrases_en": [
+      "Tirstrup is part of the Central Denmark region."
+    ]
+  },
+  {
+    "eid": 18,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Tirstrup",
+        "predicate": "isPartOf",
+        "object": "Denmark"
+      }
+    ],
+    "phrases_en": [
+      "Tirstrup is part of Denmark."
+    ]
+  },
+  {
+    "eid": 19,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Turkmenistan Airlines",
+        "predicate": "headquarter",
+        "object": "Ashgabat"
+      }
+    ],
+    "phrases_en": [
+      "The headquarters of Turkmenistan Airlines are located in Ashgabat.",
+      "The headquarters of Turkmenistan Airlines are in Ashgabat."
+    ]
+  },
+  {
+    "eid": 20,
+    "rdf_tree": ["X", ["X"]],
+    "triples": [
+      {
+        "subject": "Turkmenistan Airlines",
+        "predicate": "headquarter",
+        "object": "Turkmenistan"
+      }
+    ],
+    "phrases_en": [
+      "The headquarters of Turkmenistan Airlines are located in Turkmenistan.",
+      "The headquarters of Turkmenistan Airlines are in Turkmenistan."
+    ]
+  }
+]

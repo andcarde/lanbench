@@ -19,10 +19,26 @@ const DATASET_COLORS = ['dataset-purple', 'dataset-violet', 'dataset-green-progr
 const DEFAULT_DATASET_COLOR = 'dataset-purple';
 
 /**
- * Target size of each section (number of entries per work block).
+ * Default size of each section (number of entries per work block) used when a
+ * dataset row does not carry an explicit `sectionSize` (legacy rows). Matches
+ * the `@default(10)` on `Dataset.sectionSize` in the Prisma schema.
  * @type {number}
  */
 const SECTION_SIZE = 10;
+
+/**
+ * Resolves the per-dataset section size, falling back to {@link SECTION_SIZE}
+ * for legacy rows (or any non-positive/garbage value). Single seam every
+ * partitioning/progress consumer uses so the fallback lives in one place.
+ *
+ * @param {{ sectionSize?: * }|null|undefined} datasetRow - Dataset row (or any
+ *   object carrying `sectionSize`).
+ * @returns {number} A positive integer section size.
+ */
+function resolveSectionSize(datasetRow) {
+    const raw = Number(datasetRow && datasetRow.sectionSize);
+    return Number.isInteger(raw) && raw > 0 ? raw : SECTION_SIZE;
+}
 
 /**
  * Languages declared by default in a dataset when the source does not provide
@@ -35,5 +51,6 @@ module.exports = {
     DATASET_COLORS,
     DEFAULT_DATASET_COLOR,
     SECTION_SIZE,
+    resolveSectionSize,
     DEFAULT_LANGUAGES
 };

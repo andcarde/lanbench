@@ -31,6 +31,8 @@ function createAdminApiRouter({ adminController } = {}) {
     router.get('/evaluation-criteria', adminController.listEvaluationCriteria);
     router.post('/evaluation-criteria', adminController.createEvaluationCriterion);
     router.patch('/evaluation-criteria/:id', adminController.updateEvaluationCriterion);
+    router.get('/users', adminController.listUsers);
+    router.patch('/users/:id', adminController.updateUserRole);
 
     return router;
 }

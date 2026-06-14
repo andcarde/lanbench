@@ -27,13 +27,23 @@ suite is split into two layers:
   review wizard, etc. They talk to a real Prisma client and exercise the
   Express app as a black box.
 
-At the time this snapshot was taken **all 452 tests in the suite pass**
+At the time the v0.4 snapshot was taken **all 452 tests in the suite passed**
 (439 unit + 13 integration). Each row below lists the file it lives in, the
 human-readable test name and the user story (from
 [documentation/user_stories.md](documentation/user_stories.md)) it most directly
 covers. Tests that exercise subsystems outside the scope of the current user
 stories (US-1 … US-6, which are about server vs dataset roles) are marked `—`
 in the **User Story** column.
+
+> **Update (v0.5):** the suite has since grown to **672 tests** (626 unit + 46
+> integration), all passing. The original v0.4 tables below remain accurate for
+> tests that survived unchanged; the **342 tests added since v0.4** are listed
+> in the [Update — v0.5 additions](#update--v05-additions) section at the end
+> of this document, grouped by category and file. A handful of entries in the
+> v0.4 tables now point to tests whose name was tightened or whose file was
+> renamed during ongoing refactors — when in doubt, the
+> [Update — v0.5 additions](#update--v05-additions) section reflects what mocha
+> currently picks up.
 
 ---
 
@@ -239,7 +249,7 @@ the Prisma model. Independent of Mocha — should be run after every
 | 100 | tests/unit/datasets/datasets-router.test.js | datasets router integration expone DELETE /api/datasets/:id como endpoint de borrado total | — |
 | 101 | tests/unit/datasets/datasets-router.test.js | datasets router integration devuelve el listado canónico en GET /api/datasets | — |
 | 102 | tests/unit/datasets/datasets-router.test.js | datasets router integration obtiene las entries canónicas correspondientes a un dataset y sección dados en GET /api/datasets/1/sections/1 | — |
-| 103 | tests/unit/datasets/datasets-router.test.js | datasets router integration redirige GET /datasets al listado canónico /tasks | — |
+| 103 | tests/unit/datasets/datasets-router.test.js | datasets router integration sirve el listado canónico datasets.html en GET /datasets | — |
 | 104 | tests/unit/datasets/datasets-router.test.js | datasets router integration sirve la página dataset-view.html en GET /datasets/1/view | — |
 | 105 | tests/unit/datasets/datasets-router.test.js | datasets router integration devuelve el texto del dataset en GET /api/datasets/1/text | — |
 | 106 | tests/unit/datasets/datasets-service.test.js | datasets-service createDataset importa el XML a entryRecords y los persiste junto al dataset | — |
@@ -270,9 +280,9 @@ the Prisma model. Independent of Mocha — should be run after every
 | 131 | tests/unit/datasets/section-assignments-repository.test.js | section-assignments-repository createAssignment persiste la asignación con status active | — |
 | 132 | tests/unit/datasets/section-assignments-repository.test.js | section-assignments-repository expireStaleAssignments actualiza a expired las asignaciones activas vencidas | — |
 | 133 | tests/unit/datasets/section-assignments-repository.test.js | section-assignments-repository updateUserDatasetAssignmentStatus actualiza con los filtros correctos de usuario y dataset | — |
-| 134 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering un usuario normal no recibe enlaces ni badge | US-3 |
-| 135 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering un moderador recibe enlaces a /reviewer y /tasks y badge | US-3 |
-| 136 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering payloads sin isModerator se tratan como normal | US-3 |
+| 134 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering un usuario normal recibe "Datasets" y "Mis estadísticas" sin badge | US-3 |
+| 135 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering un moderador recibe enlaces a /reviewer, /datasets, /my-stats y badge | US-3 |
+| 136 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering todo usuario autenticado recibe Datasets y estadísticas personales | US-3 |
 
 #### Annotations
 
@@ -636,3 +646,415 @@ the Prisma model. Independent of Mocha — should be run after every
 | 450 | tests/integration/users/login-session.test.js | login session integration stores request.session.user after successful login | US-1 |
 | 451 | tests/integration/users/register-moderator.test.js | register-moderator integration registers a moderator using a code produced by the generator script | US-5 |
 | 452 | tests/integration/users/users-database.test.js | users database integration registers, logs in, logs out and deletes a user | US-1 |
+
+---
+
+## Update — v0.5 additions
+
+Tests added after the v0.4 snapshot above. The complete current suite now contains **672** tests (626 unit + 46 integration). The rows below list **only** the entries created since v0.4 — earlier rows remain accurate for tests that survived unchanged.
+
+### Entities (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 1 | tests/unit/shared/entity-exports.test.js | Entity exports consistency Dataset exports expose DatasetDTO as the single canonical class | — |
+| 2 | tests/unit/users/user-entity.test.js | user entity rejects session payloads that use legacy userId key | — |
+
+### Users (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 3 | tests/unit/users/users-repository-email.test.js | users-repository exact email lookup normaliza espacios y mayusculas para buscar por email | — |
+| 4 | tests/unit/users/users-repository-email.test.js | users-repository exact email lookup devuelve null si el email queda vacio | — |
+| 5 | tests/unit/users/users-router-endpoints.test.js | users router endpoints (renamed from usuarios) expone /register y /register/moderator pero no /create-session (movido a /api/session) | — |
+
+### Datasets (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 6 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service bloquea con 409 llm_credential_required cuando llmMode=correction y no hay credencial activa | — |
+| 7 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service procede normalmente cuando llmMode=correction y hay una credencial activa | — |
+| 8 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service.getNextEntry devuelve la entry apuntada por la sesion activa con su contexto de seccion | — |
+| 9 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service.getNextEntry marca isLastEntryInSection=false cuando la entry no es la ultima | — |
+| 10 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service.getNextEntry lanza 409 no_active_session si no hay sesion activa | — |
+| 11 | tests/unit/datasets/continue-dataset-service.test.js | continue-dataset-service.getNextEntry lanza 404 entry_not_found si la posicion no existe en la seccion | — |
+| 12 | tests/unit/datasets/dataset-admin-check.test.js | credential check — buildCheckResultText (modal text) returns the model message on success | — |
+| 13 | tests/unit/datasets/dataset-admin-check.test.js | credential check — buildCheckResultText (modal text) falls back to a default success line when no message is provided | — |
+| 14 | tests/unit/datasets/dataset-admin-check.test.js | credential check — buildCheckResultText (modal text) returns the server error on failure | — |
+| 15 | tests/unit/datasets/dataset-admin-check.test.js | credential check — buildCheckResultText (modal text) falls back to a default error line for empty/odd payloads | — |
+| 16 | tests/unit/datasets/dataset-admin-check.test.js | credential check — controller error-log flagging flags a failed check (200 {ok:false}) for the error log | — |
+| 17 | tests/unit/datasets/dataset-admin-check.test.js | credential check — controller error-log flagging does not flag a successful check | — |
+| 18 | tests/unit/datasets/dataset-admin-tabs.test.js | dataset-admin — computeTabVisibilityState (P2) hides the Revisión tab when review is disabled and keeps Anotación active | — |
+| 19 | tests/unit/datasets/dataset-admin-tabs.test.js | dataset-admin — computeTabVisibilityState (P2) shows the Revisión tab when review is enabled, still resetting to Anotación | — |
+| 20 | tests/unit/datasets/dataset-creation-rules.test.js | applyNewDatasetFormRules (P6, pure) review off ⇒ additional hidden + off (R1) | — |
+| 21 | tests/unit/datasets/dataset-creation-rules.test.js | applyNewDatasetFormRules (P6, pure) review on ⇒ additional shown, value preserved | — |
+| 22 | tests/unit/datasets/dataset-creation-rules.test.js | applyNewDatasetFormRules (P6, pure) review on, additional off ⇒ shown but off | — |
+| 23 | tests/unit/datasets/dataset-creation-rules.test.js | applyNewDatasetFormRules (P6, pure) generation + review off ⇒ additional off (R1, no R2) | — |
+| 24 | tests/unit/datasets/dataset-creation-rules.test.js | applyNewDatasetFormRules (P6, pure) correction forces review + additional, both locked (R2) | — |
+| 25 | tests/unit/datasets/dataset-creation-rules.test.js | createDataset server-side rule normalisation (P6, T6.3) correction ⇒ review + additional forced true even if the request says otherwise | — |
+| 26 | tests/unit/datasets/dataset-creation-rules.test.js | createDataset server-side rule normalisation (P6, T6.3) review disabled ⇒ additional reviews forced false | — |
+| 27 | tests/unit/datasets/dataset-creation-rules.test.js | createDataset server-side rule normalisation (P6, T6.3) review enabled (non-correction) keeps the requested additional flag | — |
+| 28 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) upsertByProvider keys by (datasetId, provider), creates inactive and does not touch isActive on update | — |
+| 29 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) listByDataset never selects the cipher | — |
+| 30 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) setActive deactivates the rest and activates the chosen one (exactly one active) | — |
+| 31 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) setActive returns 0 when the provider does not exist | — |
+| 32 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) findActiveByDataset returns null when none is active | — |
+| 33 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) deleteByProvider removes the matching row | — |
+| 34 | tests/unit/datasets/dataset-llm-credentials-repository.test.js | dataset-llm-credentials-repository (T3) findDatasetLlmMode returns the dataset llm_mode, or null when the dataset is missing | — |
+| 35 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) POST creates a credential (201) and the response is masked (no clear key) | — |
+| 36 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) GET lists masked credentials for an admin (200) | — |
+| 37 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) non-admin gets 403 on list and create | — |
+| 38 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) no session returns 401 | — |
+| 39 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) PATCH activate and DELETE work for an admin | — |
+| 40 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) POST check returns the model message | — |
+| 41 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) invalid payload (missing apiKey) returns 400 | — |
+| 42 | tests/unit/datasets/dataset-llm-credentials-router.test.js | dataset-llm-credentials router (T7) with llm_mode = none, GET returns [] and POST is rejected (409) | — |
+| 43 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) rejects a non-admin with a 403 ServiceError | — |
+| 44 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) saveCredential returns a masked DTO that never contains the clear key nor the cipher | — |
+| 45 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) rejects an invalid payload (missing apiKey) with 400 | — |
+| 46 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) resolveActiveProviderConfig decrypts the active credential, and returns null when none is active | — |
+| 47 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) with llm_mode = "none": listForAdmin returns [] and resolveActiveProviderConfig returns null even with rows | — |
+| 48 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) with llm_mode = "none": writes and check are rejected with 409 | — |
+| 49 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) checkCredential calls the model with the decrypted key and returns its message | — |
+| 50 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) checkCredential returns { ok:false, error } without leaking the key on provider failure | — |
+| 51 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) saveCredential rejects an apiBase pointing to Groq website (console.groq.com / groq.com) with 400 | — |
+| 52 | tests/unit/datasets/dataset-llm-credentials-service.test.js | dataset-llm-credentials-service (T4) activate and delete reject an unknown provider with 404 | — |
+| 53 | tests/unit/datasets/dataset-naming.test.js | dataset naming — createDataset usa el nombre proporcionado por el usuario (recortado) | — |
+| 54 | tests/unit/datasets/dataset-naming.test.js | dataset naming — createDataset cae al nombre del fichero cuando no se proporciona nombre | — |
+| 55 | tests/unit/datasets/dataset-naming.test.js | dataset naming — createDataset rechaza con 409 cuando el usuario ya posee un dataset con ese nombre | — |
+| 56 | tests/unit/datasets/dataset-naming.test.js | dataset naming — createDataset rechaza con 400 cuando el nombre supera el máximo de caracteres | — |
+| 57 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (service) exige admin, comprueba duplicados del propietario y renombra | — |
+| 58 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (service) rechaza con 409 cuando el propietario ya tiene otro dataset con ese nombre | — |
+| 59 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (service) propaga 403 cuando el actor no es administrador del dataset | — |
+| 60 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (service) rechaza con 400 cuando el nombre nuevo está vacío | — |
+| 61 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (controller) delega en datasetsService y responde 200 | — |
+| 62 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (controller) devuelve 400 cuando el id no es un entero positivo | — |
+| 63 | tests/unit/datasets/dataset-naming.test.js | dataset naming — renameDataset (controller) devuelve 401 sin sesión válida | — |
+| 64 | tests/unit/datasets/dataset-naming.test.js | dataset naming — frontend pure helpers deriveDatasetNameFromFile quita la extensión .xml y recorta | — |
+| 65 | tests/unit/datasets/dataset-naming.test.js | dataset naming — frontend pure helpers normaliseDatasetName recorta cadenas y degrada valores no string a "" | — |
+| 66 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration anade por email exacto con permiso annotator por defecto | — |
+| 67 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration anade respetando los permisos solicitados en el payload | — |
+| 68 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration descarta el permiso reviewer al anadir si el dataset no tiene revision | — |
+| 69 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration rechaza con no_role_selected si solo se pide reviewer en dataset sin revision | — |
+| 70 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration rechaza el alta si los permisos solicitados son todos falsos | — |
+| 71 | tests/unit/datasets/dataset-permissions.test.js | dataset permissions administration descarta el permiso reviewer al actualizar si el dataset no tiene revision | — |
+| 72 | tests/unit/datasets/dataset-review-availability.test.js | getAccessibleDatasetItem review availability (P5) surfaces reviewAvailable=true when the reviewer has reviewable entries | — |
+| 73 | tests/unit/datasets/dataset-review-availability.test.js | getAccessibleDatasetItem review availability (P5) keeps reviewAvailable=false when no entries are pending review | — |
+| 74 | tests/unit/datasets/dataset-review-availability.test.js | getAccessibleDatasetItem review availability (P5) flags blockedBySelfAnnotation when every candidate entry was annotated by the reviewer | — |
+| 75 | tests/unit/datasets/dataset-review-availability.test.js | getAccessibleDatasetItem review availability (P5) does not flag self-annotation when reviewable entries also exist | — |
+| 76 | tests/unit/datasets/dataset-section-size.test.js | resolveSectionSize (P4 helper, DECOUPLE-0) returns the explicit positive value | — |
+| 77 | tests/unit/datasets/dataset-section-size.test.js | resolveSectionSize (P4 helper, DECOUPLE-0) falls back to the default for legacy/garbage rows | — |
+| 78 | tests/unit/datasets/dataset-section-size.test.js | createDataset persists & partitions by the declarative section size (T4.1) persists sectionSize=25 from the body and partitions 30 entries into 2 sections | — |
+| 79 | tests/unit/datasets/dataset-section-size.test.js | createDataset persists & partitions by the declarative section size (T4.1) defaults a missing or invalid sectionSize to 10 | — |
+| 80 | tests/unit/datasets/dataset-section-size.test.js | getAccessibleDatasetSection honours a non-default section size (T4.2) partitions 10 entries into sections of 4 | — |
+| 81 | tests/unit/datasets/dataset-section-size.test.js | dataset progress uses the section size (T4.3) counts reviewed entries by completedSections * sectionSize | — |
+| 82 | tests/unit/datasets/dataset-section-size.test.js | dataset progress uses the section size (T4.3) defaults to a size of 10 when none is given | — |
+| 83 | tests/unit/datasets/dataset-section-size.test.js | continue-dataset-service uses the dataset section size (T4.3) resumes an active session computing entryIndexInSection with a non-10 size | — |
+| 84 | tests/unit/datasets/dataset-section-size.test.js | frontend normaliseDatasetOptions / normaliseSectionSize (T4.4) parses the section size, defaulting/clamping to 10 | — |
+| 85 | tests/unit/datasets/dataset-section-size.test.js | frontend normaliseDatasetOptions / normaliseSectionSize (T4.4) normaliseDatasetOptions returns the parsed size | — |
+| 86 | tests/unit/datasets/datasets-controller.test.js | datasets-controller listAllDatasets devuelve 401 cuando la sesión no es válida | — |
+| 87 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetXml descarga el XML como adjunto con su filename | — |
+| 88 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetXml devuelve 400 cuando id no es entero positivo | — |
+| 89 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetXml devuelve 401 sin sesión válida | — |
+| 90 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetAnnotatedXml descarga el XML extendido con filename <name>-extended.xml | — |
+| 91 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetAnnotatedXml propaga el 409 dataset_not_completed del service | — |
+| 92 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetAnnotatedXml devuelve 400 cuando id no es entero positivo | — |
+| 93 | tests/unit/datasets/datasets-controller.test.js | datasets-controller downloadDatasetAnnotatedXml devuelve 401 sin sesión válida | — |
+| 94 | tests/unit/datasets/datasets-review-button.test.js | reviewButtonTitle shows "Abrir revisión" when there is something to review | — |
+| 95 | tests/unit/datasets/datasets-review-button.test.js | reviewButtonTitle explains the self-review rule when the reviewer annotated every candidate entry | — |
+| 96 | tests/unit/datasets/datasets-review-button.test.js | reviewButtonTitle falls back to the generic message when there is simply nothing annotated yet | — |
+| 97 | tests/unit/datasets/datasets-review-button.test.js | reviewButtonTitle prefers the open-review wording even if the self-annotation flag is set | — |
+| 98 | tests/unit/datasets/datasets-review-button.test.js | reviewButtonTitle tolerates a missing/invalid review object | — |
+| 99 | tests/unit/datasets/datasets-review-button.test.js | normaliseDatasetReviewState normalises blockedBySelfAnnotation to a boolean | — |
+| 100 | tests/unit/datasets/datasets-router.test.js | datasets router integration expone GET /api/datasets/:id/download como descarga adjunta del XML | — |
+| 101 | tests/unit/datasets/datasets-router.test.js | datasets router integration expone GET /api/datasets/:id/download/annotated como descarga adjunta del XML extendido | — |
+| 102 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetXmlDownload devuelve filename, body y contentType | — |
+| 103 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetXmlDownload rechaza con 404 cuando el dataset no tiene entries | — |
+| 104 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetAnnotatedXmlDownload devuelve filename, body y contentType al 100% completado | — |
+| 105 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetAnnotatedXmlDownload rechaza con 409 dataset_not_completed cuando faltan secciones | — |
+| 106 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetAnnotatedXmlDownload rechaza con 409 si sectionsPending > 0 aunque sectionsCompleted iguale el total | — |
+| 107 | tests/unit/datasets/datasets-service.test.js | datasets-service getAccessibleDatasetAnnotatedXmlDownload rechaza con 404 dataset_without_entries cuando no hay entries | — |
+| 108 | tests/unit/datasets/new-dataset-button-role.test.js | canCreateDataset (moderator gate) permite crear datasets a un moderador | US-3 |
+| 109 | tests/unit/datasets/new-dataset-button-role.test.js | canCreateDataset (moderator gate) lo niega a un usuario no moderador | US-3 |
+| 110 | tests/unit/datasets/new-dataset-button-role.test.js | canCreateDataset (moderator gate) lo niega cuando falta el flag isModerator | US-3 |
+| 111 | tests/unit/datasets/new-dataset-button-role.test.js | canCreateDataset (moderator gate) lo niega para sesiones ausentes o no booleanas | US-3 |
+| 112 | tests/unit/datasets/section-assignments-repository.test.js | section-assignments-repository addTimeToActiveAssignment incrementa timeSpentSeconds de la asignación activa | — |
+| 113 | tests/unit/datasets/section-assignments-repository.test.js | section-assignments-repository addTimeToActiveAssignment es un no-op cuando los segundos no son positivos | — |
+| 114 | tests/unit/datasets/toolbar-role.test.js | toolbar isModerator-aware rendering un moderador recibe enlaces a /datasets, /reviewer, /my-stats y badge | US-3 |
+| 115 | tests/unit/datasets/toolbar-role.test.js | toolbar isActiveToolbarLink (P7 active-item highlight) matches the exact route only | US-3 |
+| 116 | tests/unit/datasets/toolbar-role.test.js | toolbar isActiveToolbarLink (P7 active-item highlight) tolerates trailing slashes and query/hash | US-3 |
+| 117 | tests/unit/datasets/toolbar-role.test.js | toolbar isActiveToolbarLink (P7 active-item highlight) matches nested routes under the link path | US-3 |
+| 118 | tests/unit/datasets/toolbar-role.test.js | toolbar isActiveToolbarLink (P7 active-item highlight) does not match when on a different page | US-3 |
+
+### Annotations (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 119 | tests/unit/annotations/annotations-controller.test.js | annotations-controller send devuelve 401 si no hay sesión válida | — |
+| 120 | tests/unit/annotations/annotations-controller.test.js | annotations-controller continue delega en continueDatasetService y devuelve el caso calculado | — |
+| 121 | tests/unit/annotations/annotations-controller.test.js | annotations-controller continue devuelve 401 si no hay sesión válida | — |
+| 122 | tests/unit/annotations/annotations-controller.test.js | annotations-controller continue devuelve 400 si el datasetId es inválido | — |
+| 123 | tests/unit/annotations/annotations-controller.test.js | annotations-controller next delega en continueDatasetService.getNextEntry y devuelve el payload | — |
+| 124 | tests/unit/annotations/annotations-controller.test.js | annotations-controller next devuelve 401 si no hay sesión válida | — |
+| 125 | tests/unit/annotations/annotations-controller.test.js | annotations-controller next devuelve 400 si el datasetId es inválido | — |
+| 126 | tests/unit/annotations/annotations-credential-propagation.test.js | annotations-service credential propagation (T6) injects providerConfig into the check context when the dataset has an active credential | — |
+| 127 | tests/unit/annotations/annotations-credential-propagation.test.js | annotations-service credential propagation (T6) does not inject providerConfig when no datasetId is given (legacy global behaviour) | — |
+| 128 | tests/unit/annotations/annotations-credential-propagation.test.js | annotations-service credential propagation (T6) does not inject providerConfig when the dataset has no active credential | — |
+| 129 | tests/unit/annotations/annotations-credential-propagation.test.js | annotations-service credential propagation (T6) degrades to the global provider (no throw) when credential resolution fails, but only after access is granted | — |
+| 130 | tests/unit/annotations/annotations-credential-propagation.test.js | annotations-service credential propagation (T6) rejects when the user has no access to the requested dataset, without calling the checker | — |
+| 131 | tests/unit/annotations/annotations-repository-status.test.js | annotations-repository — entry lifecycle transition marca la entry como annotated cuando se guarda al menos una frase | — |
+| 132 | tests/unit/annotations/annotations-repository-status.test.js | annotations-repository — entry lifecycle transition revierte la entry a pending cuando se borran todas las frases | — |
+| 133 | tests/unit/annotations/annotations-repository-status.test.js | annotations-repository — entry lifecycle transition no toca el estado cuando la entry no es accesible | — |
+| 134 | tests/unit/annotations/annotations-router.test.js | annotations router integration mantiene POST /api/annotations/check, /send, /:datasetId/continue y GET /:datasetId/next enlazados al controller | — |
+| 135 | tests/unit/annotations/annotations-service.test.js | annotations-service saveSentences acumula el tiempo de anotación en la asignación activa | — |
+| 136 | tests/unit/annotations/annotations-service.test.js | annotations-service saveSentences no registra tiempo cuando es cero | — |
+| 137 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentsRepository inyectado lanza 403 si no hay asignación activa para la sección | — |
+| 138 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentsRepository inyectado lanza 403 si la asignación activa es de otra sección | — |
+| 139 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentsRepository inyectado guarda correctamente cuando la asignación coincide | — |
+| 140 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentsRepository inyectado omite la validación de asignación si no hay sectionNumber | — |
+| 141 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentService inyectado propaga sectionCompleted=true cuando el servicio lo confirma | — |
+| 142 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentService inyectado propaga sectionCompleted=false cuando quedan entries por anotar | — |
+| 143 | tests/unit/annotations/annotations-workflow.test.js | annotations-workflow (integración de asignación de sección) saveSentences con sectionAssignmentService inyectado propaga el error del sectionAssignmentService y revierte la transacción de cierre | — |
+
+### Reviews (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 144 | tests/unit/reviews/reviewer-ui.test.js | reviewer request-button state (P5 affordance) is enabled ("siguiente") when there is no open review — lets the reviewer pull a candidate | — |
+| 145 | tests/unit/reviews/reviewer-ui.test.js | reviewer request-button state (P5 affordance) is disabled while fetching or while a review is open with criteria pending | — |
+| 146 | tests/unit/reviews/reviewer-ui.test.js | reviewer request-button state (P5 affordance) shows "finalizado" (disabled) right after a finalized review | — |
+| 147 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) activeCriterionIndex devuelve la posicion del primer criterio no decidido | — |
+| 148 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) activeCriterionIndex devuelve la longitud cuando todos estan decididos | — |
+| 149 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) canFinalize solo true cuando hay criterios y todos estan decididos | — |
+| 150 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) predictedOutcome completed si todo es accepted, disputed en otro caso | — |
+| 151 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) buildSentenceState construye estado por frase desde anotaciones y correcciones previas | — |
+| 152 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) requiresComment solo "rejected" ("No") exige comentario | — |
+| 153 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) readDatasetIdFromLocation lee datasetId de la query string | — |
+| 154 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) readDatasetIdFromLocation devuelve null sin datasetId valido (cola global) | — |
+| 155 | tests/unit/reviews/reviewer-ui.test.js | reviewer UI helpers (T4.5) messageFromResult extrae message o code del resultado | — |
+| 156 | tests/unit/reviews/reviews-controller.test.js | reviews-controller (T4.4) submitDecision normaliza sentenceIndex ausente a null (criterio de nivel review) | — |
+| 157 | tests/unit/reviews/reviews-repository.test.js | reviews-repository (T4.2) upsertDecision crea una decision nueva con (reviewId, sentenceIndex, criterionCode) | — |
+| 158 | tests/unit/reviews/reviews-repository.test.js | reviews-repository (T4.2) upsertDecision actualiza la decision existente sin crear otra | — |
+| 159 | tests/unit/reviews/reviews-repository.test.js | reviews-repository (T4.2) upsertDecision normaliza sentenceIndex ausente a null (criterio de nivel review) | — |
+| 160 | tests/unit/reviews/reviews-repository.test.js | reviews-repository (T4.2) findAnnotatedSentenceIndexes devuelve los indices de frase anotados por el annotator | — |
+| 161 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitDecision rechaza con criterion_locked si se salta criterios de la frase | — |
+| 162 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitDecision rechaza criterio de frase enviado como nivel de review | — |
+| 163 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitDecision registra el primer criterio y pasa la review a in_progress | — |
+| 164 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitDecision registra el criterio de review (diversity) con sentenceIndex null | — |
+| 165 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitDecision permite redecidir un criterio ya resuelto de la misma frase | — |
+| 166 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitTextCorrection persiste la correccion aunque no se aporte comentario | — |
+| 167 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitTextCorrection rechaza con invalid_correction si el texto corregido esta vacio | — |
+| 168 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) submitTextCorrection persiste corrected y comment cuando se aporta justificacion | — |
+| 169 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) finalizeReview rechaza con criteria_incomplete si faltan decisiones de la frase | — |
+| 170 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) finalizeReview exige diversity cuando hay mas de una frase | — |
+| 171 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) finalizeReview registra timeSpentSeconds (acotado a la ventana de reserva) al finalizar | — |
+| 172 | tests/unit/reviews/reviews-service.test.js | reviews-service (T4.3) finalizeReview acota timeSpentSeconds desorbitado a la ventana de reserva | — |
+| 173 | tests/unit/reviews/reviews-service.test.js | buildFeedbackEntry proyecta criterios fallidos y comentarios | — |
+| 174 | tests/unit/reviews/reviews-service.test.js | buildFeedbackEntry devuelve arrays vacios cuando no hay decisiones ni comentarios | — |
+| 175 | tests/unit/reviews/reviews-service.test.js | buildReviewContextDTO expone catalogos de frase y review, aplana triples y filtra lex inglesas | — |
+| 176 | tests/unit/reviews/reviews-service.test.js | buildReviewContextDTO mapea sentenceIndex de las decisiones (null = nivel review) | — |
+| 177 | tests/unit/reviews/reviews-service.test.js | buildReviewContextDTO soporta entry null sin lanzar | — |
+
+### Admin (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 178 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management listUsers expone id/email/isModerator y nunca el password | US-3 |
+| 179 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management setUserModerator promueve a un usuario | US-3 |
+| 180 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management rechaza un userId inválido con 400 | US-3 |
+| 181 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management rechaza isModerator no booleano con 400 (semántica estricta) | US-3 |
+| 182 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management impide que un moderador se auto-degrade (409 cannot_self_demote) | US-3 |
+| 183 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management permite que un moderador se promueva a sí mismo (idempotente) | US-3 |
+| 184 | tests/unit/admin/admin-user-roles.test.js | admin-service — US-22 server-role management traduce P2025 a 404 user_not_found | US-3 |
+
+### My statistics (Me) (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 185 | tests/unit/me/me-api-router.test.js | me API router (US-14) exige meController | — |
+| 186 | tests/unit/me/me-api-router.test.js | me API router (US-14) GET /api/me/stats responde 401 sin sesión y 200 autenticado | — |
+| 187 | tests/unit/me/me-controller.test.js | me-controller (US-14) responde 200 con las estadísticas del usuario de la sesión | — |
+| 188 | tests/unit/me/me-controller.test.js | me-controller (US-14) responde 401 cuando no hay usuario en sesión | — |
+| 189 | tests/unit/me/me-controller.test.js | me-controller (US-14) propaga el status de un ServiceError | — |
+| 190 | tests/unit/me/me-statistics-service.test.js | me-statistics-service (US-14) buildMyStatisticsDTO agrega por dataset, totales y medias (en general y por dataset) | — |
+| 191 | tests/unit/me/me-statistics-service.test.js | me-statistics-service (US-14) buildMyStatisticsDTO excluye datasets sin anotaciones ni revisiones (solo > 0) | — |
+| 192 | tests/unit/me/me-statistics-service.test.js | me-statistics-service (US-14) buildMyStatisticsDTO la media general de anotación ignora tiempo sin anotaciones | — |
+| 193 | tests/unit/me/me-statistics-service.test.js | me-statistics-service (US-14) buildMyStatisticsDTO devuelve estructura vacía coherente sin actividad | — |
+| 194 | tests/unit/me/me-statistics-service.test.js | me-statistics-service (US-14) getMyStatistics orquesta el repositorio y resuelve nombres de dataset | — |
+| 195 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) formatDuration formatea minutos y segundos | — |
+| 196 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) formatDuration devuelve un guion sin actividad | — |
+| 197 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) buildSummaryCards proyecta los seis indicadores globales en orden | — |
+| 198 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) buildSummaryCards tolera totales ausentes | — |
+| 199 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) messageFromResult extrae message/code o un fallback HTTP | — |
+| 200 | tests/unit/me/own-stads-ui.test.js | own-stads UI helpers (US-14) escapeHtml escapa caracteres peligrosos | — |
+
+### Spanish & linguistic checks (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 201 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion no genera incomplete_sentence para "ejerce el liderazgo" | — |
+| 202 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion no genera relation_missing para "ejerce el liderazgo" | — |
+| 203 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion valida como correcta sin alertas de error cuando el LLM tambien la acepta | — |
+| 204 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion suprime rdf_error del LLM cuando la oracion cubre el triple con sinonimos validos | — |
+| 205 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion reconoce "ejerce" como marcador de oracion completa | — |
+| 206 | tests/unit/spanish/spanish-service-ejerce-liderazgo.test.js | spanish-service — "ejerce el liderazgo" regresion sigue detectando errores reales: objeto cambiado en leaderTitle | — |
+| 207 | tests/unit/spanish/spanish-service-persistence.test.js | spanish-service persistence buildAnnotationRows emite una fila por sentenceIndex de la entry | — |
+
+### Ollama & LLM clients (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 208 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) routes generateJson by providerConfig.provider (anthropic) | — |
+| 209 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) routes openai-compatible / groq providers to the generic client | — |
+| 210 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) routes local/ollama providerConfig to the ollama client, mapping apiBase to host | — |
+| 211 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) falls back to the global client when there is no providerConfig (cloud → groq) | — |
+| 212 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) falls back to ollama when global model is local | — |
+| 213 | tests/unit/ollama/llm-client-dispatch.test.js | llm-client dispatch (T5) generateText routes by providerConfig and returns the raw text | — |
+| 214 | tests/unit/ollama/llm-logger.test.js | llm-logger writes one REQUEST and one matching RESPONSE block to YYYY-MM-DD-llm.txt | — |
+| 215 | tests/unit/ollama/llm-logger.test.js | llm-logger supports Anthropic and Ollama request/response shapes | — |
+| 216 | tests/unit/ollama/llm-logger.test.js | llm-logger logs an (error) line in the RESPONSE block when the request times out or fails before reaching the server | — |
+| 217 | tests/unit/ollama/llm-logger.test.js | llm-logger is a no-op when disabled | — |
+| 218 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker check devuelve el resultado normalizado a partir del JSON del LLM | — |
+| 219 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker check rellena valores por defecto si el LLM devuelve un payload vacío | — |
+| 220 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker checkBatch llama a Ollama una sola vez y normaliza el resultado por sentenceIndex | — |
+| 221 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker checkBatch marca como inválida una oración cuyo alert lleve language_not_spanish | — |
+| 222 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker proposeCorrectionsBatch devuelve propuestas por sentenceIndex | — |
+| 223 | tests/unit/ollama/ollama-spanish-checker.test.js | ollama-spanish-checker proposeCorrectionsBatch no llama al LLM cuando no hay validaciones inválidas y devuelve null por slot | — |
+| 224 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) generateJson posts to /chat/completions with the bearer key and json mode, returning parsed JSON | — |
+| 225 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) generateText omits response_format and returns the raw content | — |
+| 226 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) omits the system message when no system prompt is given (credential "check" path) | — |
+| 227 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) replaces an HTML error body with a hint about the wrong URL (console.groq.com / groq.com) | — |
+| 228 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) includes the system message when a system prompt is given | — |
+| 229 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) writes a paired REQUEST/RESPONSE entry to the daily LLM log on every call | — |
+| 230 | tests/unit/ollama/openai-compatible-client.test.js | openai-compatible-client (T5) throws a clear error when the API key is missing | — |
+| 231 | tests/unit/ollama/openai-compatible-client.test.js | anthropic-client (T5) generateJson posts to /v1/messages with x-api-key and normalises text blocks to JSON | — |
+| 232 | tests/unit/ollama/openai-compatible-client.test.js | anthropic-client (T5) generateText concatenates the text blocks | — |
+| 233 | tests/unit/ollama/openai-compatible-client.test.js | anthropic-client (T5) honours a custom apiBase override | — |
+
+### XML (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 234 | tests/unit/xml/correction-fixtures.test.js | AI-correction example fixtures (P3, T3.2) the input fixture exposes triples and a Spanish candidate per entry | — |
+| 235 | tests/unit/xml/correction-fixtures.test.js | AI-correction example fixtures (P3, T3.2) the expected fixture corrects each Spanish candidate while keeping the triples | — |
+| 236 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) the corpora nest: correction-10 ⊂ 20 ⊂ 30 ⊂ 40 (same eids/candidates) | — |
+| 237 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) covers all three verdict families (acceptance, warning, error) in every size | — |
+| 238 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 10 input XML parses to 10 entries, each with triples + a Spanish candidate | — |
+| 239 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 10 expected JSON aligns 1:1 with the input and uses valid severities | — |
+| 240 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 10 counts in the expected file match the severities of its entries | — |
+| 241 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 20 input XML parses to 20 entries, each with triples + a Spanish candidate | — |
+| 242 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 20 expected JSON aligns 1:1 with the input and uses valid severities | — |
+| 243 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 20 counts in the expected file match the severities of its entries | — |
+| 244 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 30 input XML parses to 30 entries, each with triples + a Spanish candidate | — |
+| 245 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 30 expected JSON aligns 1:1 with the input and uses valid severities | — |
+| 246 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 30 counts in the expected file match the severities of its entries | — |
+| 247 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 40 input XML parses to 40 entries, each with triples + a Spanish candidate | — |
+| 248 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 40 expected JSON aligns 1:1 with the input and uses valid severities | — |
+| 249 | tests/unit/xml/correction-suite.test.js | AI-correction evaluation corpus (correction-{10,20,30,40}) size 40 counts in the expected file match the severities of its entries | — |
+| 250 | tests/unit/xml/dataset-xml-annotated.test.js | buildAnnotatedDatasetXml inserta un Spanish lex emparejado con el lid del english lex al mismo sentenceIndex | — |
+| 251 | tests/unit/xml/dataset-xml-annotated.test.js | buildAnnotatedDatasetXml respeta el orden por sentenceIndex y empareja cada Spanish lex con el lid del english correspondiente | — |
+| 252 | tests/unit/xml/dataset-xml-annotated.test.js | buildAnnotatedDatasetXml marca como free las annotations sin english lex emparejable y usa lid="id<sentenceIndex+1>" | — |
+| 253 | tests/unit/xml/dataset-xml-annotated.test.js | buildAnnotatedDatasetXml no añade lex extra si la entry no tiene annotations | — |
+| 254 | tests/unit/xml/dataset-xml-annotated.test.js | buildAnnotatedDatasetXml preserva el resto de la estructura XML (triplesets y links) | — |
+| 255 | tests/unit/xml/xml-format.test.js | xml-format shared helpers renderAttrs formatea pares atributo/valor escapando todos los reservados XML | — |
+| 256 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() devuelve una instancia de DatasetDTO | — |
+| 257 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() entries es un Array | — |
+| 258 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() contiene las 790 entries del fichero ru_dev.xml | — |
+| 259 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() cada entry es una instancia de EntryDTO | — |
+| 260 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() eid y size son números | — |
+| 261 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() primera entry tiene los campos correctos | — |
+| 262 | tests/unit/xml/xml-reader.test.js | xml-reader — readDataset() shape y shapeType son null cuando el atributo está ausente | — |
+
+### Contracts, mappers & shared (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 263 | tests/unit/shared/dataset-progress.test.js | dataset-progress cuenta entries anotadas dentro de secciones aun no completas (sin revision) | — |
+| 264 | tests/unit/shared/dataset-progress.test.js | dataset-progress combina secciones completadas y anotaciones parciales (sin revision) | — |
+| 265 | tests/unit/shared/dataset-progress.test.js | dataset-progress separa entries revisadas y anotadas no revisadas cuando hay revision | — |
+| 266 | tests/unit/shared/dataset-progress.test.js | dataset-progress cae a calculo por secciones cuando no se conocen entries anotadas | — |
+| 267 | tests/unit/shared/dataset-progress.test.js | dataset-progress devuelve 100% pendiente cuando el dataset esta vacio | — |
+| 268 | tests/unit/shared/dto-mappers.test.js | dto-mappers mapDatasetListDTO produce el DatasetListDTO canonico | — |
+| 269 | tests/unit/shared/dto-mappers.test.js | dto-mappers mapDatasetListDTO propaga blockedBySelfAnnotation (regla de auto-revision) | — |
+| 270 | tests/unit/shared/dto-mappers.test.js | dto-mappers mapDatasetListDTO propaga hasActiveCredential cuando viene definido | — |
+| 271 | tests/unit/shared/dto-mappers.test.js | dto-mappers mapDatasetSectionDTO produce el DatasetSectionDTO canonico desde la forma plana | — |
+| 272 | tests/unit/shared/navigation-contract.test.js | navigation contract annotations.js solo lee datasetId de la URL y delega seccion/entry al servidor | — |
+| 273 | tests/unit/shared/request-log-anomaly.test.js | request-log middleware — shouldLogAsServerError logs every 500 regardless of flags | — |
+| 274 | tests/unit/shared/request-log-anomaly.test.js | request-log middleware — shouldLogAsServerError does not log ordinary 2xx/4xx responses | — |
+| 275 | tests/unit/shared/request-log-anomaly.test.js | request-log middleware — shouldLogAsServerError logs a handled anomaly opted-in by the controller (e.g. failed credential check returning 200) | — |
+| 276 | tests/unit/shared/request-log-middleware-contract.test.js | Request log middleware contract api-error-payload should set serverErrorReason on 5xx responses | — |
+| 277 | tests/unit/shared/request-log-redaction.test.js | request-log redaction (T8) redacts AI credential secrets (apiKey/api_key/credential) and the legacy ones | — |
+| 278 | tests/unit/shared/request-log-redaction.test.js | request-log redaction (T8) does NOT redact the legitimate masked field keyLast4 (no bare "key" token) | — |
+| 279 | tests/unit/shared/request-log-redaction.test.js | request-log redaction (T8) returns non-object payloads unchanged | — |
+| 280 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) expone los cinco criterios de frase en orden | — |
+| 281 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) expone diversity como unico criterio de nivel de review | — |
+| 282 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) ALL_CRITERION_CODES concatena criterios de frase y de review | — |
+| 283 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) getPhraseCriteria devuelve objetos con code, label y description | — |
+| 284 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) el primer criterio de frase es naturalness | — |
+| 285 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) isPhraseCriterion / isReviewCriterion clasifican por familia | — |
+| 286 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) getPhraseCriterionIndex devuelve la posicion ordenada o -1 si no existe | — |
+| 287 | tests/unit/shared/review-criterion-constants.test.js | review-criterion constants (T4.1) getPhraseCriteria devuelve copias mutables sin afectar el original | — |
+| 288 | tests/unit/shared/routes-canonical.test.js | canonical routes session-api expone el recurso REST de sesion bajo /api/session | — |
+| 289 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) round-trips unicode and long strings | — |
+| 290 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) produces a different ciphertext each time (random IV) but decrypts to the same value | — |
+| 291 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) throws when the ciphertext is tampered with (GCM authentication) | — |
+| 292 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) throws when the auth tag is tampered with | — |
+| 293 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) throws on a malformed payload | — |
+| 294 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) fails explicitly when no secret is configured | — |
+| 295 | tests/unit/shared/secret-crypto.test.js | secret-crypto (T2) a credential encrypted with one secret cannot be decrypted with another | — |
+| 296 | tests/unit/shared/service-error.test.js | service-error ServiceError.datasetNotFound produce 404 dataset_not_found canónico | — |
+| 297 | tests/unit/shared/service-error.test.js | service-error ServiceError.emailTaken produce 409 email_taken canónico | — |
+| 298 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) usa el mensaje fijo del catálogo para spelling_error sin explanation | — |
+| 299 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) concatena explanation al mensaje fijo del catálogo | — |
+| 300 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) usa el mensaje fijo para grammar_error | — |
+| 301 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) usa el severity del catálogo aunque el LLM devuelva uno diferente | — |
+| 302 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) usa el tipo del catálogo | — |
+| 303 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) maneja código desconocido usando explanation como mensaje | — |
+| 304 | tests/unit/shared/validation-alert-catalog.test.js | validation-alert-catalog (vía checkBatch) usa el campo message del LLM como fallback si no hay explanation ni catálogo | — |
+| 305 | tests/unit/shared/validators.test.js | validators trimmedOr recorta cadenas no vacías y devuelve fallback en cualquier otro caso | — |
+| 306 | tests/unit/shared/validators.test.js | validators normalizeEmail aplica trim+lowercase y devuelve fallback en valores inválidos | — |
+| 307 | tests/unit/shared/validators.test.js | validators toBoolean acepta booleanos nativos, 0/1 numéricos y los tokens true/1/false/0 | — |
+| 308 | tests/unit/shared/validators.test.js | validators toBoolean devuelve fallback para valores no reconocidos (incluidos null/undefined y tokens descartados) | — |
+
+### Integration (new)
+
+| # | File | Test | User Story |
+|---|------|------|------------|
+| 309 | tests/integration/admin/admin-api.test.js | admin api integration (E5) US-22 — un moderador lista usuarios y promueve a otro a moderador | — |
+| 310 | tests/integration/admin/admin-api.test.js | admin api integration (E5) US-22 — el moderador no puede auto-degradarse (409) | — |
+| 311 | tests/integration/admin/admin-api.test.js | admin api integration (E5) US-22 — un usuario normal no puede listar usuarios (403) | — |
+| 312 | tests/integration/datasets/dataset-admin-stats.test.js | dataset statistics endpoint — review bucket (P2 integration) returns an empty review array for a review-enabled dataset with no reviews | — |
+| 313 | tests/integration/datasets/dataset-admin-stats.test.js | dataset statistics endpoint — review bucket (P2 integration) returns review rows when terminal reviews exist | — |
+| 314 | tests/integration/datasets/dataset-creation-rules.test.js | dataset creation rules (P6 integration) correction ⇒ review + additional forced true, never rejected | — |
+| 315 | tests/integration/datasets/dataset-creation-rules.test.js | dataset creation rules (P6 integration) review disabled ⇒ additional reviews forced false | — |
+| 316 | tests/integration/datasets/dataset-creation-rules.test.js | dataset creation rules (P6 integration) generation + review on keeps the requested additional flag | — |
+| 317 | tests/integration/datasets/dataset-download.test.js | dataset download integration GET /api/datasets/:id/download devuelve el XML reconstruido como adjunto con nombre <name>.xml | — |
+| 318 | tests/integration/datasets/dataset-download.test.js | dataset download integration GET /api/datasets/:id/download/annotated devuelve 409 dataset_not_completed cuando el dataset no está al 100% | — |
+| 319 | tests/integration/datasets/dataset-download.test.js | dataset download integration GET /api/datasets/:id/download/annotated genera el XML extendido con Spanish lex emparejados al 100% | — |
+| 320 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) Scenario 4 — security: admin manages credentials, responses are masked, non-admin is rejected | — |
+| 321 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) requires authentication (no session → 401) | — |
+| 322 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) Scenario 5 — check: the server calls the model with the decrypted key and returns its message | — |
+| 323 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) Scenario 6 — llm_mode none: GET returns [] and writes are rejected (409) | — |
+| 324 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) Scenario 5b — failed check: returns 200 {ok:false}, records an error-log line, and never leaks the API key (P1) | — |
+| 325 | tests/integration/datasets/dataset-llm-credentials.test.js | US-31 per-dataset LLM credentials (integration) full admin lifecycle through the real app: create → activate → check → delete | — |
+| 326 | tests/integration/datasets/dataset-section-size.test.js | dataset section size endpoint (P4 integration) GET /:id/sections/1 returns sectionSize entries for a dataset declared with sectionSize=4 | — |
+| 327 | tests/integration/gemini/gemini-api.test.js | gemini-api live key validation responde 200 y devuelve texto generado con la clave proporcionada | — |
+| 328 | tests/integration/madure/lifecycle.test.js | madure lifecycle (create → download → annotate section → review) lifecycle over ru_dev.xml | — |
+| 329 | tests/integration/madure/lifecycle.test.js | madure lifecycle (create → download → annotate section → review) lifecycle over ru_dev_2.xml | — |
+| 330 | tests/integration/me/me-stats.test.js | me stats integration (US-14) rejects an unauthenticated request with 401 | — |
+| 331 | tests/integration/me/me-stats.test.js | me stats integration (US-14) returns the session user's aggregated totals and per-dataset breakdown | — |
+| 332 | tests/integration/me/me-stats.test.js | me stats integration (US-14) returns empty totals for a user with no activity | — |
+| 333 | tests/integration/reviews/annotation-review-handoff.test.js | annotation → review handoff integration before annotating, the review queue is empty (404 no_review_available) | — |
+| 334 | tests/integration/reviews/annotation-review-handoff.test.js | annotation → review handoff integration saving an annotation flips the entry to "annotated" | — |
+| 335 | tests/integration/reviews/annotation-review-handoff.test.js | annotation → review handoff integration the reviewer is now served that annotated entry, with the right annotator | — |
+| 336 | tests/integration/reviews/annotation-review-handoff.test.js | annotation → review handoff integration an annotated entry in a review-disabled dataset is never served (Fix B) | — |
+| 337 | tests/integration/reviews/annotation-review-handoff.test.js | full-section → review handoff (P5) annotating every entry of the section flips them all to "annotated" | — |
+| 338 | tests/integration/reviews/annotation-review-handoff.test.js | full-section → review handoff (P5) every entry of the completed section is independently reviewable, then the queue drains | — |
+| 339 | tests/integration/reviews/annotation-review-handoff.test.js | reviewer who is also an annotator (self-review exclusion) both users annotate their own entry | — |
+| 340 | tests/integration/reviews/annotation-review-handoff.test.js | reviewer who is also an annotator (self-review exclusion) the reviewer-annotator is served the OTHER person's entry, never their own | — |
+| 341 | tests/integration/reviews/annotation-review-handoff.test.js | reviewer who is also an annotator (self-review exclusion) the reviewer-annotator's own entry is still reviewable by a different reviewer | — |
+| 342 | tests/integration/reviews/reviews-workflow.test.js | reviews workflow integration (T4.7) Escenario 3 — correccion de texto: comentario opcional, texto obligatorio | — |
+
+---
+
+Totals: 626 unit + 46 integration = **672** tests in the suite.

@@ -170,7 +170,7 @@ function isLikelyLeaderTitleCovered(sentence, triples) {
         return false;
 
     const normalizedSentence = normalizeForMatching(sentence);
-    if (!/\b(gobierna|lidera|dirige|preside|liderazgo|ejerce)\b/i.test(normalizedSentence))
+    if (!/\b(gobierna|lidera|dirige|dirigid[ao]s?|preside|presidid[ao]s?|liderazgo|ejerce)\b/i.test(normalizedSentence))
         return false;
 
     return triples.some(triple => {

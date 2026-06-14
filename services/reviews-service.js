@@ -5,8 +5,9 @@
  *
  * Covers:
  *   - Assignment of the next reviewable entry.
- *   - Advancing through criteria (`currentCriterionIndex`) with
- *     `upsertDecision`.
+ *   - Per-phrase criteria evaluation (each annotated sentence keeps its own
+ *     decision per criterion) plus the review-level `diversity` criterion,
+ *     persisted with `upsertDecision`.
  *   - Closure (`completed`/`disputed`) propagating the state to the entry.
  *   - The list of feedback received by the annotator.
  *
@@ -16,14 +17,14 @@
  *
  * @typedef {Object} ReviewsServiceDeps
  * @property {Record<string, any>} [reviewsRepository]
- * @property {Record<string, any>} [datasetsRepository]
+ * @property {Record<string, any>} [datasetsPermissionsRepository]
  * @property {Record<string, any>} [prismaClient]
  * @property {number}              [reviewDurationMs]
  */
 
 const defaultPrisma = require('../prisma/client');
 const { createReviewsRepository } = require('../repositories/reviews-repository');
-const { createDatasetsRepository } = require('../repositories/datasets-repository');
+const { createDatasetsPermissionsRepository } = require('../repositories/datasets-permissions-repository');
 const { ServiceError } = require('./service-error');
 const {
     REVIEW_PENDING,
@@ -38,12 +39,16 @@ const {
     decisionRequiresComment
 } = require('../constants/review-decision');
 const {
-    getOrderedCriteria,
-    getOrderedCriterionCodes,
-    isValidCriterionCode,
-    getCriterionIndex
+    getPhraseCriteria,
+    getReviewCriteria,
+    getPhraseCriterionCodes,
+    getReviewCriterionCodes,
+    isPhraseCriterion,
+    isReviewCriterion,
+    getPhraseCriterionIndex
 } = require('../constants/review-criterion');
 const {
+    ENTRY_ANNOTATED,
     ENTRY_REVIEWED,
     ENTRY_DISPUTED
 } = require('../constants/entry-status');
@@ -58,13 +63,13 @@ const DEFAULT_REVIEW_DURATION_MS = 2 * 60 * 60 * 1000;
  */
 function createReviewsService({
     reviewsRepository,
-    datasetsRepository,
+    datasetsPermissionsRepository,
     prismaClient,
     reviewDurationMs
 } = {}) {
     const deps = {
         reviewsRepository: reviewsRepository || createReviewsRepository(),
-        datasetsRepository: datasetsRepository || createDatasetsRepository(),
+        datasetsPermissionsRepository: datasetsPermissionsRepository || createDatasetsPermissionsRepository(),
         prisma: prismaClient || defaultPrisma,
         reviewDurationMs: reviewDurationMs ?? DEFAULT_REVIEW_DURATION_MS
     };
@@ -132,6 +137,7 @@ function createReviewsService({
         const entryDetail = await deps.prisma.entry.findUnique({
             where: { id: review.entryId },
             include: {
+                dataset: { select: { id: true, name: true } },
                 triplesets: {
                     orderBy: [{ type: 'asc' }, { position: 'asc' }],
                     include: { triples: { orderBy: { position: 'asc' } } }
@@ -148,36 +154,30 @@ function createReviewsService({
             }
         });
 
+        const annotatorEmail = await resolveAnnotatorEmail(review.annotatorId);
         const decisions = await deps.reviewsRepository.findDecisionsByReview({ reviewId });
         const comments = await deps.reviewsRepository.findCommentsByReview({ reviewId });
 
-        return buildReviewContextDTO({ review, entry: entryDetail, decisions, comments });
+        return buildReviewContextDTO({ review, entry: entryDetail, decisions, comments, annotatorEmail });
     }
 
     /**
-     * Records the reviewer's decision for a criterion and advances the progress.
-     * @param {*} options - { reviewId, reviewerId, criterionCode, decision, comment }.
+     * Records the reviewer's decision for a criterion of a phrase, or for the
+     * review-level criterion when `sentenceIndex` is `null`.
+     *
+     * Per-phrase wizard guard: a phrase criterion stays locked until every
+     * earlier criterion of the SAME phrase has been decided. Re-deciding an
+     * already-resolved criterion is allowed (the decision is overwritten).
+     *
+     * @param {*} options - { reviewId, reviewerId, sentenceIndex, criterionCode, decision, comment }.
      * @returns {Promise<*>} Updated review summary.
      */
-    async function submitDecision({ reviewId, reviewerId, criterionCode, decision, comment }) {
-        if (!isValidCriterionCode(criterionCode))
-            throw new ServiceError('Codigo de criterio invalido.', {
-                status: 400,
-                code: 'invalid_criterion'
-            });
-
-        if (!isValidReviewDecision(decision))
-            throw new ServiceError('Decision invalida.', {
-                status: 400,
-                code: 'invalid_decision'
-            });
-
+    async function submitDecision({ reviewId, reviewerId, sentenceIndex = null, criterionCode, decision, comment }) {
+        const isReviewLevel = sentenceIndex === null || sentenceIndex === undefined;
+        const normalizedIndex = isReviewLevel ? null : Number(sentenceIndex);
         const trimmedComment = typeof comment === 'string' ? comment.trim() : '';
-        if (decisionRequiresComment(decision) && trimmedComment.length === 0)
-            throw new ServiceError('Esta decision requiere un comentario explicativo.', {
-                status: 400,
-                code: 'comment_required'
-            });
+
+        assertValidDecisionInput({ isReviewLevel, normalizedIndex, criterionCode, decision, trimmedComment });
 
         const review = await loadOwnedReview({ reviewId, reviewerId });
 
@@ -187,34 +187,49 @@ function createReviewsService({
                 code: 'review_closed'
             });
 
-        const requestedIndex = getCriterionIndex(criterionCode);
-        if (requestedIndex > review.currentCriterionIndex)
-            throw new ServiceError('Debe resolver primero los criterios anteriores.', {
-                status: 409,
-                code: 'criterion_locked'
-            });
+        if (!isReviewLevel)
+            await assertPhraseWizardOrder({ reviewId, sentenceIndex: normalizedIndex, criterionCode });
 
         await deps.reviewsRepository.upsertDecision({
             reviewId,
+            sentenceIndex: normalizedIndex,
             criterionCode,
             decision,
             comment: trimmedComment.length > 0 ? trimmedComment : null
         });
 
-        const totalCriteria = getOrderedCriterionCodes().length;
-        let nextIndex = review.currentCriterionIndex;
-        if (requestedIndex === review.currentCriterionIndex && nextIndex < totalCriteria)
-            nextIndex = review.currentCriterionIndex + 1;
-
         const nextStatus = review.status === REVIEW_PENDING ? REVIEW_IN_PROGRESS : review.status;
-
-        const updated = await deps.reviewsRepository.updateReviewProgress({
-            reviewId,
-            currentCriterionIndex: nextIndex,
-            status: nextStatus
-        });
+        const updated = nextStatus !== review.status
+            ? await deps.reviewsRepository.updateReviewStatus({ reviewId, status: nextStatus })
+            : review;
 
         return buildReviewSummary(updated);
+    }
+
+    /**
+     * Per-phrase wizard guard: a phrase criterion can only be decided once every
+     * earlier criterion of the SAME phrase has been decided. No-op for the first
+     * criterion of a phrase. Throws `criterion_locked` otherwise.
+     * @param {*} options - { reviewId, sentenceIndex, criterionCode }.
+     * @returns {Promise<void>}
+     */
+    async function assertPhraseWizardOrder({ reviewId, sentenceIndex, criterionCode }) {
+        const requestedIndex = getPhraseCriterionIndex(criterionCode);
+        if (requestedIndex <= 0)
+            return;
+
+        const decisions = await deps.reviewsRepository.findDecisionsByReview({ reviewId });
+        const decidedForSentence = new Set(
+            decisions
+                .filter((/** @type {*} */ d) => d.sentenceIndex === sentenceIndex)
+                .map((/** @type {*} */ d) => d.criterionCode)
+        );
+        const prior = getPhraseCriterionCodes().slice(0, requestedIndex);
+        if (!prior.every(code => decidedForSentence.has(code)))
+            throw new ServiceError('Debe resolver primero los criterios anteriores de la frase.', {
+                status: 409,
+                code: 'criterion_locked'
+            });
     }
 
     /**
@@ -223,12 +238,9 @@ function createReviewsService({
      * @returns {Promise<Array<*>>} The review's comments after adding the correction.
      */
     async function submitTextCorrection({ reviewId, reviewerId, sentenceIndex, originalSentence, correctedSentence, comment }) {
+        // The justification for a correction lives in the rejected criterion's
+        // "Motivo"; the correction itself does not require its own comment.
         const trimmedComment = typeof comment === 'string' ? comment.trim() : '';
-        if (trimmedComment.length === 0)
-            throw new ServiceError('La correccion exige un comentario.', {
-                status: 400,
-                code: 'comment_required'
-            });
 
         const trimmedCorrection = typeof correctedSentence === 'string' ? correctedSentence.trim() : '';
         if (trimmedCorrection.length === 0)
@@ -257,11 +269,23 @@ function createReviewsService({
     }
 
     /**
-     * Closes a review, applying final states to the review, the entry and the annotations.
-     * @param {*} options - { reviewId, reviewerId }.
+     * Closes a review, applying final states to the review, the entry and the
+     * annotations, and recording the time the reviewer spent on it.
+     *
+     * Branches on `Dataset.hasAdditionalReviews` (§4.6):
+     *   - `false` → single-round path: entry → `reviewed`/`disputed`.
+     *   - `true`  → consensus path: a clean round only closes the entry when
+     *               the previous terminal round on the same entry was also
+     *               clean (two consecutive clean rounds). Otherwise the entry
+     *               returns to `annotated` and is re-queued. A non-clean round
+     *               additionally mutates `Annotation.sentence` for the
+     *               corrected sentences so the next reviewer sees the
+     *               corrections.
+     *
+     * @param {*} options - { reviewId, reviewerId, timeSpentSeconds }.
      * @returns {Promise<*>} Updated summary of the closed review.
      */
-    async function finalizeReview({ reviewId, reviewerId }) {
+    async function finalizeReview({ reviewId, reviewerId, timeSpentSeconds = 0 }) {
         const review = await loadOwnedReview({ reviewId, reviewerId });
 
         if (isReviewClosed(review.status))
@@ -271,25 +295,70 @@ function createReviewsService({
             });
 
         const decisions = await deps.reviewsRepository.findDecisionsByReview({ reviewId });
-        const decided = new Set(decisions.map((/** @type {*} */ d) => d.criterionCode));
-        const allCriteria = getOrderedCriterionCodes();
-        const missing = allCriteria.filter((/** @type {*} */ code) => !decided.has(code));
+        const sentenceIndexes = await deps.reviewsRepository.findAnnotatedSentenceIndexes({
+            entryId: review.entryId,
+            annotatorId: review.annotatorId
+        });
 
+        const missing = collectMissingDecisions({ decisions, sentenceIndexes });
         if (missing.length > 0)
             throw new ServiceError('Faltan criterios por evaluar.', {
                 status: 409,
                 code: 'criteria_incomplete'
             });
 
-        const allAccepted = decisions.every((/** @type {*} */ d) => d.decision === REVIEW_DECISION_ACCEPTED);
-        const finalReviewStatus = allAccepted ? REVIEW_COMPLETED : REVIEW_DISPUTED;
-        const finalEntryStatus = allAccepted ? ENTRY_REVIEWED : ENTRY_DISPUTED;
+        const comments = await deps.reviewsRepository.findCommentsByReview({ reviewId });
+        const allAccepted = decisions.length > 0
+            && decisions.every((/** @type {*} */ d) => d.decision === REVIEW_DECISION_ACCEPTED);
+        // A round is "clean" when the reviewer accepted everything AND did not
+        // submit any text correction. The latter is the actual change vector
+        // for multi-round chains, so a comment-less all-accepted close is what
+        // we count as agreement with the previous round.
+        const isCleanRound = allAccepted && comments.length === 0;
+
+        const hasAdditional = await resolveDatasetHasAdditionalReviews(review.entryId);
+
+        let finalReviewStatus;
+        let finalEntryStatus;
+        if (!hasAdditional) {
+            finalReviewStatus = allAccepted ? REVIEW_COMPLETED : REVIEW_DISPUTED;
+            finalEntryStatus = allAccepted ? ENTRY_REVIEWED : ENTRY_DISPUTED;
+        } else {
+            const previous = await deps.reviewsRepository.findPreviousTerminalReview({
+                entryId: review.entryId,
+                beforeRoundIndex: review.roundIndex
+            });
+
+            if (isCleanRound) {
+                // A clean round closes successfully on its own; whether the
+                // chain terminates depends on whether the previous round was
+                // also clean.
+                finalReviewStatus = REVIEW_COMPLETED;
+                finalEntryStatus = previous && previous.cleanRound === true
+                    ? ENTRY_REVIEWED
+                    : ENTRY_ANNOTATED;
+            } else {
+                // Non-clean round always re-queues the entry; status reflects
+                // the disagreement (mirrors the single-round disputed path).
+                finalReviewStatus = REVIEW_DISPUTED;
+                finalEntryStatus = ENTRY_ANNOTATED;
+            }
+        }
+
         const completedAt = new Date();
+        // Trust the client's elapsed time but clamp it to the reservation window
+        // so a spoofed or buggy value cannot poison the average-time metrics.
+        const recordedSeconds = clampSeconds(timeSpentSeconds, Math.floor(deps.reviewDurationMs / 1000));
 
         await deps.prisma.$transaction(async (/** @type {*} */ tx) => {
             await tx.review.update({
                 where: { id: reviewId },
-                data: { status: finalReviewStatus, completedAt }
+                data: {
+                    status: finalReviewStatus,
+                    cleanRound: isCleanRound,
+                    completedAt,
+                    timeSpentSeconds: recordedSeconds
+                }
             });
             await tx.entry.update({
                 where: { id: review.entryId },
@@ -304,10 +373,45 @@ function createReviewsService({
                     data: { isAcceptedFirstTry: false }
                 });
             }
+            // §4.6.3: apply this round's corrections to the canonical
+            // `Annotation.sentence` so the next reviewer sees the corrected
+            // text. The pre-correction text remains preserved in
+            // `ReviewComment.originalSentence` for chain reconstruction.
+            if (hasAdditional && comments.length > 0
+                && tx.annotation && typeof tx.annotation.updateMany === 'function')
+                for (const comment of comments)
+                    await tx.annotation.updateMany({
+                        where: {
+                            entryId: review.entryId,
+                            userId: review.annotatorId,
+                            sentenceIndex: comment.sentenceIndex
+                        },
+                        data: { sentence: comment.correctedSentence }
+                    });
         });
 
         const updated = await deps.reviewsRepository.findReviewById(reviewId);
         return buildReviewSummary(updated);
+    }
+
+    /**
+     * Resolves whether the entry's dataset has the multi-round flag on. Uses
+     * the Prisma client directly so the service does not need a new repo
+     * dependency. Returns `false` when the relation cannot be reached (test
+     * stubs, missing entry), preserving the single-round path as a safe
+     * default.
+     * @param {number} entryId - Entry id.
+     * @returns {Promise<boolean>} `true` when the dataset opted in.
+     */
+    async function resolveDatasetHasAdditionalReviews(entryId) {
+        const entryModel = deps.prisma && deps.prisma.entry;
+        if (!entryModel || typeof entryModel.findUnique !== 'function')
+            return false;
+        const entry = await entryModel.findUnique({
+            where: { id: entryId },
+            select: { dataset: { select: { hasAdditionalReviews: true } } }
+        });
+        return Boolean(entry && entry.dataset && entry.dataset.hasAdditionalReviews);
     }
 
     /**
@@ -346,6 +450,23 @@ function createReviewsService({
     }
 
     /**
+     * Resolves the annotator's email for display in the review context. Returns
+     * `null` when the user model is not reachable (e.g. injected stubs).
+     * @param {number} annotatorId - Annotator identifier.
+     * @returns {Promise<?string>} Email, or null.
+     */
+    async function resolveAnnotatorEmail(annotatorId) {
+        const userModel = deps.prisma && deps.prisma.user;
+        if (!userModel || typeof userModel.findUnique !== 'function')
+            return null;
+        const annotator = await userModel.findUnique({
+            where: { id: annotatorId },
+            select: { email: true }
+        });
+        return annotator ? annotator.email : null;
+    }
+
+    /**
      * Loads a review, requiring that it belongs to the given reviewer.
      * @param {*} options - { reviewId, reviewerId }.
      * @returns {Promise<*>} Review row.
@@ -365,7 +486,7 @@ function createReviewsService({
      * @param {*} options - Identifiers.
      */
     async function requireDatasetReviewerPermission({ reviewerId, datasetId }) {
-        const permit = await deps.datasetsRepository.findPermitForUser({ datasetId, userId: reviewerId });
+        const permit = await deps.datasetsPermissionsRepository.findPermitForUser({ datasetId, userId: reviewerId });
         if (!permit?.isReviewer) {
             throw new ServiceError('No tienes permisos de revision sobre este dataset.', {
                 status: 403,
@@ -416,12 +537,12 @@ function buildReviewSummary(review) {
         return null;
 
     return {
+        id: review.id,
         reviewId: review.id,
         entryId: review.entryId,
         reviewerId: review.reviewerId,
         annotatorId: review.annotatorId,
         status: review.status,
-        currentCriterionIndex: review.currentCriterionIndex,
         assignedAt: review.assignedAt instanceof Date ? review.assignedAt.toISOString() : review.assignedAt,
         expiresAt: review.expiresAt instanceof Date ? review.expiresAt.toISOString() : review.expiresAt,
         completedAt: review.completedAt instanceof Date ? review.completedAt.toISOString() : (review.completedAt || null)
@@ -429,11 +550,109 @@ function buildReviewSummary(review) {
 }
 
 /**
- * Builds the review-context DTO with triples, sentences, decisions and comments.
- * @param {*} options - { review, entry, decisions, comments }.
+ * Clamps a client-supplied elapsed time to a non-negative integer no larger
+ * than `maxSeconds`. Guards the average-time metrics against bad input.
+ * @param {*} value - Raw seconds from the client.
+ * @param {number} maxSeconds - Upper bound (the reservation window).
+ * @returns {number} Sanitized seconds.
+ */
+function clampSeconds(value, maxSeconds) {
+    const n = Math.floor(Number(value));
+    if (!Number.isFinite(n) || n <= 0)
+        return 0;
+    return Math.min(n, maxSeconds);
+}
+
+/**
+ * Validates the shape of a decision before it touches the store. Throws a
+ * `ServiceError` with the matching domain code on the first violation.
+ * @param {*} options - { isReviewLevel, normalizedIndex, criterionCode, decision, trimmedComment }.
+ * @returns {void}
+ */
+function assertValidDecisionInput({ isReviewLevel, normalizedIndex, criterionCode, decision, trimmedComment }) {
+    if (!isReviewLevel && (!Number.isInteger(normalizedIndex) || normalizedIndex < 0))
+        throw new ServiceError('Indice de frase invalido.', {
+            status: 400,
+            code: 'invalid_sentence_index'
+        });
+
+    const criterionMatchesScope = isReviewLevel
+        ? isReviewCriterion(criterionCode)
+        : isPhraseCriterion(criterionCode);
+    if (!criterionMatchesScope)
+        throw new ServiceError('Codigo de criterio invalido para el ambito indicado.', {
+            status: 400,
+            code: 'invalid_criterion'
+        });
+
+    if (!isValidReviewDecision(decision))
+        throw new ServiceError('Decision invalida.', {
+            status: 400,
+            code: 'invalid_decision'
+        });
+
+    if (decisionRequiresComment(decision) && trimmedComment.length === 0)
+        throw new ServiceError('Esta decision requiere un comentario explicativo.', {
+            status: 400,
+            code: 'comment_required'
+        });
+}
+
+/**
+ * Stable key for a decision within a review: the phrase index (or `R` for the
+ * review-level scope) combined with the criterion code.
+ * @param {?number} sentenceIndex - Phrase index, or null for review-level.
+ * @param {string} criterionCode - Criterion code.
+ * @returns {string} Composite key.
+ */
+function decisionKey(sentenceIndex, criterionCode) {
+    const scope = sentenceIndex === null || sentenceIndex === undefined ? 'R' : sentenceIndex;
+    return `${scope}|${criterionCode}`;
+}
+
+/**
+ * Computes the criteria still missing for a review to be finalizable: every
+ * phrase must have all per-phrase criteria decided, and — only when there is
+ * more than one phrase — the review-level criteria must be decided too.
+ * @param {*} options - { decisions, sentenceIndexes }.
+ * @returns {Array<{sentenceIndex:?number, criterionCode:string}>} Missing pairs.
+ */
+function collectMissingDecisions({ decisions, sentenceIndexes }) {
+    const decided = new Set((decisions || []).map((/** @type {*} */ d) => decisionKey(d.sentenceIndex, d.criterionCode)));
+    const phraseCodes = getPhraseCriterionCodes();
+    const reviewCodes = getReviewCriterionCodes();
+    const indexes = Array.isArray(sentenceIndexes) ? sentenceIndexes : [];
+
+    /** @type {Array<{sentenceIndex:?number, criterionCode:string}>} */
+    const missing = [];
+    for (const sentenceIndex of indexes)
+        for (const criterionCode of phraseCodes)
+            if (!decided.has(decisionKey(sentenceIndex, criterionCode)))
+                missing.push({ sentenceIndex, criterionCode });
+
+    if (indexes.length > 1)
+        for (const criterionCode of reviewCodes)
+            if (!decided.has(decisionKey(null, criterionCode)))
+                missing.push({ sentenceIndex: null, criterionCode });
+
+    return missing;
+}
+
+/**
+ * Builds the review-context DTO consumed by the reviewer UI.
+ *
+ * Shape (see `prototypes/reviewer-update` and TECHNICAL-DESIGN.md §4.2):
+ *   - `review`: lightweight header (id, status, annotator email, dataset, dates).
+ *   - `phraseCriteria` / `reviewCriteria`: the two criteria catalogues.
+ *   - `reviewDecisions`: flat list where `sentenceIndex === null` marks a
+ *     review-level decision and a number marks a per-phrase one.
+ *   - `annotations`, `reviewComments`, `triples`, `englishSentences`,
+ *     `alertDecisions`: the entry context the reviewer needs.
+ *
+ * @param {*} options - { review, entry, decisions, comments, annotatorEmail }.
  * @returns {*} DTO ready to serve to the client.
  */
-function buildReviewContextDTO({ review, entry, decisions, comments }) {
+function buildReviewContextDTO({ review, entry, decisions, comments, annotatorEmail = null }) {
     const triples = entry && Array.isArray(entry.triplesets)
         ? entry.triplesets.flatMap((/** @type {*} */ ts) => (ts.triples || []).map((/** @type {*} */ t) => ({
             subject: t.subject,
@@ -469,16 +688,26 @@ function buildReviewContextDTO({ review, entry, decisions, comments }) {
         : [];
 
     return {
-        review: buildReviewSummary(review),
+        review: {
+            id: review.id,
+            status: review.status,
+            annotatorEmail: annotatorEmail || null,
+            datasetId: entry ? entry.datasetId : null,
+            datasetName: entry && entry.dataset ? entry.dataset.name : null,
+            assignedAt: review.assignedAt instanceof Date ? review.assignedAt.toISOString() : (review.assignedAt || null),
+            expiresAt: review.expiresAt instanceof Date ? review.expiresAt.toISOString() : (review.expiresAt || null)
+        },
         entry: entry
             ? { id: entry.id, datasetId: entry.datasetId, eid: entry.eid, position: entry.position, status: entry.status }
             : null,
+        phraseCriteria: getPhraseCriteria(),
+        reviewCriteria: getReviewCriteria(),
         triples,
         englishSentences,
         annotations,
         alertDecisions,
-        criteria: getOrderedCriteria(),
         reviewDecisions: (decisions || []).map((/** @type {*} */ d) => ({
+            sentenceIndex: d.sentenceIndex === undefined ? null : d.sentenceIndex,
             criterionCode: d.criterionCode,
             decision: d.decision,
             comment: d.comment,

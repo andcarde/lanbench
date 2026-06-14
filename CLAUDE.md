@@ -39,14 +39,25 @@ The project runs as three containers orchestrated by `docker-compose.yaml`:
 - Start: `docker compose up` (add `-d` to detach)
 - Stop: `docker compose down` (data survives)
 - Reset DB completely: `docker compose down -v` (destroys the `mariadb_data` volume)
-- After editing `prisma/schema.prisma`: `docker compose exec app npx prisma db push`
-- Browse data with schema awareness (run from host, not in the container): `npx prisma studio`
+- After editing `prisma/schema.prisma`: `docker compose cp prisma/schema.prisma app:/app/prisma/schema.prisma && docker compose exec app npx prisma db push` (rebuild the image with `docker compose build app` when convenient, so the baked schema stays in sync).
+- Browse data with schema awareness: `docker compose exec app npx prisma studio` (Studio runs inside the `app` container; it forwards the port automatically because Docker maps 5555 on demand — if not, use Adminer at http://localhost:8080).
 
 ### Notes
 
 - `database/lanbench.sql` is **not** auto-loaded — it's a stale phpMyAdmin dump whose schema does not match `prisma/schema.prisma`. The source of truth is the Prisma schema, applied via `prisma db push`.
 - The Ollama service is not yet containerized; `MODEL=local` would need to reach an Ollama instance on the host.
 - `./uploads/` is bind-mounted so user-uploaded files survive container rebuilds.
+
+### Required step after any code change
+
+Whenever a task involves code changes, the agent must run `npm run up:2` once the task is finished to upload the changes to the running docker stack.
+
+### Required step after any database schema change
+
+Whenever a task changes `prisma/schema.prisma`, the agent must push the new schema into the running docker container and then run the schema check:
+
+1. `docker compose cp prisma/schema.prisma app:/app/prisma/schema.prisma && docker compose exec app npx prisma db push`
+2. `npm run test:db`
 
 ## Incident mitigation methodology (bugfix methodology)
 

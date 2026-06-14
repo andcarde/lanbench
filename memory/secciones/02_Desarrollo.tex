@@ -1,0 +1,178 @@
+\chapter{Desarrollo}
+
+El perfil oficial de WebNLG se encuentra disponible en el repositorio público de GitHub\footnote{\url{https://github.com/webnlg}}, donde se alojan los recursos empleados en las distintas ediciones del \textit{challenge}. A lo largo de los años, WebNLG ha sido utilizado como \textit{benchmark} estándar para la evaluación comparativa de sistemas de generación y estructuración de lenguaje natural.
+
+\subsection{WebNLG Challenge 2017}
+
+El WebNLG Challenge 2017 constituyó la primera competición en la que el conjunto de datos WebNLG fue empleado formalmente como referencia para evaluar sistemas de generación de texto a partir de tripletas RDF. La tarea era exclusivamente \textit{data-to-text} y el idioma considerado fue el inglés. 
+
+Las métricas de evaluación empleadas fueron BLEU, METEOR y TER. El desafío fue presentado en la 10th International Conference on Natural Language Generation (INLG 2017), celebrada en Santiago de Compostela \cite{Gardent2017}.
+
+\subsection{WebNLG+ Challenge 2020}
+
+La edición WebNLG+ 2020 amplió el alcance del desafío incorporando una tarea bilingüe y bidireccional. Además de la generación de texto a partir de RDF, se incluyó la tarea inversa de extracción estructurada (\textit{text-to-RDF}). El conjunto de datos incluyó inglés y ruso.
+
+Las métricas empleadas fueron BLEU, METEOR, chrF++, y BERTScore. El repositorio oficial del desafío se encuentra disponible en:
+\url{https://github.com/WebNLG/challenge-2020}.
+
+\textbf{Referencia:} Castro Ferreira et al. (2020). \textit{The 2020 Bilingual, Bi-Directional WebNLG+ Shared Task: Overview and Evaluation Results}.
+
+\subsection{WebNLG 2023 Shared Task}
+
+La edición de 2023 tuvo como objetivo principal evaluar sistemas de generación en lenguas con recursos limitados. Se incorporaron maltés, irlandés, bretón, galés y ruso.
+
+Las métricas empleadas fueron BLEU, METEOR, chrF++, TER y BERTScore. El conjunto de datos se encuentra accesible en:
+\url{https://huggingface.co/datasets/webnlg/challenge-2023}.
+
+\section{Estructura del dataset}
+
+El conjunto de datos WebNLG está compuesto por instancias individuales denominadas \textit{entries}. Cada \textit{entry} relaciona un conjunto de tripletas RDF, generalmente extraídas de DBpedia, con una o varias realizaciones en lenguaje natural. Esta organización permite evaluar sistemas del tipo \textit{data-to-text} y \textit{text-to-data}.
+
+\section{La entry como unidad básica}
+
+Cada \textit{entry} constituye un ejemplo independiente y posee cinco atributos principales:
+
+\begin{itemize}
+    \item \textbf{category}: categoría semántica de DBpedia.
+    \item \textbf{eid}: identificador único dentro de una categoría y tamaño.
+    \item \textbf{size}: número de tripletas RDF, entre 1 y 7.
+    \item \textbf{shape}: representación estructural del grafo RDF.
+    \item \textbf{shape\_type}: tipo de estructura del grafo.
+\end{itemize}
+
+El atributo \textit{size} permite medir la complejidad semántica de la oración, mientras que \textit{eid} garantiza su identificación dentro de su grupo estructural.
+
+\section{Representación estructural: shape y shape\_type}
+
+Los conjuntos de tripletas RDF se organizan como árboles. La estructura del grafo se describe mediante el atributo \textit{shape}, que emplea una notación anidada similar al formato Newick. 
+
+Adicionalmente, cada estructura se clasifica según el atributo \textit{shape\_type}:
+
+\begin{itemize}
+    \item \textbf{Chain}: el objeto de un triple actúa como sujeto del siguiente.
+    \item \textbf{Sibling}: varios triples comparten el mismo sujeto.
+    \item \textbf{Mixed}: combinación de los patrones anteriores.
+\end{itemize}
+
+Esta categorización permite analizar el impacto de la complejidad estructural en el rendimiento de los modelos.
+
+\section{Contenido interno de una entry}
+
+Cada \textit{entry} contiene tres bloques fundamentales:
+
+\begin{itemize}
+    \item \textbf{originaltripleset}: tripletas RDF extraídas directamente de DBpedia.
+    \item \textbf{modifiedtripleset}: versión normalizada y corregida para entrenamiento.
+    \item \textbf{lexs}: realizaciones en lenguaje natural (\textit{lexicalisations}).
+\end{itemize}
+
+Las lexicalizaciones poseen un identificador (\textit{lid}), un atributo de idioma (\textit{lang}) y un comentario de calidad (\textit{comment}), generalmente ``good'' o ``toFix''.
+
+\section{Diferenciación entre triples originales y modificados}
+
+La coexistencia de ambas versiones responde a una separación funcional. Los triples originales preservan la trazabilidad con DBpedia, facilitando análisis semánticos y alineaciones externas. Los triples modificados, en cambio, garantizan uniformidad terminológica y estructural, reduciendo inconsistencias léxicas. 
+
+Para tareas de entrenamiento y evaluación automática se recomienda emplear exclusivamente la versión modificada.
+
+\section{Ejemplo ilustrativo}
+
+A continuación se presenta una \textit{entry} correspondiente al conjunto bilingüe inglés--ruso (2020):
+
+\begin{verbatim}
+<entry category="Airport"
+       eid="1"
+       shape="(X (X))"
+       shape_type="NA"
+       size="1">
+
+  <originaltripleset>
+    <otriple>
+      Aarhus_Airport | cityServed | "Aarhus, Denmark"@en
+    </otriple>
+  </originaltripleset>
+
+  <modifiedtripleset>
+    <mtriple>
+      Aarhus_Airport | cityServed | "Aarhus, Denmark"
+    </mtriple>
+  </modifiedtripleset>
+
+  <lex lang="en" lid="Id1">
+    The Aarhus is the airport of Aarhus, Denmark.
+  </lex>
+
+  <lex lang="ru" lid="Id1">
+    Орхус - аэропорт города Орхус, Дания.
+  </lex>
+</entry>
+\end{verbatim}
+
+\section{Extensión al español}
+
+De manera análoga a la incorporación del ruso en la edición de 2020, es posible extender el conjunto de datos al español mediante la inclusión de nuevas lexicalizaciones alineadas:
+
+\begin{verbatim}
+<lex lang="es" lid="Id1">
+  Aarhus es el aeropuerto de Aarhus, Dinamarca.
+</lex>
+
+<lex lang="es" lid="Id2">
+  El aeropuerto de Aarhus da servicio a la ciudad de Aarhus, Dinamarca.
+</lex>
+\end{verbatim}
+
+Asimismo, pueden añadirse enlaces auxiliares de alineación léxica:
+
+\begin{verbatim}
+<link direction="en2es">
+  Aarhus Airport | includes | Aeropuerto de Aarhus
+</link>
+\end{verbatim}
+
+Esta ampliación permite construir un subconjunto multilingüe coherente, manteniendo la compatibilidad estructural con el benchmark original.
+
+\subsection{Integración de modelos de lenguaje en la anotación y revisión}
+
+Las pruebas preliminares realizadas con gestores de modelos ejecutados en local, en particular Ollama, permitieron constatar limitaciones relevantes en términos de latencia y calidad de salida cuando se empleaban modelos de menor tamaño, como Llama 3 de 7 mil millones de parámetros o Qwen de 3 mil millones de parámetros. En estas condiciones, incluso tras aplicar una capa de \textit{prompt engineering} intensiva, no se obtuvieron resultados suficientemente consistentes para un flujo de trabajo de anotación y validación de calidad académica. Por ello, se adopta como criterio operativo la utilización preferente de modelos servidos en la nube, manteniendo no obstante la posibilidad de ejecución local como opción secundaria para contextos con mayores restricciones de privacidad o conectividad.
+
+En este contexto, la alternativa seleccionada es Groq, plataforma de inferencia en la nube que proporciona acceso mediante API a modelos abiertos de altas prestaciones y que, además, permite la gestión de claves privadas con caducidad para sesiones o proyectos concretos. Asimismo, su compatibilidad con interfaces de tipo OpenAI simplifica la integración dentro de arquitecturas software ya existentes y reduce el coste de migración tecnológica. A efectos metodológicos, se recomienda no emplear modelos inferiores a la familia Llama 3 de 70 mil millones de parámetros, dado que las pruebas realizadas muestran que este umbral mejora de forma significativa la fiabilidad de las sugerencias automáticas en tareas de corrección y reformulación.
+
+A partir de estas pruebas, se establece un sistema de clasificación jerárquica de errores con codificación fija. En particular, el sistema contempla las siguientes categorías: error ortográfico, error gramatical, error sintáctico, error de traducción, error de correspondencia con RDF y error de diversidad, entendido este último como la repetición sustancial de una frase previamente incluida. Cuando una salida presenta varios defectos simultáneamente, el sistema asigna únicamente el primer código de error aplicable según el orden anterior. Junto con dicha clasificación, el modelo propone automáticamente una alternativa corregida que, de acuerdo con su evaluación, subsana el error detectado.
+
+No obstante, este mecanismo no se concibe como una autoridad cerrada, sino como una ayuda supervisada. Por ello, el usuario puede rechazar la clasificación emitida por el modelo siempre que acompañe dicha acción de un comentario justificativo en el que explicite el carácter de falso positivo de la detección. Este requisito introduce trazabilidad sobre las discrepancias entre humano y modelo y, adicionalmente, permite construir en el futuro un repositorio de casos conflictivos de gran utilidad para la evaluación comparativa de distintos LLMs y para el refinamiento posterior del sistema.
+
+Desde el punto de vista funcional, tanto en la creación como en la gestión del dataset puede determinarse el rol operativo del LLM. Se distinguen tres modalidades. En la primera, denominada \textit{ninguno}, no existe intervención automática del modelo. En la segunda, denominada \textit{corrector}, el sistema analiza la frase introducida por el usuario, aplica el algoritmo de detección jerárquica previamente descrito y propone una reformulación corregida. En la tercera, denominada \textit{creativo}, el modelo genera directamente una propuesta de lexicalización procurando evitar los errores tipificados, de modo que el anotador humano actúa principalmente como editor o validador posterior. En esta última modalidad no se exige comentario justificativo cuando el usuario modifica la propuesta, ya que la intervención humana forma parte natural del proceso creativo y de refinamiento.
+
+\subsection{Concurrencia en anotación y revisión}
+
+La aplicación debe permitir la anotación y la revisión concurrente de un mismo dataset sin que ello produzca duplicidades de trabajo ni una sobrecarga excesiva en el servidor. Para ello, se introduce el concepto de \textit{sección}, entendida como un conjunto de entradas reservado temporalmente en memoria para un usuario cuando éste inicia una tarea de anotación o revisión. Mientras la sesión permanezca activa, dicha sección queda asociada de forma exclusiva a ese usuario, liberándose automáticamente al cierre de sesión.
+
+Cada usuario dispone, como máximo, de una única sección asignada por combinación de dataset y rol, distinguiéndose de manera independiente los roles de anotación y revisión. Si en un momento dado todas las secciones disponibles de un dataset se encuentran ya asignadas, el sistema informa de esta circunstancia al usuario y evita nuevas reservas. Esta política permite controlar el acceso concurrente de una forma más eficiente que un esquema de bloqueo a nivel de entrada individual.
+
+En una primera iteración del sistema, el tamaño de las secciones se fija en diez elementos. Se trata de una decisión de compromiso entre dos objetivos contrapuestos. Por una parte, un tamaño elevado reduce la frecuencia de interacción con el servidor, pero puede disminuir la eficiencia colectiva en las fases finales de completado del dataset, cuando quedan pocas entradas disponibles. Por otra parte, un tamaño demasiado pequeño incrementa el coste de gestión en el servidor debido al mayor número de operaciones de reserva, liberación y reasignación. La elección inicial de un tamaño fijo responde, por tanto, a un criterio pragmático de simplicidad y rendimiento, aunque se prevé su parametrización en versiones futuras.
+
+La introducción de secciones se justifica por dos razones fundamentales. En primer lugar, evita que varios usuarios realicen de forma simultánea el mismo trabajo sobre las mismas entradas. En segundo lugar, impide que el sistema tenga que gestionar bloqueos de grano excesivamente fino, esto es, a nivel de una única entrada, lo que encarecería notablemente el control de concurrencia y dificultaría la escalabilidad operativa de la plataforma.
+
+\subsection{Estadísticas, trazabilidad y análisis del trabajo}
+
+Con objeto de reforzar la trazabilidad del proceso de construcción del dataset, se incorpora un apartado de estadísticas dentro de la página de gestión, accesible exclusivamente para usuarios con rol de administrador. Este módulo permite confirmar la autoría de las tareas de anotación y revisión realizadas sobre un dataset concreto, así como visualizar el tiempo de trabajo asociado a cada usuario y actividad.
+
+La función principal de este componente no es únicamente descriptiva, sino también de control metodológico. La identificación de autorías y tiempos de dedicación facilita auditorías internas, permite analizar la distribución real de la carga de trabajo y proporciona evidencias empíricas sobre el grado de participación de cada colaborador en el proceso de curación del corpus.
+
+En fases futuras, este módulo podrá ampliarse con estimaciones analíticas derivadas de los propios datos de uso generados por la plataforma. En particular, resulta de interés incorporar métricas desagregadas según tipos de entrada del dataset, complejidad semántica, categoría ontológica o nivel de intervención correctiva requerida, de modo que pueda caracterizarse con mayor precisión el coste real de anotación y revisión para distintos subconjuntos del corpus.
+
+\subsection{Permisos y gobernanza del dataset}
+
+La página de gestión incorpora también mecanismos para la concesión de permisos de anotación, revisión y administración sobre cada dataset. Este diseño responde a una lógica de gobernanza explícita en la que los distintos niveles de acceso no sólo controlan la operatividad de la plataforma, sino que delimitan responsabilidades diferenciadas dentro del ciclo de vida del recurso.
+
+En la evolución prevista del sistema se contempla, además, la introducción de un modelo formal de propiedad (\textit{ownership}). Bajo este esquema, el propietario del dataset será el único usuario con capacidad para eliminarlo, modificar sus propiedades básicas y alterar los permisos de administración. Esta separación entre propiedad y administración resulta relevante desde el punto de vista organizativo, ya que permite descentralizar tareas de gestión cotidiana sin perder un nivel último de control institucional sobre el recurso.
+
+Los administradores, por su parte, podrán consultar las estadísticas del dataset y conceder permisos de anotación y revisión a otros usuarios. Adicionalmente, se prevé que en futuras versiones puedan generar URL de invitación asociadas a un dataset y a uno o varios roles concretos. Tales enlaces podrán configurarse para un único uso o para múltiples usos, de modo que se facilite la incorporación controlada de nuevos colaboradores sin necesidad de asignación manual individual. Este mecanismo resulta especialmente adecuado para campañas de anotación distribuidas o para entornos docentes y de investigación con equipos variables.
+
+\subsection{Roles generales de la aplicación}
+
+A nivel global, la aplicación distingue entre dos grandes perfiles de usuario: investigadores y asociados. Los investigadores son aquellos usuarios habilitados para crear nuevos datasets, mientras que los asociados únicamente pueden interactuar con datasets ya existentes para realizar tareas autorizadas de anotación, revisión o consulta, según los permisos que les hayan sido concedidos.
+
+Esta diferenciación funcional introduce una separación clara entre creación de recursos e intervención sobre recursos creados, lo que contribuye a preservar la coherencia del sistema y a evitar la proliferación descontrolada de datasets sin supervisión metodológica suficiente. Desde una perspectiva organizativa, el rol de investigador se vincula así con la iniciativa y responsabilidad sobre la construcción de nuevos corpus, mientras que el rol de asociado queda orientado a la colaboración operativa sobre recursos ya definidos.
+
+Finalmente, se contempla como ampliación futura la posibilidad de que los investigadores generen códigos de registro. Bajo este esquema, únicamente los poseedores de dichos códigos podrían registrarse en la aplicación, lo que permitiría controlar de forma más estricta el crecimiento de la base de usuarios y adaptar el acceso a entornos cerrados de investigación, proyectos financiados o comunidades académicas específicas.

@@ -117,6 +117,11 @@
           "minLength": 1,
           "description": "Obligatorio. Nombre visible del dataset."
         },
+        "description": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Opcional. Descripcion libre del dataset (max 512 caracteres). Ausente o null cuando el dataset no tiene descripcion."
+        },
         "totalEntries": {
           "type": "integer",
           "minimum": 0,
@@ -176,8 +181,13 @@
             "reviewableCount": {
               "type": "integer",
               "minimum": 0
-            }
+            },
+            "blockedBySelfAnnotation": { "type": "boolean" }
           }
+        },
+        "hasActiveCredential": {
+          "type": "boolean",
+          "description": "Opcional. True cuando el dataset tiene al menos una credencial de IA activa. Usado por el frontend para deshabilitar 'Anotar' en datasets con llmMode='correction' sin credencial."
         }
       }
     },

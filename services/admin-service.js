@@ -11,6 +11,7 @@
  * @typedef {Object} AdminServiceDeps
  * @property {Record<string, any>} [datasetsRepository]
  * @property {Record<string, any>} [evaluationCriteriaRepository]
+ * @property {Record<string, any>} [usersRepository]
  * @property {() => Date}          [now] - Injectable clock (deterministic tests).
  *
  * @typedef {Object} ExportResult
@@ -45,8 +46,10 @@
 
 const { createDatasetsRepository } = require('../repositories/datasets-repository');
 const { createEvaluationCriteriaRepository } = require('../repositories/evaluation-criteria-repository');
+const { createUsersRepository } = require('../repositories/users-repository');
 const { ServiceError } = require('./service-error');
 const { calculatePercentagesFromSectionCounters } = require('../utils/dataset-progress');
+const { resolveSectionSize } = require('../constants/datasets');
 const { escapeXml, renderAttrs } = require('../utils/xml-format');
 const { toIntegerNormalized, trimmedOr } = require('../utils/validators');
 
@@ -58,11 +61,12 @@ const SUPPORTED_EXPORT_FORMATS = new Set(['json', 'xml']);
  *
  * @param {AdminServiceDeps} [options]
  */
-function createAdminService({ datasetsRepository, evaluationCriteriaRepository, now } = {}) {
-    /** @type {{ datasetsRepository: any, evaluationCriteriaRepository: any, now: () => Date }} */
+function createAdminService({ datasetsRepository, evaluationCriteriaRepository, usersRepository, now } = {}) {
+    /** @type {{ datasetsRepository: any, evaluationCriteriaRepository: any, usersRepository: any, now: () => Date }} */
     const deps = {
         datasetsRepository: datasetsRepository || createDatasetsRepository(),
         evaluationCriteriaRepository: evaluationCriteriaRepository || createEvaluationCriteriaRepository(),
+        usersRepository: usersRepository || createUsersRepository(),
         now: now || (() => new Date())
     };
 
@@ -170,12 +174,75 @@ function createAdminService({ datasetsRepository, evaluationCriteriaRepository, 
         }
     }
 
+    /**
+     * Lists every user with their server role (US-22). Moderator-only surface;
+     * the password is never selected by the repository, so it cannot leak.
+     *
+     * @returns {Promise<Array<{ id:number, email:string, isModerator:boolean }>>}
+     */
+    async function listUsers() {
+        const users = await deps.usersRepository.listUsers();
+        return users.map(mapUserRole);
+    }
+
+    /**
+     * Promotes or demotes a user's server role (`isModerator`) — the missing
+     * write side of US-22. A moderator cannot strip their own elevation, which
+     * guards against a one-moderator base locking everyone out.
+     *
+     * @param {{ actorId:number|null, userId:number, isModerator:boolean }} input
+     * @returns {Promise<{ id:number, email:string, isModerator:boolean }>}
+     * @throws {ServiceError} `400` invalid input, `409` self-demotion, `404` unknown user.
+     */
+    async function setUserModerator({ actorId, userId, isModerator }) {
+        if (!Number.isInteger(userId) || userId <= 0)
+            throw new ServiceError('El id de usuario es inválido.', { status: 400, code: 'invalid_user_id' });
+
+        if (typeof isModerator !== 'boolean')
+            throw new ServiceError('El campo isModerator debe ser booleano.', {
+                status: 400,
+                code: 'invalid_is_moderator'
+            });
+
+        if (actorId === userId && isModerator === false)
+            throw new ServiceError('No puedes retirarte a ti mismo el rol de moderador.', {
+                status: 409,
+                code: 'cannot_self_demote'
+            });
+
+        try {
+            const updated = await deps.usersRepository.setIsModerator(userId, isModerator);
+            return mapUserRole(updated);
+        } catch (caughtError) {
+            const error = /** @type {any} */ (caughtError);
+            if (error?.code === 'P2025')
+                throw new ServiceError('Usuario no encontrado.', { status: 404, code: 'user_not_found' });
+            throw error;
+        }
+    }
+
     return {
         listDatasetSummaries,
         exportDatasetProgress,
         listEvaluationCriteria,
         createEvaluationCriterion,
-        updateEvaluationCriterion
+        updateEvaluationCriterion,
+        listUsers,
+        setUserModerator
+    };
+}
+
+/**
+ * Maps a user row to the role DTO exposed by the admin API (US-22).
+ *
+ * @param {Record<string, any>} user
+ * @returns {{ id:number, email:string, isModerator:boolean }}
+ */
+function mapUserRole(user) {
+    return {
+        id: user.id,
+        email: user.email,
+        isModerator: Boolean(user.isModerator)
     };
 }
 
@@ -201,7 +268,8 @@ function mapDatasetSummary(summary) {
             sectionsPending: summary.sectionsPending,
             reviewEnabled: Boolean(summary.isReviewEnabled),
             annotatedEntries: toIntegerNormalized(summary.annotatedEntries),
-            totalEntries: toIntegerNormalized(summary.totalEntries)
+            totalEntries: toIntegerNormalized(summary.totalEntries),
+            sectionSize: resolveSectionSize(summary)
         }),
         updatedAt: toIso(summary.updatedAt)
     };
@@ -233,7 +301,8 @@ function mapDatasetExport(dataset, exportedAt) {
                 sectionsPending: dataset.sectionsPending,
                 reviewEnabled: Boolean(dataset.isReviewEnabled),
                 annotatedEntries,
-                totalEntries: toIntegerNormalized(dataset.totalEntries)
+                totalEntries: toIntegerNormalized(dataset.totalEntries),
+                sectionSize: resolveSectionSize(dataset)
             })
         },
         entries: (dataset.entries || []).map(mapExportEntry)

@@ -5,20 +5,42 @@ const testApi = require('node:test');
 
 const ReviewerUI = require('../../../public/js/reviewer.js');
 const {
-    computeNextActiveCriterion,
-    canFinalize,
-    buildSentenceReviewState,
-    canFinishSentenceReview,
-    hasRejectedSentence,
-    buildRejectedSentencesComment,
-    requiresComment,
-    isCriterionUnlocked,
     buildCriteriaState,
-    escapeHtml
+    activeCriterionIndex,
+    canFinalize,
+    predictedOutcome,
+    buildSentenceState,
+    requiresComment,
+    readDatasetIdFromLocation,
+    messageFromResult,
+    escapeHtml,
+    computeRequestButtonMode,
+    describeRequestButton
 } = ReviewerUI;
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
+
+describe('reviewer request-button state (P5 affordance)', () => {
+    it('is enabled ("siguiente") when there is no open review — lets the reviewer pull a candidate', () => {
+        assert.equal(computeRequestButtonMode({}), 'siguiente');
+        assert.equal(computeRequestButtonMode({ hasOpenReview: false }), 'siguiente');
+        assert.equal(describeRequestButton('siguiente').disabled, false);
+    });
+
+    it('is disabled while fetching or while a review is open with criteria pending', () => {
+        assert.equal(computeRequestButtonMode({ fetching: true }), 'pendiente');
+        assert.equal(computeRequestButtonMode({ hasOpenReview: true, finalized: false }), 'pendiente');
+        assert.equal(describeRequestButton('pendiente').disabled, true);
+    });
+
+    it('shows "finalizado" (disabled) right after a finalized review', () => {
+        assert.equal(computeRequestButtonMode({ hasOpenReview: true, finalized: true }), 'finalizado');
+        const view = describeRequestButton('finalizado');
+        assert.equal(view.disabled, true);
+        assert.equal(view.variant, 'btn-success');
+    });
+});
 
 describe('reviewer UI helpers (T4.5)', () => {
     describe('buildCriteriaState', () => {
@@ -38,102 +60,80 @@ describe('reviewer UI helpers (T4.5)', () => {
         });
     });
 
-    describe('computeNextActiveCriterion', () => {
-        it('devuelve null si todos estan decididos', () => {
-            const result = computeNextActiveCriterion([{ decided: true }, { decided: true }]);
-            assert.equal(result, null);
+    describe('activeCriterionIndex', () => {
+        it('devuelve la posicion del primer criterio no decidido', () => {
+            assert.equal(activeCriterionIndex([
+                { decided: true },
+                { decided: false },
+                { decided: false }
+            ]), 1);
         });
 
-        it('devuelve el primer no decidido', () => {
-            const result = computeNextActiveCriterion([
-                { code: 'a', decided: true },
-                { code: 'b', decided: false },
-                { code: 'c', decided: false }
-            ]);
-            assert.equal(result.code, 'b');
-        });
-
-        it('soporta arrays vacios sin lanzar', () => {
-            assert.equal(computeNextActiveCriterion([]), null);
-            assert.equal(computeNextActiveCriterion(null), null);
+        it('devuelve la longitud cuando todos estan decididos', () => {
+            assert.equal(activeCriterionIndex([{ decided: true }, { decided: true }]), 2);
         });
     });
 
     describe('canFinalize', () => {
-        it('solo true cuando todos los criterios estan decididos', () => {
+        it('solo true cuando hay criterios y todos estan decididos', () => {
             assert.equal(canFinalize([{ decided: true }, { decided: true }]), true);
             assert.equal(canFinalize([{ decided: true }, { decided: false }]), false);
             assert.equal(canFinalize([]), false);
-            assert.equal(canFinalize(null), false);
+            assert.equal(canFinalize(/** @type {any} */ (null)), false);
         });
     });
 
-    describe('sentence review helpers', () => {
-        it('construye estado de frases desde anotaciones y correcciones previas', () => {
-            const state = buildSentenceReviewState(
+    describe('predictedOutcome', () => {
+        it('completed si todo es accepted, disputed en otro caso', () => {
+            assert.equal(predictedOutcome([{ decision: 'accepted' }, { decision: 'accepted' }]), 'completed');
+            assert.equal(predictedOutcome([{ decision: 'accepted' }, { decision: 'rejected' }]), 'disputed');
+        });
+    });
+
+    describe('buildSentenceState', () => {
+        it('construye estado por frase desde anotaciones y correcciones previas', () => {
+            const state = buildSentenceState(
                 [
                     { sentenceIndex: 0, sentence: 'frase uno', origin: 'manual' },
-                    { sentenceIndex: 1, sentence: 'frase dos', origin: 'llm' }
+                    { sentenceIndex: 1, sentence: 'frase dos', origin: 'edited' }
                 ],
-                [{ sentenceIndex: 1, correctedSentence: 'frase dos alternativa' }]
+                [{ sentenceIndex: 1, correctedSentence: 'frase dos alternativa', comment: 'mejor' }]
             );
 
             assert.equal(state.length, 2);
-            assert.equal(state[0].decision, null);
-            assert.equal(state[1].decision, 'rejected');
-            assert.equal(state[1].alternative, 'frase dos alternativa');
-        });
-
-        it('solo permite terminar con todas las frases decididas y alternativas completas', () => {
-            assert.equal(canFinishSentenceReview([]), false);
-            assert.equal(canFinishSentenceReview([{ decision: 'accepted' }]), true);
-            assert.equal(canFinishSentenceReview([{ decision: 'rejected', alternative: '' }]), false);
-            assert.equal(canFinishSentenceReview([{ decision: 'rejected', alternative: 'otra frase' }]), true);
-            assert.equal(canFinishSentenceReview([
-                { decision: 'accepted' },
-                { decision: null }
-            ]), false);
-        });
-
-        it('resume las frases rechazadas para la decision global', () => {
-            const state = [
-                { sentenceIndex: 0, decision: 'accepted' },
-                { sentenceIndex: 2, decision: 'rejected' }
-            ];
-
-            assert.equal(hasRejectedSentence(state), true);
-            assert.equal(buildRejectedSentencesComment(state), 'Frases rechazadas: #2.');
+            assert.equal(state[0].persistedCorrection, false);
+            assert.equal(state[1].persistedCorrection, true);
+            assert.equal(state[1].correctedSentence, 'frase dos alternativa');
         });
     });
 
     describe('requiresComment', () => {
-        it('rejected y needs_fix exigen comentario', () => {
+        it('solo "rejected" ("No") exige comentario', () => {
             assert.equal(requiresComment('rejected'), true);
-            assert.equal(requiresComment('needs_fix'), true);
             assert.equal(requiresComment('accepted'), false);
-            assert.equal(requiresComment(null), false);
+            assert.equal(requiresComment(/** @type {any} */ (null)), false);
         });
     });
 
-    describe('isCriterionUnlocked', () => {
-        it('el primero siempre esta desbloqueado', () => {
-            const state = [{ code: 'a', decided: false }, { code: 'b', decided: false }];
-            assert.equal(isCriterionUnlocked(state, 'a'), true);
-            assert.equal(isCriterionUnlocked(state, 'b'), false);
+    describe('readDatasetIdFromLocation', () => {
+        it('lee datasetId de la query string', () => {
+            assert.equal(readDatasetIdFromLocation(/** @type {any} */ ({ search: '?datasetId=12' })), 12);
         });
 
-        it('un criterio se desbloquea cuando los anteriores estan decididos', () => {
-            const state = [
-                { code: 'a', decided: true },
-                { code: 'b', decided: false },
-                { code: 'c', decided: false }
-            ];
-            assert.equal(isCriterionUnlocked(state, 'b'), true);
-            assert.equal(isCriterionUnlocked(state, 'c'), false);
+        it('devuelve null sin datasetId valido (cola global)', () => {
+            assert.equal(readDatasetIdFromLocation(/** @type {any} */ ({ search: '' })), null);
+            assert.equal(readDatasetIdFromLocation(/** @type {any} */ ({ search: '?datasetId=0' })), null);
+            assert.equal(readDatasetIdFromLocation(/** @type {any} */ ({ search: '?datasetId=abc' })), null);
+            assert.equal(readDatasetIdFromLocation(/** @type {any} */ (null)), null);
         });
+    });
 
-        it('codigo desconocido devuelve false', () => {
-            assert.equal(isCriterionUnlocked([{ code: 'a', decided: false }], 'z'), false);
+    describe('messageFromResult', () => {
+        it('extrae message o code del resultado', () => {
+            assert.equal(messageFromResult({ data: { message: 'boom' } }), 'boom');
+            assert.equal(messageFromResult({ data: { code: 'criterion_locked' } }), 'criterion_locked');
+            assert.equal(messageFromResult({ status: 404, data: null }), 'HTTP 404');
+            assert.equal(messageFromResult(null), 'Error desconocido');
         });
     });
 

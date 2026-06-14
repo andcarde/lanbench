@@ -70,6 +70,7 @@ function buildDatasetsController(postSpy) {
         async addDatasetPermission(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(201).json({ ok: true }); },
         async updateDatasetPermission(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({ ok: true }); },
         async getDatasetStatistics(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({}); },
+        async renameDataset(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({ ok: true }); },
         async deleteDataset(/** @type {*} */ _req, /** @type {*} */ res) { return res.status(200).json({ ok: true }); },
         /**
          * Gets dataset text from the corresponding source.

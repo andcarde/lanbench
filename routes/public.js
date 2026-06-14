@@ -4,7 +4,7 @@
  * @file Public router (`/`, `/register`, `/login`) — pages accessible without
  * a session.
  *
- *   - `GET /`         redirects to `/tasks` or `/login` depending on whether there is a session.
+ *   - `GET /`         redirects to `/datasets` or `/login` depending on whether there is a session.
  *   - `GET /register` serves `public/register.html`.
  *   - `GET /login`    serves `public/login.html`.
  */
@@ -16,7 +16,7 @@ const router = express.Router();
 
 router.get('/', (request, response) => {
     if (request.session?.user)
-        return response.redirect('/tasks');
+        return response.redirect('/datasets');
 
     return response.redirect('/login');
 });

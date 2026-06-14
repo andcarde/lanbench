@@ -24,6 +24,7 @@
  */
 
 const defaultPrisma = require('../prisma/client');
+const { ENTRY_ANNOTATED, ENTRY_PENDING } = require('../constants/entry-status');
 
 /**
  * Builds the `Annotation` repository.
@@ -79,6 +80,9 @@ function createAnnotationsRepository({ prisma } = {}) {
             });
 
             if (rows.length === 0) {
+                // Clearing every sentence reverts the entry to `pending` so it is
+                // no longer surfaced as a review candidate (see review queue).
+                await setEntryStatus(tx, entry.id, ENTRY_PENDING);
                 return {
                     entryId: entry.id,
                     savedCount: 0
@@ -88,6 +92,14 @@ function createAnnotationsRepository({ prisma } = {}) {
             await tx.annotation.createMany({
                 data: rows.map(row => ({ ...row, entryId: entry.id }))
             });
+
+            // Saving at least one sentence marks the entry `annotated`, the single
+            // production transition that makes it eligible for the review queue
+            // (`reviews-repository.findReviewableEntries` filters `status =
+            // 'annotated'`). Re-annotating an already reviewed/disputed entry sets
+            // it back to `annotated`; the queue still excludes it while a terminal
+            // review exists, so this cannot silently re-open a closed review.
+            await setEntryStatus(tx, entry.id, ENTRY_ANNOTATED);
 
             return {
                 entryId: entry.id,
@@ -119,6 +131,23 @@ function createAnnotationsRepository({ prisma } = {}) {
         replaceForAccessibleEntry,
         countAnnotatedEntriesByUser
     };
+}
+
+/**
+ * Updates the lifecycle `status` of an entry inside an open transaction.
+ * Kept as a tiny helper so the two transition points (annotated / pending)
+ * share one shape and stay easy to find.
+ *
+ * @param {*} tx - Open Prisma transaction client.
+ * @param {number} entryId - Internal entry id.
+ * @param {string} status - Target lifecycle status.
+ * @returns {Promise<void>}
+ */
+async function setEntryStatus(tx, entryId, status) {
+    await tx.entry.update({
+        where: { id: entryId },
+        data: { status }
+    });
 }
 
 /**

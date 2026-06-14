@@ -34,7 +34,7 @@ $(document).ready(function () {
                 showToast('Login successful!', 'success');
                 // Brief delay so the success toast is visible before redirecting.
                 setTimeout(function () {
-                    window.location.href = (response && response.redirectUrl) || '/tasks';
+                    window.location.href = (response && response.redirectUrl) || '/datasets';
                 }, 400);
             })
             .fail(function (xhr) {

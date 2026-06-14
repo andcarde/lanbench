@@ -30,6 +30,7 @@
  * @property {number|null} datasetId
  * @property {number|null} sectionNumber
  * @property {boolean|null} isLastEntry
+ * @property {number} timeSpentSeconds
  */
 
 const { createAnnotationsService } = require('../services/annotations-service');
@@ -65,8 +66,19 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
             return;
         }
 
+        // `datasetId` is optional. When present, the dataset's AI credential may
+        // apply, so an authenticated user is required and the service validates
+        // access before resolving/using the credential. Without it, behaviour is
+        // the legacy global one (no session required, no providerConfig).
+        const datasetId = resolveCheckDatasetId(request.body, payload.entryContext);
+        const userId = resolveSessionUserId(request);
+        if (datasetId !== null && userId === null) {
+            respondUnauthenticated(response);
+            return;
+        }
+
         try {
-            const validations = await service.checkSentences(payload.sentences, payload.entryContext);
+            const validations = await service.checkSentences(payload.sentences, payload.entryContext, { userId, datasetId });
             response.status(200).json(validations);
             return;
         } catch (caughtError) {
@@ -102,7 +114,8 @@ function createAnnotationsController({ annotationsService, continueDatasetServic
                 rdfId: /** @type {number} */ (payload.entryId),
                 sentences: /** @type {SendSentenceItem[]} */ (payload.sentences),
                 ...(payload.sectionNumber !== null ? { sectionNumber: payload.sectionNumber } : {}),
-                ...(payload.isLastEntry !== null ? { isLastEntry: payload.isLastEntry } : {})
+                ...(payload.isLastEntry !== null ? { isLastEntry: payload.isLastEntry } : {}),
+                timeSpentSeconds: payload.timeSpentSeconds
             });
 
             response.status(200).json(savedAnnotation);
@@ -215,8 +228,24 @@ function normalizeEntryContext(entryContext) {
         category: normalized.category,
         englishSentences: normalized.englishSentences,
         triples: normalized.triples,
+        ...(normalized.datasetId ? { datasetId: normalized.datasetId } : {}),
         ...(previousSentences.length > 0 ? { previousSentences } : {})
     };
+}
+
+/**
+ * Resolves the optional `datasetId` for `POST /check` from the entry context or
+ * the request body. Returns `null` when none is provided.
+ *
+ * @param {Record<string, any>|null|undefined} body
+ * @param {Record<string, any>|null|undefined} entryContext
+ * @returns {number|null}
+ */
+function resolveCheckDatasetId(body, entryContext) {
+    const fromContext = toPositiveInteger(entryContext?.datasetId);
+    if (fromContext !== null)
+        return fromContext;
+    return toPositiveInteger(body?.datasetId);
 }
 
 /**
@@ -230,7 +259,9 @@ function normalizeEntryContext(entryContext) {
  */
 function normalizeSendPayload(payload) {
     if (!payload || typeof payload !== 'object')
-        return { sentences: null, entryId: null, datasetId: null, sectionNumber: null, isLastEntry: null };
+        return { sentences: null, entryId: null, datasetId: null, sectionNumber: null, isLastEntry: null, timeSpentSeconds: 0 };
+
+    const rawSeconds = Number(payload.timeSpentSeconds);
 
     return {
         sentences: payload.sentences,
@@ -241,7 +272,8 @@ function normalizeSendPayload(payload) {
             : null,
         isLastEntry: payload.isLastEntry !== undefined && payload.isLastEntry !== null
             ? Boolean(payload.isLastEntry)
-            : null
+            : null,
+        timeSpentSeconds: Number.isFinite(rawSeconds) && rawSeconds > 0 ? Math.floor(rawSeconds) : 0
     };
 }
 

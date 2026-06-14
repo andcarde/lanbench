@@ -12,6 +12,13 @@
  * `response.locals.serverErrorReason` with the original reason. If missing, it
  * falls back to `response.statusMessage`.
  *
+ * Handled-failure contract: some actions return HTTP 200 with an
+ * `{ ok:false }` envelope (e.g. the credential "check" that catches a provider
+ * failure). Those never reach a 500, so they would leave no trace. A controller
+ * can opt such a response into the error log by setting
+ * `response.locals.logAnomaly = true` (plus `serverErrorReason`), without
+ * changing the status code it returns to the client.
+ *
  * @typedef {import('express').Request}       ExpressRequest
  * @typedef {import('express').Response}      ExpressResponse
  * @typedef {import('express').NextFunction}  ExpressNext
@@ -69,7 +76,7 @@ function createRequestLogMiddleware({ logsDirectory = DEFAULT_LOGS_DIRECTORY } =
         }
 
         response.on('finish', () => {
-            if (response.statusCode !== 500)
+            if (!shouldLogAsServerError(response.statusCode, response.locals))
                 return;
 
             const now = new Date();
@@ -83,6 +90,19 @@ function createRequestLogMiddleware({ logsDirectory = DEFAULT_LOGS_DIRECTORY } =
         next();
     };
 }
+
+/**
+ * Decides whether a finished response must be recorded in the daily error log.
+ * True for every `500`, and also for any response a controller explicitly
+ * flagged as an anomaly via `response.locals.logAnomaly` (handled failures that
+ * still answer 2xx — see the module contract).
+ *
+ * @param {number} statusCode
+ * @param {Record<string, any>|null|undefined} locals
+ * @returns {boolean}
+ */
+const shouldLogAsServerError = (statusCode, locals) =>
+    statusCode === 500 || Boolean(locals && locals.logAnomaly);
 
 /**
  * Pads a number with leading zeros up to `size` characters.
@@ -154,7 +174,11 @@ const sanitizePayload = (payload) => {
     if (!payload || typeof payload !== 'object')
         return payload;
 
-    const sensitive = ['password', 'passwd', 'pwd', 'token', 'authorization'];
+    // Controlled substring tokens. `apikey`/`api_key`/`credential`/`secret` are
+    // added for the per-dataset AI credentials (US-31). The bare `key` token is
+    // intentionally NOT used, so legitimate masked fields like `keyLast4` are
+    // never redacted.
+    const sensitive = ['password', 'passwd', 'pwd', 'token', 'authorization', 'apikey', 'api_key', 'credential', 'secret'];
     /** @type {any} */
     const copy = Array.isArray(payload) ? [...payload] : { ...(/** @type {object} */ (payload)) };
 
@@ -239,5 +263,7 @@ const ensureLogFileInitialized = async (logsDirectory, filePath) => {
 };
 
 module.exports = {
-    createRequestLogMiddleware
+    createRequestLogMiddleware,
+    sanitizePayload,
+    shouldLogAsServerError
 };

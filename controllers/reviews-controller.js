@@ -85,10 +85,17 @@ function createReviewsController({ reviewsService } = {}) {
         if (!reviewId || !body.criterionCode || !body.decision)
             return respondInvalidPayload(response, 'Datos invalidos.');
 
+        // `sentenceIndex` identifies the evaluated phrase; absent or non-integer
+        // means the review-level criterion (e.g. diversity).
+        const sentenceIndex = Number.isInteger(body.sentenceIndex) && body.sentenceIndex >= 0
+            ? body.sentenceIndex
+            : null;
+
         try {
             const updated = await service.submitDecision({
                 reviewId,
                 reviewerId,
+                sentenceIndex,
                 criterionCode: body.criterionCode,
                 decision: body.decision,
                 comment: body.comment || null
@@ -141,8 +148,13 @@ function createReviewsController({ reviewsService } = {}) {
         if (!reviewId)
             return respondInvalidPayload(response, 'Identificador invalido.');
 
+        const body = request.body && typeof request.body === 'object' ? request.body : {};
+        const timeSpentSeconds = Number.isFinite(Number(body.timeSpentSeconds))
+            ? Number(body.timeSpentSeconds)
+            : 0;
+
         try {
-            const updated = await service.finalizeReview({ reviewId, reviewerId });
+            const updated = await service.finalizeReview({ reviewId, reviewerId, timeSpentSeconds });
             return response.status(200).json(updated);
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));

@@ -66,7 +66,10 @@ describe('users-repository isModerator projection', () => {
         assert.equal(capturedArgs.length, 1);
         assert.deepEqual(capturedArgs[0], {
             where: { id: 42 },
-            data: { isModerator: true }
+            data: { isModerator: true },
+            // Only safe fields are selected back so the password never leaves
+            // the repository on a role change (US-22 admin surface).
+            select: { id: true, email: true, isModerator: true }
         });
     });
 });

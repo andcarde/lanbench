@@ -36,10 +36,10 @@ const {
     REVIEW_DECISION_REJECTED
 } = require('../../../constants/review-decision');
 const {
-    CRITERION_GRAMMAR,
-    CRITERION_COVERAGE,
-    getOrderedCriterionCodes
+    getPhraseCriterionCodes
 } = require('../../../constants/review-criterion');
+
+const PHRASE_CODES = getPhraseCriterionCodes();
 const { ENTRY_DISPUTED, ENTRY_ANNOTATED } = require('../../../constants/entry-status');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
@@ -124,21 +124,30 @@ function buildInMemoryRepo(/** @type {any[]} */ initialEntries = []) {
             if (status) r.status = status;
             return { ...r };
         },
-        async upsertDecision(/** @type {*} */ { reviewId, criterionCode, decision, comment = null }) {
+        async upsertDecision(/** @type {*} */ { reviewId, sentenceIndex = null, criterionCode, decision, comment = null }) {
+            const normalized = Number.isInteger(sentenceIndex) ? sentenceIndex : null;
             const list = decisionsByReview.get(reviewId) || [];
-            const existing = list.find((/** @type {*} */ d) => d.criterionCode === criterionCode);
+            const existing = list.find((/** @type {*} */ d) => d.sentenceIndex === normalized && d.criterionCode === criterionCode);
             if (existing) {
                 existing.decision = decision;
                 existing.comment = comment;
                 existing.decidedAt = new Date();
             } else {
-                list.push({ reviewId, criterionCode, decision, comment, decidedAt: new Date() });
+                list.push({ reviewId, sentenceIndex: normalized, criterionCode, decision, comment, decidedAt: new Date() });
             }
             decisionsByReview.set(reviewId, list);
             return list[list.length - 1];
         },
         async findDecisionsByReview(/** @type {*} */ { reviewId }) {
             return (decisionsByReview.get(reviewId) || []).map((/** @type {*} */ d) => ({ ...d }));
+        },
+        async findAnnotatedSentenceIndexes(/** @type {*} */ { entryId, annotatorId }) {
+            const e = entries.get(entryId);
+            if (!e) return [];
+            return (e.annotations || [])
+                .filter((/** @type {*} */ a) => a.userId === annotatorId)
+                .map((/** @type {*} */ a) => a.sentenceIndex)
+                .sort((/** @type {*} */ a, /** @type {*} */ b) => a - b);
         },
         async createComment(/** @type {*} */ payload) {
             const list = commentsByReview.get(payload.reviewId) || [];
@@ -327,57 +336,62 @@ describe('reviews workflow integration (T4.7)', function () {
         const requestRes = await agent.post('/api/reviews/request');
         const reviewId = requestRes.data.reviewId;
 
+        // Skipping the 2nd criterion of phrase #0 before the 1st is decided.
         const skip = await agent.post(`/api/reviews/${reviewId}/decisions`, {
-            criterionCode: CRITERION_COVERAGE,
+            sentenceIndex: 0,
+            criterionCode: PHRASE_CODES[1],
             decision: REVIEW_DECISION_ACCEPTED
         });
         assert.equal(skip.status, 409);
         assert.equal(skip.data.code, 'criterion_locked');
 
         const ok1 = await agent.post(`/api/reviews/${reviewId}/decisions`, {
-            criterionCode: CRITERION_GRAMMAR,
+            sentenceIndex: 0,
+            criterionCode: PHRASE_CODES[0],
             decision: REVIEW_DECISION_ACCEPTED
         });
         assert.equal(ok1.status, 200);
-        assert.equal(ok1.data.currentCriterionIndex, 1);
         assert.equal(ok1.data.status, REVIEW_IN_PROGRESS);
 
         const noComment = await agent.post(`/api/reviews/${reviewId}/decisions`, {
-            criterionCode: CRITERION_COVERAGE,
+            sentenceIndex: 0,
+            criterionCode: PHRASE_CODES[1],
             decision: REVIEW_DECISION_REJECTED
         });
         assert.equal(noComment.status, 400);
         assert.equal(noComment.data.code, 'comment_required');
 
         const withComment = await agent.post(`/api/reviews/${reviewId}/decisions`, {
-            criterionCode: CRITERION_COVERAGE,
+            sentenceIndex: 0,
+            criterionCode: PHRASE_CODES[1],
             decision: REVIEW_DECISION_REJECTED,
             comment: 'falta entidad'
         });
         assert.equal(withComment.status, 200);
-        assert.equal(withComment.data.currentCriterionIndex, 2);
+        assert.equal(withComment.data.status, REVIEW_IN_PROGRESS);
     });
 
-    it('Escenario 3 — correccion de texto exige comentario', async () => {
+    it('Escenario 3 — correccion de texto: comentario opcional, texto obligatorio', async () => {
         const agent = makeAgent(baseUrl, users.reviewer1);
 
         const requestRes = await agent.post('/api/reviews/request');
         const reviewId = requestRes.data.reviewId;
 
-        const noComment = await agent.post(`/api/reviews/${reviewId}/corrections`, {
+        // The justification lives in the rejected criterion's "Motivo": a
+        // correction without its own comment is now accepted.
+        const withoutComment = await agent.post(`/api/reviews/${reviewId}/corrections`, {
             sentenceIndex: 0,
             correctedSentence: 'frase corregida'
         });
-        assert.equal(noComment.status, 400);
-        assert.equal(noComment.data.code, 'comment_required');
+        assert.equal(withoutComment.status, 200);
+        assert.equal(withoutComment.data.comments.length, 1);
 
-        const withComment = await agent.post(`/api/reviews/${reviewId}/corrections`, {
+        const emptyCorrection = await agent.post(`/api/reviews/${reviewId}/corrections`, {
             sentenceIndex: 0,
-            correctedSentence: 'frase corregida',
-            comment: 'mejorar conexion'
+            correctedSentence: '   '
         });
-        assert.equal(withComment.status, 200);
-        assert.equal(withComment.data.comments.length, 1);
+        assert.equal(emptyCorrection.status, 400);
+        assert.equal(emptyCorrection.data.code, 'invalid_correction');
     });
 
     it('Escenario 4 — finalizacion clasifica entry como disputed cuando hay rechazo', async () => {
@@ -387,14 +401,14 @@ describe('reviews workflow integration (T4.7)', function () {
         const reviewId = requestRes.data.reviewId;
         const entryId = requestRes.data.entryId;
 
-        const codes = getOrderedCriterionCodes();
-        for (let i = 0; i < codes.length; i++) {
+        // Single annotated phrase (#0): decide its five criteria, one rejected.
+        for (let i = 0; i < PHRASE_CODES.length; i++) {
             const decision = i === 1 ? REVIEW_DECISION_REJECTED : REVIEW_DECISION_ACCEPTED;
             /** @type {Record<string, any>} */
-            const body = { criterionCode: codes[i], decision };
+            const body = { sentenceIndex: 0, criterionCode: PHRASE_CODES[i], decision };
             if (decision === REVIEW_DECISION_REJECTED) body.comment = 'rev';
             const res = await agent.post(`/api/reviews/${reviewId}/decisions`, body);
-            assert.equal(res.status, 200, `criterio ${codes[i]} ${decision}`);
+            assert.equal(res.status, 200, `criterio ${PHRASE_CODES[i]} ${decision}`);
         }
 
         const finalize = await agent.post(`/api/reviews/${reviewId}/finalize`);

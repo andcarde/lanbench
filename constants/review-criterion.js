@@ -3,8 +3,18 @@
 /**
  * @file Catalogue of criteria used in the annotation review process.
  *
- * Each criterion includes a stable code (for DB and APIs), a visible `label`
- * and a `description` shown to the reviewer.
+ * The reviewer flow evaluates two distinct families of criteria (see `US-13`
+ * and TECHNICAL-DESIGN.md §2.6 / §4.2):
+ *
+ *   - **Per-phrase criteria** ({@link PHRASE_CRITERIA}): judged independently
+ *     for every annotated sentence of the entry. Each annotated sentence keeps
+ *     its own decision for every one of these five criteria.
+ *   - **Review-level criteria** ({@link REVIEW_CRITERIA}): decided once for the
+ *     whole entry because they are inherently comparative across sentences.
+ *     `diversity` (lexical variety across the set of phrases) is the only one.
+ *
+ * Each criterion exposes a stable `code` (used in the DB and the API), a
+ * visible `label` and a `description` shown to the reviewer.
  *
  * @typedef {import('../types/typedefs').ReviewCriterionCode} ReviewCriterionCode
  *
@@ -14,70 +24,113 @@
  * @property {string} description
  */
 
-/** @type {'criterion_grammar'} */
-const CRITERION_GRAMMAR = 'criterion_grammar';
-/** @type {'criterion_coverage'} */
-const CRITERION_COVERAGE = 'criterion_coverage';
-/** @type {'criterion_diversity'} */
-const CRITERION_DIVERSITY = 'criterion_diversity';
-/** @type {'criterion_semantic_fidelity'} */
-const CRITERION_SEMANTIC_FIDELITY = 'criterion_semantic_fidelity';
-
 /**
- * Ordered, immutable list of criteria.
+ * Per-phrase evaluation criteria, in the order the wizard presents them. The
+ * next criterion of a phrase stays locked until the current one is decided.
  * @type {ReadonlyArray<ReviewCriterion>}
  */
-const ORDERED_CRITERIA = Object.freeze([
+const PHRASE_CRITERIA = Object.freeze(/** @type {ReviewCriterion[]} */ ([
     {
-        code: CRITERION_GRAMMAR,
-        label: 'Gramática y ortografía',
-        description: 'La frase es gramaticalmente correcta y no contiene errores ortográficos.'
+        code: 'naturalness',
+        label: 'Naturalidad',
+        description: '¿La frase suena natural para una persona hispanohablante?'
     },
     {
-        code: CRITERION_COVERAGE,
-        label: 'Cobertura de triples',
-        description: 'La frase cubre todos los triples relevantes de la entry.'
+        code: 'fluency',
+        label: 'Fluidez',
+        description: '¿La redacción de la frase es fluida y gramaticalmente correcta?'
     },
     {
-        code: CRITERION_DIVERSITY,
-        label: 'Diversidad lingüística',
-        description: 'Las frases del envío presentan suficiente variedad léxica y estructural.'
+        code: 'adequacy',
+        label: 'Adecuación',
+        description: '¿El significado de la frase se corresponde con los triples y la referencia?'
     },
     {
-        code: CRITERION_SEMANTIC_FIDELITY,
-        label: 'Fidelidad semántica',
-        description: 'El contenido refleja fielmente la información del RDF y la referencia inglesa.'
+        code: 'completeness',
+        label: 'Completitud',
+        description: '¿La frase expresa toda la información relevante que le corresponde?'
+    },
+    {
+        code: 'coverage',
+        label: 'Cobertura',
+        description: '¿La frase cubre los triples que le atañen?'
     }
-]);
+]).map(c => Object.freeze(c)));
 
 /**
- * List of codes in the same order as {@link ORDERED_CRITERIA}.
- * @type {ReadonlyArray<ReviewCriterionCode>}
+ * Review-level criteria, decided once for the whole entry. `diversity` is
+ * comparative across all the sentences, so it is not evaluated per phrase.
+ * @type {ReadonlyArray<ReviewCriterion>}
  */
-const ALL_CRITERION_CODES = Object.freeze(ORDERED_CRITERIA.map(c => c.code));
+const REVIEW_CRITERIA = Object.freeze(/** @type {ReviewCriterion[]} */ ([
+    {
+        code: 'diversity',
+        label: 'Diversidad',
+        description: '¿El conjunto de frases aporta variedad léxica? (criterio global de la entry)'
+    }
+]).map(c => Object.freeze(c)));
+
+/** @type {ReadonlyArray<ReviewCriterionCode>} */
+const PHRASE_CRITERION_CODES = Object.freeze(PHRASE_CRITERIA.map(c => c.code));
+/** @type {ReadonlyArray<ReviewCriterionCode>} */
+const REVIEW_CRITERION_CODES = Object.freeze(REVIEW_CRITERIA.map(c => c.code));
+/** @type {ReadonlyArray<ReviewCriterionCode>} */
+const ALL_CRITERION_CODES = Object.freeze([...PHRASE_CRITERION_CODES, ...REVIEW_CRITERION_CODES]);
 
 /**
- * Returns a mutable copy of the ordered list of criteria.
- * Each criterion is itself a copy (not shared with the catalogue).
- *
+ * Returns a mutable copy of the per-phrase criteria (each criterion copied).
  * @returns {ReviewCriterion[]}
  */
-function getOrderedCriteria() {
-    return ORDERED_CRITERIA.map(c => ({ ...c }));
+function getPhraseCriteria() {
+    return PHRASE_CRITERIA.map(c => ({ ...c }));
 }
 
 /**
- * Returns a mutable copy of the list of codes.
- *
+ * Returns a mutable copy of the review-level criteria (each criterion copied).
+ * @returns {ReviewCriterion[]}
+ */
+function getReviewCriteria() {
+    return REVIEW_CRITERIA.map(c => ({ ...c }));
+}
+
+/**
+ * Returns a mutable copy of the per-phrase criterion codes, in order.
  * @returns {ReviewCriterionCode[]}
  */
-function getOrderedCriterionCodes() {
-    return ALL_CRITERION_CODES.slice();
+function getPhraseCriterionCodes() {
+    return PHRASE_CRITERION_CODES.slice();
 }
 
 /**
- * Type-guard: checks whether a value matches a known criterion code.
- *
+ * Returns a mutable copy of the review-level criterion codes, in order.
+ * @returns {ReviewCriterionCode[]}
+ */
+function getReviewCriterionCodes() {
+    return REVIEW_CRITERION_CODES.slice();
+}
+
+/**
+ * Type-guard: whether the code is a per-phrase criterion.
+ * @param {unknown} code
+ * @returns {code is ReviewCriterionCode}
+ */
+function isPhraseCriterion(code) {
+    return typeof code === 'string'
+        && /** @type {ReadonlyArray<string>} */ (PHRASE_CRITERION_CODES).includes(code);
+}
+
+/**
+ * Type-guard: whether the code is a review-level criterion.
+ * @param {unknown} code
+ * @returns {code is ReviewCriterionCode}
+ */
+function isReviewCriterion(code) {
+    return typeof code === 'string'
+        && /** @type {ReadonlyArray<string>} */ (REVIEW_CRITERION_CODES).includes(code);
+}
+
+/**
+ * Type-guard: whether the code is a known criterion (phrase or review-level).
  * @param {unknown} code
  * @returns {code is ReviewCriterionCode}
  */
@@ -87,23 +140,27 @@ function isValidCriterionCode(code) {
 }
 
 /**
- * Position of the criterion in the ordered list (or -1 if it does not exist).
- *
+ * Position of a per-phrase criterion in {@link PHRASE_CRITERIA} (or -1). Used by
+ * the per-phrase wizard guard to keep later criteria of a phrase locked.
  * @param {string} code
  * @returns {number}
  */
-function getCriterionIndex(code) {
-    return /** @type {ReadonlyArray<string>} */ (ALL_CRITERION_CODES).indexOf(code);
+function getPhraseCriterionIndex(code) {
+    return /** @type {ReadonlyArray<string>} */ (PHRASE_CRITERION_CODES).indexOf(code);
 }
 
 module.exports = {
-    CRITERION_GRAMMAR,
-    CRITERION_COVERAGE,
-    CRITERION_DIVERSITY,
-    CRITERION_SEMANTIC_FIDELITY,
+    PHRASE_CRITERIA,
+    REVIEW_CRITERIA,
+    PHRASE_CRITERION_CODES,
+    REVIEW_CRITERION_CODES,
     ALL_CRITERION_CODES,
-    getOrderedCriteria,
-    getOrderedCriterionCodes,
+    getPhraseCriteria,
+    getReviewCriteria,
+    getPhraseCriterionCodes,
+    getReviewCriterionCodes,
+    isPhraseCriterion,
+    isReviewCriterion,
     isValidCriterionCode,
-    getCriterionIndex
+    getPhraseCriterionIndex
 };

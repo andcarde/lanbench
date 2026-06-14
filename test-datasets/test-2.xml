@@ -1,0 +1,152 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="Airport" eid="1" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | demonym | Texan</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | demonym | Texan</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The people of Texas are known as Texans.</lex>
+      <lex comment="" lang="ru" lid="Id1">Жители Техаса известны как техасцы.</lex>
+      <lex comment="" lang="en" lid="Id2">The inhabitants of Texas have the demonym Texan.</lex>
+      <lex comment="" lang="ru" lid="Id2">У жителей Техаса этнохороним - техасец.</lex>
+      <lex comment="" lang="en" lid="Id3">The people of Texas are called Texans.</lex>
+      <lex comment="" lang="ru" lid="Id3">Жителей Техаса называют техасцами.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Texan | sameAs | техасский/техасец</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="2" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | language | English_language</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | language | English_language</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">English is spoken in Texas.</lex>
+      <lex comment="" lang="ru" lid="Id1">В Техасе говорят по-английски.</lex>
+      <lex comment="" lang="en" lid="Id2">English is the language of Texas.</lex>
+      <lex comment="" lang="ru" lid="Id2">Английский язык - язык Техаса.</lex>
+      <lex comment="" lang="en" lid="Id3">The language spoken in Texas is English.</lex>
+      <lex comment="" lang="ru" lid="Id3">Язык, на котором говорят в Техасе, - английский.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">English_language | sameAs | Английский_язык</dbpedialink>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="3" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Texas | language | Spanish_language</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Texas | language | Spanish_language</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Spanish is spoken in Texas.</lex>
+      <lex comment="" lang="ru" lid="Id1">На испанском языке говорят в Техасе.</lex>
+      <lex comment="" lang="en" lid="Id2">Spanish is a language spoken in Texas.</lex>
+      <lex comment="" lang="ru" lid="Id2">Испанский - язык, на котором говорят в Техасе.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Spanish_language | sameAs | Испанский_язык</dbpedialink>
+        <dbpedialink direction="en2ru">Texas | sameAs | Техас</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="4" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Tirstrup | country | Denmark</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Tirstrup | country | Denmark</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Tirstrup is located in the country of Denmark.</lex>
+      <lex comment="" lang="ru" lid="Id1">Тирструп находится в Дании.</lex>
+      <lex comment="" lang="en" lid="Id2">Tirstrup is in the country of Denmark.</lex>
+      <lex comment="" lang="ru" lid="Id2">Тирструп находится в Дании.</lex>
+      <lex comment="" lang="en" lid="Id3">Tirstrup is in Denmark.</lex>
+      <lex comment="" lang="ru" lid="Id3">Тирструп находится в Дании.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Denmark | sameAs | Дания</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Tirstrup | sameAs | Тирструп</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="5" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Tirstrup | isPartOf | Central_Denmark_Region</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>Tirstrup | subdivisionName | Central_Denmark_Region</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Tirstrup | isPartOf | Central_Denmark_Region</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Tirstrup is part of the Central Denmark region.</lex>
+      <lex comment="" lang="ru" lid="Id1">Тирструп - часть региона Центральной Ютландии.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Central_Denmark_Region | sameAs | Центральная_Ютландия_(область)</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Tirstrup | sameAs | Тирструп</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="6" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Tirstrup | subdivisionName | Denmark</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Tirstrup | isPartOf | Denmark</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Tirstrup is part of Denmark.</lex>
+      <lex comment="" lang="ru" lid="Id1">Тирструп - часть Дании.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Denmark | sameAs | Дания</dbpedialink>
+      </dbpedialinks>
+      <links>
+        <link direction="en2ru">Tirstrup | sameAs | Тирструп</link>
+      </links>
+    </entry>
+    <entry category="Airport" eid="7" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Turkmenistan_Airlines | headquarters | Ashgabat</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>Turkmenistan_Airlines | headquarter | Ashgabat</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Turkmenistan_Airlines | headquarter | Ashgabat</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The headquarters of Turkmenistan Airlines are located in Ashgabat.</lex>
+      <lex comment="" lang="ru" lid="Id1">Штаб-квартира авиакомпании «Туркменские авиалинии» находится в Ашхабаде.</lex>
+      <lex comment="" lang="en" lid="Id2">The headquarters of Turkmenistan Airlines are in Ashgabat.</lex>
+      <lex comment="" lang="ru" lid="Id2">Штаб-квартира авиакомпании &quot;Туркменские авиалинии&quot; находится в Ашхабаде.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Ashgabat | sameAs | Ашхабад</dbpedialink>
+        <dbpedialink direction="en2ru">Turkmenistan_Airlines | sameAs | Туркменские_авиалинии</dbpedialink>
+      </dbpedialinks>
+    </entry>
+    <entry category="Airport" eid="8" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Turkmenistan_Airlines | headquarters | Turkmenistan</otriple>
+      </originaltripleset>
+      <originaltripleset>
+        <otriple>Turkmenistan_Airlines | headquarter | Turkmenistan</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Turkmenistan_Airlines | headquarter | Turkmenistan</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The headquarters of Turkmenistan Airlines are located in Turkmenistan.</lex>
+      <lex comment="" lang="ru" lid="Id1">Штаб-квартира авиакомпании &quot;Туркменские авиалинии&quot; находится в Туркменистане.</lex>
+      <lex comment="" lang="en" lid="Id2">The headquarters of Turkmenistan Airlines are in Turkmenistan.</lex>
+      <lex comment="" lang="ru" lid="Id2">Штаб-квартира авиакомпании Туркменские авиалинии находится в Туркменистане.</lex>
+      <dbpedialinks>
+        <dbpedialink direction="en2ru">Turkmenistan | sameAs | Туркмения</dbpedialink>
+        <dbpedialink direction="en2ru">Turkmenistan_Airlines | sameAs | Туркменские_авиалинии</dbpedialink>
+      </dbpedialinks>
+    </entry>
+  </entries>
+</benchmark>

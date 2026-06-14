@@ -1,0 +1,68 @@
+
+\chapter{Herramientas y procesos en la construcción de WebNLG}
+
+\section{Herramientas, metodologías y validación en la construcción y ampliación de WebNLG}
+
+\subsection{Ampliación multilingüe}
+
+El desarrollo de versiones multilingües del conjunto de datos WebNLG ha seguido una metodología iterativa que combina procesos de revisión humana estructurada con uso de herramientas de traducción automática neuronal. En particular, la edición WebNLG+ 2020 adoptó un enfoque bilingüe y bidireccional en el que, además de la tarea clásica de generación de texto a partir de RDF, se incorporó la tarea inversa de extracción estructurada (\textit{text-to-RDF}) (Castro Ferreira et al., 2020). Para la ampliación del dataset al ruso, las lexicalizaciones originales en inglés fueron en primera fase traducidas mediante sistemas de traducción automática neuronal, tras lo cual se aplicó un proceso de posedición con intervención humana a través de plataformas de \textit{crowdsourcing}. En concreto, se empleó Yandex.Toloka para realizar una doble fase de corrección y verificación, incorporando mecanismos de retroalimentación cuando se detectaban errores semánticos o inconsistencias (Castro Ferreira et al., 2020).
+
+/* Tareas 03.03.2026
+ * Ver en detalle el uso de Yandex.Toloka en WebNLG, viabilidad para
+ * mi proyecto y descripción general de la plataforma y roles de usuario.
+ * Caso típico aparte de WebNLG
+ */
+
+Este procedimiento permitió aumentar la productividad manteniendo la calidad, es decir, que la traducción sea fidedigna al grafo RDF. La utilización de enlaces de entidades (\textit{entity pointers}), apoyados en relaciones como \texttt{sameAs} en DBpedia, facilitó la correcta traducción y alineación de nombres propios y entidades complejas, reduciendo errores de desambiguación (Castro Ferreira et al., 2020). Este modelo metodológico resulta directamente transferible a la ampliación hacia nuevas lenguas, como el español, siempre que se mantenga la estructura de control en las distintas fases: generación automática inicial, posedición humana y validación experta final.
+
+\subsection{Validación de RDF}
+
+La validez de los datos RDF puede analizarse en tres niveles complementarios: sintáctico, estructural y semántico.
+
+En primer lugar, la validez sintáctica implica que las tripletas generadas puedan ser correctamente segmentadas, es decir, parseadas por herramientas estándar de RDF, tales como Apache Jena o Eclipse RDF4J. Este nivel garantiza la conformidad con el formato RDF.
+
+En segundo lugar, la validación estructural puede abordarse mediante lenguajes de definición de restricciones como SHACL (\textit{Shapes Constraint Language}) o ShEx (\textit{Shape Expressions}), que permiten especificar cardinalidades, tipos de datos y relaciones obligatorias entre nodos (Knublauch \& Kontokostas, 2017). La utilización de validadores SHACL o ShEx posibilita comprobar automáticamente si un conjunto de triples cumple las restricciones ontológicas previstas, lo que resulta particularmente útil en tareas de generación automática. El uso de estos esquemas SHACL o ShEx se complementa con herramientas capaces de inferir esquemas SHACL o ShEx a partir de grafos RDF ya validados, contribuyendo así a la formalización progresiva del modelo de datos (RDF Validation Survey, 2022).
+
+En tercer lugar, la validación semántica es la más compleja de todas. Se pueden utilizar LLMs (large language models) para generar el RDF siendo este validado por humanos (Human-in-the-Loop) o al revés, que este sea generado por humanos y que varios LLMs propongan mejoras que tendrán que ser aprobadas por humanos o incluso que evalúan su calidad, siendo una métrica de atención.
+
+\subsection{Estandarización del dataset}
+
+La formalización de WebNLG como benchmark se apoya en una documentación estructurada que especifica el formato de las \textit{entries}, la diferenciación entre \texttt{originaltripleset} y \texttt{modifiedtripleset}, y la anotación de lexicalizaciones (WebNLG GitHub Repository). Esto sigue la directivao GEM (\textit{General Evaluation of NLG}) que a través de \textit{data cards}, se describen de manera transparente los objetivos, limitaciones, sesgos y usos previstos del dataset (Gehrmann et al., 2021). 
+
+El seguimiento del estándar y documentación en una eventual extensión multilingüe al español permitiría garantizar la coherencia metodológica y la interoperabilidad.
+
+\textit{Human-in-the-Loop}
+
+En el ámbito de la inteligencia artificial, el enfoque \textit{Human-in-the-Loop} (HITL) se define como una característica metodológica en la que la intervención humana se integra de manera explícita dentro de un proceso automatizado con el propósito de incrementar la calidad del resultado, validar el estado del sistema y aplicar correcciones tanto sobre el producto generado como sobre los parámetros internos del modelo. HITL implica la participación activa de agentes humanos en puntos críticos del flujo de trabajo de un sistema de IA, incrementando las capacidades de detección del contexto y de evaluación del sistema gracias a expertos humanos \cite{IBM_HITL_Definition, Cloud_HITL_Definition}.
+
+Este enfoque puede implementarse en distintas fases del ciclo de vida de un sistema: durante el desarrollo del producto, en el entrenamiento del modelo, en la validación de los resultados o en su despliegue operativo. A diferencia de los paradigmas completamente automáticos, los procesos basados en HITL incorporan supervisión humana para mitigar limitaciones estructurales de los modelos, tales como errores conceptuales, alucinaciones, inconsistencias internas o la propagación de estados intermedios defectuosos \cite{Wu2021_HITL_Survey}. 
+
+Además, la participación humana no se limita a la corrección puntual de errores, sino que puede desempeñar un papel estratégico, ya que gracias a un mejor análisis global del sistema se puede rediseñar la arquitectura del mismo. La evaluación humana experta permite identificar ineficiencias estructurales, rediseñar flujos de trabajo conforme a principios de optimización —enfoque metodológico \textit{LEAN}— y reorganizar los recursos computacionales de forma más eficiente. De este modo, el paradigma HITL no sólo actúa como mecanismo de control de calidad, sino también como instrumento de mejora continua del proceso \cite{MosqueiraRey2023_HITL}.
+
+\subsection{Human-in-the-Loop en WebNLG}
+
+En la edición de 2020, tras la traducción automática inicial, las lexicalizaciones fueron sometidas a evaluación humana con edición mediante plataformas de microtareas, seguidas de controles automáticos adicionales y revisión experta final (Castro Ferreira et al., 2020). Este modelo iterativo permite reducir los errores cometidos por los expertos, permitiendo un registro de errores que podrían mejorar tanto la calidad de evaluadores automáticos que mejoren la capacidad de las métricas usuales.
+
+\subsection{Toloka}
+
+Toloka es una empresa neerlandesa con presencia en US, Israel, Switzerland y Serbia (https://platform.toloka.ai/) que fue desarollada originalmente dentro del ecosistema Yandex. Su misión es la proporcionar y curar datos para el entrenamiento de modelos de IA.
+
+Métodologías utilizadas por Toloka son la validación cruzada, \textit{golden sets} y solapamiento dinámico entre otros. Además, los modelos que se beneficían más de la plataforma son aquellos basados en Supervised Fine-Tuning (SFT) y Reinforcement Learning from Human Feedback (RLHF).
+
+Uno de los benchmarks más famosos de Toloka es U-MATHv, utilizado ampliamente a la hora de medir la capacidad de razonamiento matemático de los modelos LLMs (large language models).
+
+A través de la plataforma se permite configurar definir la tarea, poner documentación, incluidos casos de ejemplos más poner restricciones a los participantes que vayan a ejecutar la tarea como idiomas (ej: español) y conocimientos adicionales. La estrategia básica es pedir a los participantes que generen varias sentencias naturales y distintas, respetando la valided semántica y ortográfica. La tarifa estándar es de 0.34\$ por tarea y minuto en la que se incluye el pago al experto (60\%), la comisión de la plataforma (20\%) y una revisión por LLM que pondere la calidad (20\%).
+
+El crowdsourcing permite obtener grandes bases de datos anotados a través de participantes independientes.
+
+// Comprobar fuente
+En el WebNLG Challenge de 2020 se utilizo Toloka para anotar el ruso y AMT para anotar el inglés.
+
+// Poner todas las métricas y desarrolarlas: natural, cierto, completo y diverso
+
+// Par de perfiles de administrador /usuario.
+// Llamada a Lamma v3
+// Ivestigar si es mejor llamar a la API de Google (se puede ver en
+configuracion de la herramienta).
+
+// Ver si se pueden meter metodologías de Toloka en la web

@@ -233,6 +233,13 @@ body {
   background: #e8d99f;
 }
 
+.btn-new-dataset:disabled,
+.btn-new-dataset:disabled:hover {
+  background: #efe1af;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .dataset-tooltip {
   position: fixed;
   z-index: 9999;

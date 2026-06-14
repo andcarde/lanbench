@@ -160,4 +160,45 @@ describe('section-assignments-repository', () => {
             assert.equal(updateManyCalls[0].data.status, 'released');
         });
     });
+
+    describe('addTimeToActiveAssignment', () => {
+        it('incrementa timeSpentSeconds de la asignación activa', async () => {
+            /** @type {any[]} */
+            const updateManyCalls = [];
+            const repo = createSectionAssignmentsRepository({
+                prisma: buildFakePrisma({
+                    async updateMany(/** @type {*} */ payload) {
+                        updateManyCalls.push(payload);
+                        return { count: 1 };
+                    }
+                })
+            });
+
+            await repo.addTimeToActiveAssignment({ userId: 3, datasetId: 9, seconds: 42 });
+
+            assert.equal(updateManyCalls.length, 1);
+            assert.equal(updateManyCalls[0].where.userId, 3);
+            assert.equal(updateManyCalls[0].where.datasetId, 9);
+            assert.equal(updateManyCalls[0].where.status, 'active');
+            assert.deepEqual(updateManyCalls[0].data.timeSpentSeconds, { increment: 42 });
+        });
+
+        it('es un no-op cuando los segundos no son positivos', async () => {
+            /** @type {any[]} */
+            const updateManyCalls = [];
+            const repo = createSectionAssignmentsRepository({
+                prisma: buildFakePrisma({
+                    async updateMany(/** @type {*} */ payload) {
+                        updateManyCalls.push(payload);
+                        return { count: 1 };
+                    }
+                })
+            });
+
+            const result = await repo.addTimeToActiveAssignment({ userId: 3, datasetId: 9, seconds: 0 });
+
+            assert.deepEqual(result, { count: 0 });
+            assert.equal(updateManyCalls.length, 0);
+        });
+    });
 });

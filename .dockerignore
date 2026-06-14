@@ -9,6 +9,7 @@ pnpm-debug.log
 # ============================================
 # Environment variables and secrets
 # ============================================
+api-keys.json
 .env
 .env.local
 .env.*.local

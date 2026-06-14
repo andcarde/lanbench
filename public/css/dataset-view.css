@@ -25,12 +25,6 @@ body.dataset-view-page {
   margin: 0 auto;
 }
 
-.dataset-view-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0 0 1rem;
-}
-
 .dataset-view-header {
   display: flex;
   align-items: center;
@@ -95,31 +89,6 @@ body.dataset-view-page {
   letter-spacing: 0.18em;
   font-size: 0.82rem;
   font-weight: 700;
-}
-
-.dataset-mode-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.8rem 1rem;
-  border-radius: 999px;
-  background: rgba(20, 20, 20, 0.88);
-  color: #f3f3f3;
-  font-size: 0.92rem;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.14);
-}
-
-.dataset-mode-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #75d05c;
-  box-shadow: 0 0 0 5px rgba(117, 208, 92, 0.18);
-}
-
-.dataset-mode-pill.is-live .dataset-mode-dot {
-  background: #f0be31;
-  box-shadow: 0 0 0 5px rgba(240, 190, 49, 0.18);
 }
 
 .dataset-view-card {
@@ -255,11 +224,6 @@ body.dataset-view-page {
   .dataset-view-card-header {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .dataset-mode-pill {
-    width: 100%;
-    justify-content: center;
   }
 
   .dataset-xml-viewer {

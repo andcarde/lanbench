@@ -39,7 +39,7 @@
 
 const defaultPrisma = require('../prisma/client');
 const { ACTIVE_REVIEW_STATUSES } = require('../constants/review-status');
-const { SECTION_SIZE } = require('../constants/datasets');
+const { resolveSectionSize } = require('../constants/datasets');
 
 /** Options for the import transaction (maxWait/timeout in ms). */
 const DATASET_IMPORT_TRANSACTION_OPTIONS = {
@@ -243,6 +243,58 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
+     * Finds a dataset *owned* by `userId` (via a `Permit` with `isOwned`) whose
+     * name matches, optionally excluding one dataset id. Enforces the
+     * per-owner name-uniqueness invariant on creation and rename. The name
+     * comparison uses the column's DB collation (case-insensitive by default).
+     *
+     * @param {{ userId:number, name:string, excludeDatasetId?:number }} input
+     * @returns {Promise<{ id:number, name:string }|null>}
+     */
+    async function findOwnedDatasetWithSameName({ userId, name, excludeDatasetId }) {
+        return deps.prisma.dataset.findFirst({
+            where: {
+                name,
+                ...(Number.isInteger(excludeDatasetId) && Number(excludeDatasetId) > 0
+                    ? { id: { not: excludeDatasetId } }
+                    : {}),
+                permits: {
+                    some: { userId, isOwned: true }
+                }
+            },
+            select: { id: true, name: true }
+        });
+    }
+
+    /**
+     * Resolves the owning user of a dataset (the `Permit` row with `isOwned`).
+     *
+     * @param {{ datasetId:number }} input
+     * @returns {Promise<number|null>} Owner user id, or null if none.
+     */
+    async function findDatasetOwnerUserId({ datasetId }) {
+        const ownerPermit = await deps.prisma.permit.findFirst({
+            where: { datasetId, isOwned: true },
+            select: { userId: true }
+        });
+        return ownerPermit ? ownerPermit.userId : null;
+    }
+
+    /**
+     * Renames a dataset.
+     *
+     * @param {{ datasetId:number, name:string }} input
+     * @returns {Promise<{ id:number, name:string }>}
+     */
+    async function renameDataset({ datasetId, name }) {
+        return deps.prisma.dataset.update({
+            where: { id: datasetId },
+            data: { name },
+            select: { id: true, name: true }
+        });
+    }
+
+    /**
      * Updates section counters when an annotated section is completed. If
      * `isReviewEnabled` is off, the section goes directly from `pending` to
      * `completed`. If it is on, it goes to `inReview` awaiting review.
@@ -299,19 +351,25 @@ function createDatasetsRepository({ prisma } = {}) {
 
     /**
      * Lists the ids of entries that belong to a section (according to the
-     * partitioning by `SECTION_SIZE`).
+     * per-dataset section-size partitioning).
      *
-     * @param {{ datasetId:number, sectionIndex:number }} input
+     * `sectionSize` may be supplied by the caller; when omitted it is resolved
+     * from the dataset's persisted `sectionSize` (legacy rows fall back to the
+     * default). The size determines the contiguous `position` window of the
+     * section.
+     *
+     * @param {{ datasetId:number, sectionIndex:number, sectionSize?:number }} input
      * @returns {Promise<number[]>}
      */
-    async function findEntryIdsBySection({ datasetId, sectionIndex }) {
-        const startPosition = (sectionIndex - 1) * SECTION_SIZE;
+    async function findEntryIdsBySection({ datasetId, sectionIndex, sectionSize }) {
+        const size = await resolveDatasetSectionSize(datasetId, sectionSize);
+        const startPosition = (sectionIndex - 1) * size;
         const rows = await deps.prisma.entry.findMany({
             where: {
                 datasetId,
                 position: {
                     gte: startPosition,
-                    lt: startPosition + SECTION_SIZE
+                    lt: startPosition + size
                 }
             },
             select: { id: true },
@@ -319,6 +377,26 @@ function createDatasetsRepository({ prisma } = {}) {
         });
 
         return rows.map((/** @type {*} */ row) => row.id);
+    }
+
+    /**
+     * Resolves the section size to use for a dataset: the explicit override when
+     * positive, otherwise the dataset's persisted `sectionSize` (with the legacy
+     * fallback applied by {@link resolveSectionSize}).
+     *
+     * @param {number} datasetId
+     * @param {number} [sectionSize] - Optional caller-supplied size.
+     * @returns {Promise<number>}
+     */
+    async function resolveDatasetSectionSize(datasetId, sectionSize) {
+        if (typeof sectionSize === 'number' && Number.isInteger(sectionSize) && sectionSize > 0)
+            return sectionSize;
+
+        const row = await deps.prisma.dataset.findUnique({
+            where: { id: datasetId },
+            select: { sectionSize: true }
+        });
+        return resolveSectionSize(row);
     }
 
     /**
@@ -401,8 +479,58 @@ function createDatasetsRepository({ prisma } = {}) {
             where: {
                 datasetId: { in: safeDatasetIds },
                 status: 'annotated',
+                // Mirror reviews-repository.findReviewableEntries: only
+                // review-enabled datasets contribute reviewable entries, so the
+                // dataset card never advertises a review affordance for a dataset
+                // whose admin left review disabled.
+                dataset: { isReviewEnabled: true },
                 annotations: {
                     none: { userId }
+                },
+                reviews: {
+                    none: {
+                        status: {
+                            in: ['pending', 'in_progress', 'completed', 'disputed']
+                        }
+                    }
+                }
+            },
+            select: {
+                datasetId: true
+            }
+        });
+    }
+
+    /**
+     * Mirror of {@link findReviewableEntryDatasetIds} for the *opposite* side of
+     * the self-review governance rule (USER-STORIES §US-13): entries that would
+     * be reviewable except that `userId` annotated them, so the review queue
+     * excludes them. Used only to explain a disabled review button — when its
+     * count is the sole reason `reviewableCount` is 0, the card surfaces "you
+     * annotated all the pending entries yourself" instead of the generic
+     * "nothing to review".
+     *
+     * @param {{ userId:number, datasetIds:number[] }} input
+     * @returns {Promise<Array<{ datasetId:number }>>}
+     */
+    async function findSelfAnnotatedReviewableDatasetIds({ userId, datasetIds }) {
+        const safeDatasetIds = Array.isArray(datasetIds)
+            ? datasetIds.filter(id => Number.isInteger(id) && id > 0)
+            : [];
+
+        if (!safeDatasetIds.length)
+            return [];
+
+        return deps.prisma.entry.findMany({
+            where: {
+                datasetId: { in: safeDatasetIds },
+                status: 'annotated',
+                dataset: { isReviewEnabled: true },
+                // The single difference vs. findReviewableEntryDatasetIds: here we
+                // want the entries the reviewer annotated themselves (`some`),
+                // which the review queue filters out (`none`).
+                annotations: {
+                    some: { userId }
                 },
                 reviews: {
                     none: {
@@ -490,11 +618,15 @@ function createDatasetsRepository({ prisma } = {}) {
         findAccessibleDatasetGraphById,
         findAccessibleDatasetGraphWithAnnotationsById,
         createOwnedDataset,
+        findOwnedDatasetWithSameName,
+        findDatasetOwnerUserId,
+        renameDataset,
         markSectionAsAnnotated,
         findEntryByPosition,
         findEntryIdsBySection,
         deleteDatasetRecursively,
         findReviewableEntryDatasetIds,
+        findSelfAnnotatedReviewableDatasetIds,
         findActiveReviewDatasetIdsForReviewer,
         countAnnotatedEntriesByDataset
     };

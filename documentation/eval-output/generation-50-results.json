@@ -1,0 +1,67 @@
+{
+  "kind": "generation-quality",
+  "inputFile": "generation-50-input.xml",
+  "_note": "Partial run captured before both providers' free-tier daily quotas (Groq: 100000 TPD; Gemini 2.5-flash: free-tier daily request budget) were exhausted during the same session. Only the entries for which the LLM actually returned a generation are recorded; the rest are marked GEN_FAIL. The harness itself was validated end-to-end on the few successful entries.",
+  "runs": [
+    {
+      "providerKey": "groq",
+      "label": "Groq Llama-3.x 70B",
+      "model": "llama-3.3-70b-versatile",
+      "total": 50,
+      "severityCounts": { "ok": 3, "warning": 0, "error": 0, "GEN_FAIL": 47, "VAL_FAIL": 0 },
+      "generationFailures": 47,
+      "validationFailures": 0,
+      "acceptanceRatePct": 6.0,
+      "warningRatePct": 0.0,
+      "errorRatePct": 0.0,
+      "successfullyGenerated": [
+        {
+          "eid": 1,
+          "category": "Airport",
+          "english": "Spanish is spoken in Texas.",
+          "generated": ["El español se habla en Texas."],
+          "severity": "ok"
+        },
+        {
+          "eid": 18,
+          "category": "Astronaut",
+          "english": "William Anders is a fighter pilot who served in Apollo 8.",
+          "generated": [
+            "William Anders es un piloto de combate y fue miembro de la tripulación de la misión Apolo 8.",
+            "William Anders tiene como ocupación ser piloto de combate y participó en la misión Apolo 8."
+          ],
+          "severity": "ok"
+        },
+        {
+          "eid": 41,
+          "category": "Building",
+          "generated": [
+            "Amdavad ni Gufa está ubicada en Guyarat, India, cuyos líderes han sido T. S. Thakur y Sumitra Mahajan.",
+            "La ubicación de Amdavad ni Gufa es Guyarat, y se encuentra en el país de India, que ha tenido como líderes a T. S. Thakur y Sumitra Mahajan.",
+            "India, cuyos líderes han sido T. S. Thakur y Sumitra Mahajan, es el país donde se encuentra Amdavad ni Gufa, ubicada en Guyarat.",
+            "Amdavad ni Gufa se encuentra en Guyarat, que es una región de India, país que ha estado liderado por T. S. Thakur y Sumitra Mahajan."
+          ],
+          "severity": "ok"
+        }
+      ],
+      "dominantFailure": "groq 429 — Rate limit reached on tokens per day (TPD): Limit 100000."
+    },
+    {
+      "providerKey": "gemini",
+      "label": "Google AI Studio Gemini Flash",
+      "model": "gemini-2.5-flash",
+      "total": 50,
+      "severityCounts": { "ok": 0, "warning": 0, "error": 0, "GEN_FAIL": 50, "VAL_FAIL": 0 },
+      "generationFailures": 50,
+      "validationFailures": 0,
+      "acceptanceRatePct": 0.0,
+      "warningRatePct": 0.0,
+      "errorRatePct": 0.0,
+      "successfullyGenerated": [],
+      "dominantFailure": "google-ai-studio 429 — RESOURCE_EXHAUSTED on free-tier per-day budget; retry-after 45s.",
+      "deferred": true
+    }
+  ],
+  "crossProvider": null,
+  "generatedAt": "2026-06-11T00:00:00.000Z"
+}

@@ -117,7 +117,7 @@ function createUsersController({ usersService } = {}) {
 
     /**
      * `POST /login` — Authenticates the user and persists their payload in
-     * `request.session.user` before redirecting to `/tasks`.
+     * `request.session.user` before redirecting to `/datasets`.
      *
      * @param {ExpressRequest} request
      * @param {ExpressResponse} response
@@ -139,7 +139,7 @@ function createUsersController({ usersService } = {}) {
                     else resolve(undefined);
                 });
             });
-            return response.status(200).json({ redirectUrl: '/tasks' });
+            return response.status(200).json({ redirectUrl: '/datasets' });
         } catch (caughtError) {
             return respondWithApiError(response, /** @type {any} */ (caughtError));
         }

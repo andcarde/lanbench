@@ -75,8 +75,84 @@ function buildDatasetStatisticsDTO(dataset) {
             totalEntries
         },
         annotation: buildStatsRows(annotationRowsByUser, totalEntries, annotationTimeByUser),
-        review: buildStatsRows(reviewRowsByUser, totalEntries)
+        review: buildStatsRows(reviewRowsByUser, totalEntries),
+        // Dataset-wide weighted average time per task (Σ seconds ÷ Σ tasks),
+        // shown as the "general" footer of each table.
+        annotationAverage: buildWeightedAverageTime(annotationRowsByUser, annotationTimeByUser),
+        reviewAverage: buildWeightedAverageTime(reviewRowsByUser),
+        // Multi-round consensus distribution (§4.6 / §10.3.1). `null` when the
+        // dataset is single-round (no additional reviews) or when no entry has
+        // any terminal review yet — the front-end hides the block on `null`.
+        reviewRounds: buildReviewRoundsSummary(dataset)
     };
+}
+
+/**
+ * Builds the multi-round-review distribution: average rounds per entry and the
+ * histogram of round counts (1, 2, 3, ...). Returns `null` when the dataset is
+ * single-round or has no terminal reviews yet.
+ * @param {*} dataset - Dataset graph (must carry `hasAdditionalReviews` and `entries[].reviews`).
+ * @returns {?{ averageRoundsPerEntry: string, histogram: Array<{rounds:number, entryCount:number}> }} Summary.
+ */
+function buildReviewRoundsSummary(dataset) {
+    if (!dataset || !dataset.hasAdditionalReviews)
+        return null;
+
+    /** @type {Map<number, number>} entryCount per `rounds` value */
+    const byRoundCount = new Map();
+    let entriesWithReviews = 0;
+    let totalRounds = 0;
+
+    for (const entry of dataset.entries || []) {
+        const terminalCount = (entry.reviews || []).filter((/** @type {*} */ r) =>
+            TERMINAL_REVIEW_STATUSES.includes(r.status)
+        ).length;
+
+        if (terminalCount <= 0)
+            continue;
+
+        entriesWithReviews += 1;
+        totalRounds += terminalCount;
+        byRoundCount.set(terminalCount, (byRoundCount.get(terminalCount) || 0) + 1);
+    }
+
+    if (entriesWithReviews === 0)
+        return null;
+
+    const maxRounds = Math.max(...byRoundCount.keys());
+    /** @type {Array<{rounds:number, entryCount:number}>} */
+    const histogram = [];
+    for (let rounds = 1; rounds <= maxRounds; rounds += 1)
+        histogram.push({ rounds, entryCount: byRoundCount.get(rounds) || 0 });
+
+    const average = totalRounds / entriesWithReviews;
+
+    return {
+        averageRoundsPerEntry: average.toFixed(2),
+        histogram
+    };
+}
+
+/**
+ * Weighted average time per task across all users: total seconds over total
+ * tasks (so a user with more tasks contributes proportionally), formatted like
+ * the per-user `averageTime`.
+ * @param {Map<*, *>} rowsByUser - Per-user accumulator (carries `totalEntries`).
+ * @param {Map<number, number>|null} [timeByUser] - Optional external time source (annotation).
+ * @returns {string} Human-readable weighted average, or '-'.
+ */
+function buildWeightedAverageTime(rowsByUser, timeByUser = null) {
+    let totalTasks = 0;
+    let totalSeconds = 0;
+
+    for (const row of rowsByUser.values()) {
+        totalTasks += toIntegerNormalized(row.totalEntries);
+        totalSeconds += timeByUser instanceof Map
+            ? (timeByUser.get(row.userId) || 0)
+            : toIntegerNormalized(row.timeSpentSeconds);
+    }
+
+    return formatAverageTime(totalSeconds, totalTasks);
 }
 
 /**

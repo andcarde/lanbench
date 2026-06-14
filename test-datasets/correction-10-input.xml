@@ -1,0 +1,105 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="City" eid="1" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.</lex>
+    </entry>
+    <entry category="City" eid="2" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">San Sebastián de los Reyes forma parte de la Comunidad de Madrid.</lex>
+    </entry>
+    <entry category="Country" eid="3" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>France | capital | Paris</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>France | capital | Paris</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of France is Paris.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La kapital de Francia es París.</lex>
+    </entry>
+    <entry category="Person" eid="4" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Albert_Einstein | birthPlace | Ulm</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Albert_Einstein | birthPlace | Ulm</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Albert Einstein was born in Ulm.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Albert Einstein was born in Ulm.</lex>
+    </entry>
+    <entry category="Writer" eid="5" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Miguel_de_Cervantes | birthPlace | Alcalá_de_Henares</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Miguel_de_Cervantes | birthPlace | Alcalá_de_Henares</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Miguel de Cervantes was born in Alcalá de Henares.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Miguel de Cervantes nacio en Alcala de Henares.</lex>
+    </entry>
+    <entry category="Food" eid="6" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spaghetti | country | Italy</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spaghetti | country | Italy</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Spaghetti comes from Italy.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Los espaguetis provienen de Italia.</lex>
+    </entry>
+    <entry category="Building" eid="7" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Empire_State_Building | location | New_York_City</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Empire_State_Building | location | New_York_City</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Empire State Building is located in New York City.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El Empire State Building se encuentra en Chicago.</lex>
+    </entry>
+    <entry category="City" eid="8" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab, Pakistán, está dirigido por la Asamblea.</lex>
+    </entry>
+    <entry category="Country" eid="9" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spain | capital | Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | capital | Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of Spain is Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La capital de España es Madrid.</lex>
+    </entry>
+    <entry category="Food" eid="10" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spaghetti | country | Italy</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spaghetti | country | Italy</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Spaghetti comes from Italy.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Italia proviene de los espaguetis.</lex>
+    </entry>
+  </entries>
+</benchmark>

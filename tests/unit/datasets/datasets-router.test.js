@@ -137,6 +137,9 @@ describe('datasets router integration', function () {
         async getDatasetStatistics(/** @type {*} */ _request, /** @type {*} */ response) {
             return response.status(200).json({ dataset: { datasetId: 1 } });
         },
+        async renameDataset(/** @type {*} */ _request, /** @type {*} */ response) {
+            return response.status(200).json({ ok: true, datasetId: 1, dataset: { datasetId: 1, name: 'ru_dev' } });
+        },
         async deleteDataset(/** @type {*} */ _request, /** @type {*} */ response) {
             return response.status(200).json({ ok: true, datasetId: 1 });
         }
@@ -272,13 +275,17 @@ describe('datasets router integration', function () {
         });
     });
 
-    it('redirige GET /datasets al listado canónico /tasks', async () => {
+    it('sirve el listado canónico datasets.html en GET /datasets', async () => {
         const response = await fetch(`${baseUrl}/datasets`, {
             redirect: 'manual'
         });
 
-        assert.ok([302, 303].includes(response.status));
-        assert.equal(response.headers.get('location'), '/tasks');
+        assert.equal(response.status, 200);
+        assert.match(response.headers.get('content-type') || '', /text\/html/);
+
+        const html = await response.text();
+        assert.match(html, /<title>Lista de datasets<\/title>/);
+        assert.match(html, /id="datasetsContainer"/);
     });
 
     it('sirve la página dataset-view.html en GET /datasets/1/view', async () => {
@@ -291,8 +298,8 @@ describe('datasets router integration', function () {
         assert.match(html, /dataset-view\.js/);
         assert.match(html, /datasetXmlViewer/);
         assert.match(html, /Volver atrás/);
-        assert.match(html, /openAnnotationsLink/);
-        assert.match(html, /href="\/tasks"/);
+        assert.match(html, /href="\/datasets"/);
+        assert.doesNotMatch(html, /openAnnotationsLink/);
     });
 
     it('devuelve el texto del dataset en GET /api/datasets/1/text', async () => {

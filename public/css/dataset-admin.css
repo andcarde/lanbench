@@ -5,7 +5,8 @@ body {
 
 .admin-panel,
 .permissions-table-wrap,
-.statistics-panel {
+.statistics-panel,
+.llm-credentials-panel {
   background: #fff;
   border: 1px solid #d7dde5;
   border-radius: 8px;
@@ -75,4 +76,39 @@ body {
   .permissions-table {
     min-width: 620px;
   }
+}
+
+.review-rounds-block {
+  border-top: 1px solid #e2e6eb;
+  padding-top: 1rem;
+}
+
+.review-rounds-histogram {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.review-rounds-histogram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.review-rounds-histogram .bar {
+  fill: #6f42c1;
+}
+
+.review-rounds-histogram .bar-empty {
+  fill: #e2e6eb;
+}
+
+.review-rounds-histogram .axis-label {
+  fill: #6c757d;
+  font-size: 11px;
+}
+
+.review-rounds-histogram .bar-label {
+  fill: #495057;
+  font-size: 11px;
+  font-weight: 600;
 }

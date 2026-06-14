@@ -121,18 +121,37 @@ describe('reviews-controller (T4.4)', () => {
                      * @param {*} args - Value of args used by the function.
                      * @returns {Promise<*>} Result produced by the function.
                      */
-                    async submitDecision(args) { called = args; return { reviewId: 5, currentCriterionIndex: 1 }; }
+                    async submitDecision(args) { called = args; return { reviewId: 5, id: 5 }; }
                 }
             });
             const res = buildResponse();
             await controller.submitDecision(buildRequest({
                 params: { reviewId: '5' },
-                body: { criterionCode: 'criterion_grammar', decision: 'accepted', comment: ' ok ' }
+                body: { sentenceIndex: 2, criterionCode: 'naturalness', decision: 'accepted', comment: ' ok ' }
             }), res);
 
             assert.equal(called.reviewId, 5);
             assert.equal(called.reviewerId, 7);
-            assert.equal(called.criterionCode, 'criterion_grammar');
+            assert.equal(called.sentenceIndex, 2);
+            assert.equal(called.criterionCode, 'naturalness');
+            assert.equal(res.captured.status, 200);
+        });
+
+        it('normaliza sentenceIndex ausente a null (criterio de nivel review)', async () => {
+            let /** @type {any} */ called;
+            const controller = createReviewsController({
+                reviewsService: {
+                    async submitDecision(/** @type {*} */ args) { called = args; return { id: 5 }; }
+                }
+            });
+            const res = buildResponse();
+            await controller.submitDecision(buildRequest({
+                params: { reviewId: '5' },
+                body: { criterionCode: 'diversity', decision: 'accepted' }
+            }), res);
+
+            assert.equal(called.sentenceIndex, null);
+            assert.equal(called.criterionCode, 'diversity');
             assert.equal(res.captured.status, 200);
         });
     });

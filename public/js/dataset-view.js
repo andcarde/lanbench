@@ -12,10 +12,7 @@
   const $datasetIdentifier = $("#datasetIdentifier");
   const $datasetTitle = $("#datasetTitle");
   const $datasetSubtitle = $("#datasetSubtitle");
-  const $datasetModePill = $("#datasetModePill");
-  const $datasetModeLabel = $("#datasetModeLabel");
   const $datasetXmlViewer = $("#datasetXmlViewer");
-  const $openAnnotationsLink = $("#openAnnotationsLink");
   const $downloadOriginalBtn = $("#downloadOriginalBtn");
   const $downloadAnnotatedBtn = $("#downloadAnnotatedBtn");
 
@@ -84,7 +81,9 @@
   }
 
   /**
-   * Updates the page header (title, identifier, subtitle) from the context.
+   * Updates the page header (title, identifier) from the context. The subtitle
+   * is populated later from the dataset summary (`applyDatasetDescription`)
+   * because the description is owned by the server, not the URL context.
    * @param {*} context - Dataset context.
    */
   function setHeader(context) {
@@ -96,33 +95,25 @@
     document.title = `${datasetName} | Visualizador`;
     $datasetIdentifier.text(identifier);
     $datasetTitle.text(datasetName);
-    $datasetSubtitle.text("Vista conectada al endpoint AJAX del texto del dataset.");
   }
 
   /**
-   * Sets the "server mode" badge as live.
+   * Renders the dataset description as the header subtitle. Hides the node
+   * when the description is absent or empty.
+   * @param {*} dataset - Dataset summary returned by the API.
    */
-  function setModeBadge() {
-    $datasetModePill.addClass("is-live");
-    $datasetModeLabel.text("Modo servidor preparado");
-  }
+  function applyDatasetDescription(dataset) {
+    const description =
+      dataset && typeof dataset.description === "string"
+        ? dataset.description.trim()
+        : "";
 
-  /**
-   * Sets the navigation links (e.g. the "open annotations" link) from the context.
-   * @param {*} context - Dataset context.
-   */
-  function setNavigationLinks(context) {
-    const searchParams = new URLSearchParams();
+    if (description.length === 0) {
+      $datasetSubtitle.addClass("d-none").text("");
+      return;
+    }
 
-    if (context.datasetId)
-      searchParams.set("datasetId", String(context.datasetId));
-    if (context.sectionIndex)
-      searchParams.set("sectionIndex", String(context.sectionIndex));
-
-    $openAnnotationsLink.attr(
-      "href",
-      `/annotations?${searchParams.toString()}`
-    );
+    $datasetSubtitle.removeClass("d-none").text(description);
   }
 
   /**
@@ -197,17 +188,19 @@
   }
 
   /**
-   * Adjusts the controls that depend on the dataset's completion state:
-   *   - Enables the extended-download button if the dataset is at 100%.
-   *   - Disables the entry to annotation ("Open annotation") when there are no
-   *     entries left to annotate.
-   * If the query fails, the buttons stay in their default state.
+   * Fetches the dataset summary once and uses it to:
+   *   - render the dataset description as the header subtitle (US-34); and
+   *   - enable the extended-download button when the dataset is at 100%.
+   * If the query fails the subtitle stays hidden and the button stays in its
+   * default disabled state.
    *
    * @param {number} datasetId
    */
   function refreshAnnotatedButtonState(datasetId) {
     globalThis.fetchDatasetSummary(datasetId)
       .done(function (dataset) {
+        applyDatasetDescription(dataset);
+
         const completedPercent = Number(dataset && dataset.completedPercent);
         const isCompleted = Number.isFinite(completedPercent) && completedPercent >= 100;
         if (!isCompleted)
@@ -218,24 +211,12 @@
           .removeAttr("aria-disabled")
           .removeClass("is-disabled")
           .attr("title", "Descargar el XML extendido con las anotaciones en español");
-
-        $openAnnotationsLink
-          .addClass("disabled")
-          .attr("aria-disabled", "true")
-          .attr("tabindex", "-1")
-          .attr(
-            "title",
-            "El dataset está completado al 100%; no quedan entries por anotar."
-          )
-          .removeAttr("href");
       });
   }
 
   $(document).ready(function () {
     const context = getDatasetContext();
     setHeader(context);
-    setModeBadge();
-    setNavigationLinks(context);
     bindDownloadButtons(context);
     loadDatasetText(context.datasetId);
   });

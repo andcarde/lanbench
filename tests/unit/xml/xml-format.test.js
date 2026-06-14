@@ -66,7 +66,7 @@ describe('xml-format shared helpers', () => {
     it('renderAttrs formatea pares atributo/valor escapando todos los reservados XML', () => {
         assert.equal(renderAttrs({ a: '1', b: '2' }), ' a="1" b="2"');
         assert.equal(renderAttrs({}), '');
-        assert.equal(renderAttrs(null), '');
+        assert.equal(renderAttrs(/** @type {any} */ (null)), '');
         assert.equal(renderAttrs({ a: '1', b: null, c: undefined, d: 'x' }), ' a="1" d="x"');
         assert.equal(renderAttrs({ q: 'a"b' }), ' q="a&quot;b"');
         assert.equal(renderAttrs({ q: 'a&b<c>d' }), ' q="a&amp;b&lt;c&gt;d"');

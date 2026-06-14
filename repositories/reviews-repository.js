@@ -26,6 +26,7 @@
  *
  * @typedef {Object} ReviewDecisionRow
  * @property {number} reviewId
+ * @property {number|null} sentenceIndex
  * @property {ReviewCriterionCode} criterionCode
  * @property {ReviewDecisionValue} decision
  * @property {string|null} comment
@@ -52,14 +53,20 @@ const {
 const { ENTRY_ANNOTATED } = require('../constants/entry-status');
 
 /**
- * Review states that block an entry from new assignments.
+ * Review states that block an entry from a new assignment.
+ *
+ * Only **active** reviews (pending / in_progress) block: terminal reviews
+ * (`completed`/`disputed`) no longer block on their own — whether a terminal
+ * chain is reopened or not is decided by the entry's own `status` (see §4.6:
+ * `status = 'annotated'` is the re-queueable state for multi-round chains;
+ * once the chain terminates, `Entry.status` flips to `reviewed`/`disputed` and
+ * `findReviewableEntries` excludes the entry by status).
+ *
  * @type {ReviewStatus[]}
  */
 const ENTRY_REVIEW_BLOCKING_STATUSES = [
     REVIEW_PENDING,
-    REVIEW_IN_PROGRESS,
-    REVIEW_COMPLETED,
-    REVIEW_DISPUTED
+    REVIEW_IN_PROGRESS
 ];
 
 /**
@@ -116,13 +123,21 @@ function createReviewsRepository({ prisma } = {}) {
     async function findReviewableEntries({ reviewerId, datasetId = null, limit = 1 }) {
         const datasetFilter = datasetId ? { datasetId } : {};
 
-        return deps.prisma.entry.findMany({
+        const candidates = await deps.prisma.entry.findMany({
             where: {
                 ...datasetFilter,
                 status: ENTRY_ANNOTATED,
+                // Only datasets whose admin enabled review surface candidates
+                // (TECHNICAL-DESIGN §4.2: a Review is created when an annotated
+                // entry of a review-enabled dataset enters the workflow).
+                dataset: { isReviewEnabled: true },
                 annotations: {
                     none: { userId: reviewerId }
                 },
+                // An entry with an *active* review is busy; once a review
+                // terminates (completed/disputed) the entry is reopened by
+                // `finalizeReview` only when the chain has not converged
+                // (§4.6), so checking the active set is enough here.
                 reviews: {
                     none: {
                         status: { in: ENTRY_REVIEW_BLOCKING_STATUSES }
@@ -130,24 +145,56 @@ function createReviewsRepository({ prisma } = {}) {
                 }
             },
             orderBy: [{ datasetId: 'asc' }, { position: 'asc' }],
-            take: limit,
+            // Over-fetch because the anti-immediate-repeat filter (§4.6.4) is
+            // applied after the query: we discard entries whose latest
+            // terminal review was performed by the requesting reviewer.
+            take: Math.max(limit * 3, limit),
             include: {
                 annotations: {
                     orderBy: { createdAt: 'asc' },
                     take: 1,
                     select: { userId: true }
+                },
+                reviews: {
+                    where: { status: { in: /** @type {ReviewStatus[]} */ ([REVIEW_COMPLETED, REVIEW_DISPUTED]) } },
+                    orderBy: { roundIndex: 'desc' },
+                    take: 1,
+                    select: { reviewerId: true, roundIndex: true, cleanRound: true }
                 }
             }
         });
+
+        const filtered = (candidates || []).filter((/** @type {*} */ entry) => {
+            const lastTerminal = entry.reviews && entry.reviews[0];
+            // Anti-immediate-repeat: the previous round's reviewer cannot
+            // validate their own work.
+            return !lastTerminal || lastTerminal.reviewerId !== reviewerId;
+        });
+
+        return filtered.slice(0, limit);
     }
 
     /**
      * Creates a review in `pending` state with `currentCriterionIndex = 0`.
      *
+     * Computes `roundIndex` as `max(roundIndex of prior reviews on the entry) + 1`
+     * (0 if no prior review exists). This is the surrogate for §4.6's
+     * "round number" — used by the histogram and by `findPreviousTerminalReview`
+     * to look up the previous round during finalization.
+     *
      * @param {{ entryId:number, reviewerId:number, annotatorId:number, expiresAt:Date }} input
      * @returns {Promise<ReviewRow>}
      */
     async function createReview({ entryId, reviewerId, annotatorId, expiresAt }) {
+        const last = await deps.prisma.review.findFirst({
+            where: { entryId },
+            orderBy: { roundIndex: 'desc' },
+            select: { roundIndex: true }
+        });
+        const nextRoundIndex = last && Number.isInteger(last.roundIndex)
+            ? last.roundIndex + 1
+            : 0;
+
         return deps.prisma.review.create({
             data: {
                 entryId,
@@ -155,8 +202,29 @@ function createReviewsRepository({ prisma } = {}) {
                 annotatorId,
                 status: REVIEW_PENDING,
                 currentCriterionIndex: 0,
+                roundIndex: nextRoundIndex,
                 expiresAt
             }
+        });
+    }
+
+    /**
+     * Returns the previous terminal review of `entryId` strictly before
+     * `beforeRoundIndex` (i.e. the latest round in `[0, beforeRoundIndex)`
+     * whose status is `completed`/`disputed`). Used by `finalizeReview` to
+     * implement the two-clean termination rule of §4.6.
+     *
+     * @param {{ entryId:number, beforeRoundIndex:number }} input
+     * @returns {Promise<ReviewRow|null>}
+     */
+    async function findPreviousTerminalReview({ entryId, beforeRoundIndex }) {
+        return deps.prisma.review.findFirst({
+            where: {
+                entryId,
+                roundIndex: { lt: beforeRoundIndex },
+                status: { in: /** @type {ReviewStatus[]} */ ([REVIEW_COMPLETED, REVIEW_DISPUTED]) }
+            },
+            orderBy: { roundIndex: 'desc' }
         });
     }
 
@@ -213,24 +281,37 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Inserts or updates a `(reviewId, criterionCode)` decision, refreshing
-     * `decidedAt` to the current instant when it already existed.
+     * Inserts or updates the decision for a `(reviewId, sentenceIndex,
+     * criterionCode)` triple, refreshing `decidedAt` when it already existed.
      *
-     * @param {{ reviewId:number, criterionCode:ReviewCriterionCode, decision:ReviewDecisionValue, comment?:string|null }} input
+     * `sentenceIndex` is the annotated sentence the decision belongs to, or
+     * `null` for a review-level criterion (`diversity`). Because MariaDB treats
+     * NULLs as distinct in a UNIQUE index, the uniqueness of a review-level
+     * decision cannot rely on the `@@unique` constraint; this method therefore
+     * resolves the existing row explicitly (find-then-write) instead of
+     * Prisma's `upsert`.
+     *
+     * @param {{ reviewId:number, sentenceIndex?:number|null, criterionCode:ReviewCriterionCode, decision:ReviewDecisionValue, comment?:string|null }} input
      * @returns {Promise<ReviewDecisionRow>}
      */
-    async function upsertDecision({ reviewId, criterionCode, decision, comment = null }) {
-        return deps.prisma.reviewDecision.upsert({
-            where: {
-                reviewId_criterionCode: { reviewId, criterionCode }
-            },
-            update: {
-                decision,
-                comment,
-                decidedAt: new Date()
-            },
-            create: {
+    async function upsertDecision({ reviewId, sentenceIndex = null, criterionCode, decision, comment = null }) {
+        const normalizedIndex = Number.isInteger(sentenceIndex) ? sentenceIndex : null;
+
+        const existing = await deps.prisma.reviewDecision.findFirst({
+            where: { reviewId, sentenceIndex: normalizedIndex, criterionCode }
+        });
+
+        if (existing) {
+            return deps.prisma.reviewDecision.update({
+                where: { id: existing.id },
+                data: { decision, comment, decidedAt: new Date() }
+            });
+        }
+
+        return deps.prisma.reviewDecision.create({
+            data: {
                 reviewId,
+                sentenceIndex: normalizedIndex,
                 criterionCode,
                 decision,
                 comment
@@ -239,7 +320,7 @@ function createReviewsRepository({ prisma } = {}) {
     }
 
     /**
-     * Lists all decisions of a review ordered by `decidedAt`.
+     * Lists all decisions of a review ordered by sentence and decision instant.
      *
      * @param {{ reviewId:number }} input
      * @returns {Promise<ReviewDecisionRow[]>}
@@ -247,8 +328,25 @@ function createReviewsRepository({ prisma } = {}) {
     async function findDecisionsByReview({ reviewId }) {
         return deps.prisma.reviewDecision.findMany({
             where: { reviewId },
-            orderBy: { decidedAt: 'asc' }
+            orderBy: [{ sentenceIndex: 'asc' }, { decidedAt: 'asc' }]
         });
+    }
+
+    /**
+     * Returns the ordered list of `sentenceIndex` values annotated by
+     * `annotatorId` on the given entry. Used by the finalize gate to know how
+     * many phrases must be fully evaluated.
+     *
+     * @param {{ entryId:number, annotatorId:number }} input
+     * @returns {Promise<number[]>}
+     */
+    async function findAnnotatedSentenceIndexes({ entryId, annotatorId }) {
+        const rows = await deps.prisma.annotation.findMany({
+            where: { entryId, userId: annotatorId },
+            orderBy: { sentenceIndex: 'asc' },
+            select: { sentenceIndex: true }
+        });
+        return rows.map((/** @type {*} */ r) => r.sentenceIndex);
     }
 
     /**
@@ -320,9 +418,11 @@ function createReviewsRepository({ prisma } = {}) {
         expireStaleReviews,
         upsertDecision,
         findDecisionsByReview,
+        findAnnotatedSentenceIndexes,
         createComment,
         findCommentsByReview,
-        findCompletedReviewsForAnnotator
+        findCompletedReviewsForAnnotator,
+        findPreviousTerminalReview
     };
 }
 

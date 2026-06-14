@@ -246,6 +246,53 @@ describe('annotations-service', () => {
         }]);
     });
 
+    it('saveSentences acumula el tiempo de anotación en la asignación activa', async () => {
+        /** @type {any[]} */
+        const timeCalls = [];
+        const service = createAnnotationsService({
+            spanishService: { async save() { return { ok: true }; } },
+            sectionAssignmentsRepository: {
+                async findActiveAssignment() { return { id: 1, sectionIndex: 1 }; },
+                async addTimeToActiveAssignment(/** @type {*} */ args) { timeCalls.push(args); return { count: 1 }; }
+            }
+        });
+
+        await service.saveSentences({
+            userId: 5,
+            datasetId: 9,
+            rdfId: 17,
+            sentences: [{ sentence: 'Uno.', rejectionReason: null }],
+            timeSpentSeconds: 90
+        });
+
+        assert.equal(timeCalls.length, 1);
+        assert.equal(timeCalls[0].userId, 5);
+        assert.equal(timeCalls[0].datasetId, 9);
+        assert.equal(timeCalls[0].seconds, 90);
+    });
+
+    it('saveSentences no registra tiempo cuando es cero', async () => {
+        /** @type {any[]} */
+        const timeCalls = [];
+        const service = createAnnotationsService({
+            spanishService: { async save() { return { ok: true }; } },
+            sectionAssignmentsRepository: {
+                async findActiveAssignment() { return { id: 1, sectionIndex: 1 }; },
+                async addTimeToActiveAssignment(/** @type {*} */ args) { timeCalls.push(args); return { count: 1 }; }
+            }
+        });
+
+        await service.saveSentences({
+            userId: 5,
+            datasetId: 9,
+            rdfId: 17,
+            sentences: [{ sentence: 'Uno.', rejectionReason: null }],
+            timeSpentSeconds: 0
+        });
+
+        assert.equal(timeCalls.length, 0);
+    });
+
     it('saveSentences propaga errores de guardado envueltos en { error }', async () => {
         const failure = new Error('No se pudo persistir.');
         const service = createAnnotationsService({

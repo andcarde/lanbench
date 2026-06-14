@@ -3,14 +3,14 @@
 /**
  * @file Router for user pages and sign-ups, mounted at `/`.
  *
- *   - `GET  /tasks`              protected page with the task list.
  *   - `POST /register`           normal user sign-up.
  *   - `POST /register/moderator` moderator sign-up (consumes a code).
+ *
+ * The canonical dataset listing page lives at `GET /datasets` (see
+ * `routes/datasets.js`); there is no longer a `/tasks` page.
  */
 
 const express = require('express');
-const path = require('node:path');
-const { requirePageAuth } = require('../middlewares/auth');
 
 /**
  * Builds the users router.
@@ -20,10 +20,6 @@ const { requirePageAuth } = require('../middlewares/auth');
  */
 function createUsersRouter({ usersController }) {
     const router = express.Router();
-
-    router.get('/tasks', requirePageAuth, (_request, response) => {
-        response.status(200).sendFile(path.join(__dirname, '..', 'public', 'datasets.html'));
-    });
 
     router.post('/register', usersController.register);
     router.post('/register/moderator', usersController.registerModerator);

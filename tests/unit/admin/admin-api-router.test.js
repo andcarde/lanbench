@@ -83,6 +83,22 @@ describe('admin api router (E5)', function () {
             updateEvaluationCriterion(_request, response) {
                 calls.push('criteria-update');
                 return response.status(200).json({ id: 1, version: 2 });
+            },
+            /**
+             * Runs the logic of list users (US-22).
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             */
+            listUsers(_request, response) {
+                return response.status(200).json([]);
+            },
+            /**
+             * Runs the logic of update user role (US-22).
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             */
+            updateUserRole(_request, response) {
+                return response.status(200).json({});
             }
         });
 
@@ -179,6 +195,22 @@ async function startServerWithIsModerator(isModerator, adminController = null) {
              * @param {*} response - HTTP response used to return the result.
              */
             updateEvaluationCriterion(_request, response) {
+                return response.status(200).json({});
+            },
+            /**
+             * Runs the logic of list users (US-22).
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             */
+            listUsers(_request, response) {
+                return response.status(200).json([]);
+            },
+            /**
+             * Runs the logic of update user role (US-22).
+             * @param {*} _request - Value of _request used by the function.
+             * @param {*} response - HTTP response used to return the result.
+             */
+            updateUserRole(_request, response) {
                 return response.status(200).json({});
             }
         }

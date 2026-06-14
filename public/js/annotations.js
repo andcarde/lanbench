@@ -53,6 +53,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
         totalSections: 0,
         currentSectionNumber: 1,
         currentEntry: null,
+        entryStartedAt: null,
         entryIndexInSection: 0,
         totalEntriesInSection: 0,
         isLastEntryInSection: false,
@@ -312,7 +313,11 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
                 : (Array.isArray(entry.sourceSentences) ? entry.sourceSentences : []),
             sectionIndex: Number(entry.sectionIndex ?? state.currentSectionNumber ?? 1),
             triples: getEntryTriples(entry),
-            previousSentences: state.submittedSentences.slice()
+            previousSentences: state.submittedSentences.slice(),
+            // US-31: lets the backend resolve the dataset's active AI credential
+            // for this /check. Datasets with llm_mode='none' short-circuit to the
+            // global provider, so this never regresses the default behaviour.
+            ...(state.datasetId ? { datasetId: Number(state.datasetId) } : {})
         };
     }
 
@@ -531,6 +536,7 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
         }
 
         state.currentEntry = entry;
+        state.entryStartedAt = Date.now();   // start the elapsed-time clock for this entry
         state.rdfId = Number(entry.entryId ?? entry.eid);
         state.datasetName = payload.datasetName || state.datasetName || '';
         state.totalSections = Number(payload.totalSections) || state.totalSections || 1;
@@ -1063,9 +1069,13 @@ if (typeof window !== 'undefined' && typeof $ === 'function') {
      * @param {Array} sentences - Final sentences.
      */
     function postCurrentAnnotations(sentences) {
+        const timeSpentSeconds = state.entryStartedAt
+            ? Math.floor((Date.now() - state.entryStartedAt) / 1000)
+            : 0;
         window.postAnnotations(state.datasetId, state.rdfId, sentences, state.rejectionReasons, {
             sectionNumber: state.currentSectionNumber,
-            isLastEntry: state.isLastEntryInSection
+            isLastEntry: state.isLastEntryInSection,
+            timeSpentSeconds
         })
             .done(function (response) {
                 sentences.forEach(sentence => {

@@ -3,7 +3,7 @@
 /**
  * @file Public router `/datasets` — dataset HTML pages.
  *
- *   - `GET /`             redirects to `/tasks`.
+ *   - `GET /`             canonical dataset listing page (`datasets.html`).
  *   - `GET /:id/view`     dataset view page.
  *   - `GET /:id/admin`    dataset administration page.
  *
@@ -19,7 +19,7 @@ const router = express.Router();
 router.use(requirePageAuth);
 
 router.get('/', (_request, response) => {
-    response.redirect('/tasks');
+    response.status(200).sendFile(path.join(__dirname, '..', 'public', 'datasets.html'));
 });
 
 router.get('/:id/view', (_request, response) => {

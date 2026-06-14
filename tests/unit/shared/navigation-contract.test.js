@@ -38,16 +38,15 @@ describe('navigation contract', () => {
         assert.ok(annotationsActionsJs.includes('/api/annotations/'), 'annotations-actions.js debe consumir el surface /api/annotations');
     });
 
-    it('dataset-view expone volver al listado y transición explícita a anotación', () => {
+    it('dataset-view es un visor de solo lectura y no expone CTA de anotación', () => {
         const htmlPath = path.join(__dirname, '..', '..', '..', 'public', 'dataset-view.html');
         const jsPath = path.join(__dirname, '..', '..', '..', 'public', 'js', 'dataset-view.js');
         const html = fs.readFileSync(htmlPath, 'utf8');
         const script = fs.readFileSync(jsPath, 'utf8');
 
-        assert.ok(html.includes('href="/tasks"'), 'dataset-view.html debe volver al listado canónico');
-        assert.ok(html.includes('id="openAnnotationsLink"'), 'dataset-view.html debe incluir CTA a anotación');
-        assert.ok(script.includes('sectionIndex'), 'dataset-view.js debe conservar sectionIndex');
-        assert.ok(script.includes('/annotations?'), 'dataset-view.js debe construir la navegación a anotación');
+        assert.ok(html.includes('href="/datasets"'), 'dataset-view.html debe volver al listado canónico');
+        assert.ok(!html.includes('id="openAnnotationsLink"'), 'dataset-view.html no debe exponer una CTA a anotación');
+        assert.ok(!script.includes('/annotations?'), 'dataset-view.js no debe construir navegación a anotación');
     });
 
     it('annotations.html ofrece un botón de vuelta estable al listado', () => {
@@ -55,6 +54,6 @@ describe('navigation contract', () => {
         const html = fs.readFileSync(htmlPath, 'utf8');
 
         assert.ok(html.includes('id="backToTasksLink"'));
-        assert.ok(html.includes('href="/tasks"'));
+        assert.ok(html.includes('href="/datasets"'));
     });
 });

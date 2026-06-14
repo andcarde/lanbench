@@ -41,11 +41,8 @@ body.has-app-toolbar {
   letter-spacing: 0.05em;
   line-height: 1;
   text-transform: none;
-}
-
-.app-toolbar-brand:hover,
-.app-toolbar-brand:focus {
-  color: #ffffff;
+  cursor: default;
+  user-select: none;
 }
 
 .app-toolbar-actions {
@@ -57,6 +54,59 @@ body.has-app-toolbar {
 .app-toolbar-logout {
   min-width: 148px;
   box-shadow: 0 8px 18px rgba(108, 17, 17, 0.2);
+}
+
+/* Navigation links injected by toolbar.js (moderator / Revisión / Administración
+   / Mis estadísticas). Without these rules the anchors fall back to default
+   Bootstrap blue text over the blue gradient bar (illegible). */
+.app-toolbar-links {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.app-toolbar-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app-toolbar-link:hover,
+.app-toolbar-link:focus {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.16);
+  text-decoration: none;
+}
+
+.app-toolbar-link.is-active {
+  color: #0f4c97;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(8, 42, 86, 0.25);
+}
+
+/* Role badge: rounded "pill" matching the Revisión-page treatment
+   (public/css/reviewer.css .reviewer-expiry-badge), legible over the blue bar. */
+.app-toolbar-role-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 @media (max-width: 576px) {

@@ -19,7 +19,7 @@ describe('canonical routes', () => {
             .filter(layer => layer.route)
             .map(layer => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         assert.deepEqual(routes, [
@@ -34,7 +34,7 @@ describe('canonical routes', () => {
             .filter(layer => layer.route)
             .map(layer => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         assert.deepEqual(routes, [
@@ -63,6 +63,7 @@ describe('canonical routes', () => {
                 addDatasetPermission: noop,
                 updateDatasetPermission: noop,
                 getDatasetStatistics: noop,
+                renameDataset: noop,
                 deleteDataset: noop
             },
             uploadMiddleware: /** @type {any} */ ({
@@ -80,7 +81,7 @@ describe('canonical routes', () => {
             .filter((/** @type {*} */ layer) => layer.route)
             .map((/** @type {*} */ layer) => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         assert.deepEqual(routes, [
@@ -95,6 +96,7 @@ describe('canonical routes', () => {
             { path: '/:id/download', methods: ['get'] },
             { path: '/:id/download/annotated', methods: ['get'] },
             { path: '/:id/sections/:section', methods: ['get'] },
+            { path: '/:id', methods: ['patch'] },
             { path: '/:id', methods: ['delete'] }
         ]);
     });
@@ -118,14 +120,14 @@ describe('canonical routes', () => {
             .filter(layer => layer.route)
             .map(layer => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         const apiRoutes = annotationsApiRouter.stack
             .filter((/** @type {*} */ layer) => layer.route)
             .map((/** @type {*} */ layer) => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         assert.deepEqual(pageRoutes, [
@@ -153,7 +155,7 @@ describe('canonical routes', () => {
             .filter((/** @type {*} */ layer) => layer.route)
             .map((/** @type {*} */ layer) => ({
                 path: /** @type {any} */ (layer.route).path,
-                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort()
+                methods: Object.keys(/** @type {any} */ (layer.route).methods).sort((a, b) => a.localeCompare(b))
             }));
 
         assert.deepEqual(routes, [

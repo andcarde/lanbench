@@ -53,7 +53,8 @@ function postAnnotations(datasetId, rdfId, sentences, rejectionReasons, options 
             rdfId,
             sentences: items,
             sectionNumber: options.sectionNumber,
-            isLastEntry: options.isLastEntry
+            isLastEntry: options.isLastEntry,
+            timeSpentSeconds: options.timeSpentSeconds
         })
     });
 }

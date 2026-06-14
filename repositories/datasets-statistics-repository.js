@@ -38,6 +38,7 @@ function createDatasetsStatisticsRepository({ prisma } = {}) {
                 id: true,
                 name: true,
                 totalEntries: true,
+                hasAdditionalReviews: true,
                 sectionAssignments: {
                     select: {
                         userId: true,
@@ -64,6 +65,8 @@ function createDatasetsStatisticsRepository({ prisma } = {}) {
                                 id: true,
                                 reviewerId: true,
                                 status: true,
+                                roundIndex: true,
+                                cleanRound: true,
                                 timeSpentSeconds: true,
                                 reviewer: {
                                     select: {

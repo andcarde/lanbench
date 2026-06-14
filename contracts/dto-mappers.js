@@ -56,11 +56,13 @@ function mapDatasetListDTO(source, fallbackId = 1) {
         completedPercent: normalizePercent(source?.completedPercent ?? 0),
         remainPercent: normalizePercent(source?.remainPercent ?? 100)
     }, {
+        description: trimmedOr(source?.description),
         withoutReviewPercent: normalizeOptionalPercent(source?.withoutReviewPercent),
         languages: trimmedOrArray(source?.languages),
         permissions: normalizeDatasetPermissions(source?.permissions),
         review: normalizeDatasetReviewState(source?.review),
         options: normalizeDatasetOptions(source?.options),
+        hasActiveCredential: normalizeOptionalBoolean(source?.hasActiveCredential),
         colorClass: trimmedOr(source?.colorClass) || DEFAULT_DATASET_COLOR
     });
 }
@@ -264,13 +266,45 @@ function toOptionalNonNegativeInteger(value) {
 }
 
 /**
+ * Maps a `DatasetLlmCredential` row to its masked DTO (US-31). The clear key
+ * and the ciphertext are never exposed: only `provider`, `apiBase`, `model`,
+ * `keyLast4` and `isActive` are returned.
+ *
+ * @param {Record<string, any> | null | undefined} row - Credential row.
+ * @returns {{ provider: string, apiBase: string|null, model: string, keyLast4: string, isActive: boolean }}
+ */
+function mapDatasetLlmCredentialDTO(row) {
+    const source = row && typeof row === 'object' ? row : {};
+
+    return {
+        provider: trimmedOr(source.provider, ''),
+        apiBase: trimmedOr(source.apiBase),
+        model: trimmedOr(source.model, ''),
+        keyLast4: trimmedOr(source.keyLast4, ''),
+        isActive: Boolean(source.isActive)
+    };
+}
+
+/**
+ * Maps an array of credential rows to masked DTOs.
+ *
+ * @param {Array<Record<string, any>> | unknown} rows
+ * @returns {Array<{ provider: string, apiBase: string|null, model: string, keyLast4: string, isActive: boolean }>}
+ */
+function mapDatasetLlmCredentialDTOs(rows) {
+    if (!Array.isArray(rows))
+        return [];
+    return rows.map(mapDatasetLlmCredentialDTO);
+}
+
+/**
  * Converts an `EntryContext` received from the frontend into the canonical
  * shape (`entryId`, `englishSentences`, `category`, `triples`) consumed by the
  * services. The frontend already emits the canonical shape
  * (`public/js/annotations.js`).
  *
  * @param {Record<string, any> | null | undefined} entryContext
- * @returns {{ entryId: number|null, category: string, englishSentences: string[], triples: TripleDTO[] }|null}
+ * @returns {{ entryId: number|null, category: string, englishSentences: string[], triples: TripleDTO[], datasetId?: number|null }|null}
  */
 function normalizeIncomingEntryContext(entryContext) {
     if (!entryContext || typeof entryContext !== 'object')
@@ -278,12 +312,14 @@ function normalizeIncomingEntryContext(entryContext) {
 
     const triples = /** @type {TripleDTO[]} */ (normalizeTriples(entryContext.triples));
 
-    return {
+    return withOptionalFields({
         entryId: toOptionalPositiveInteger(entryContext.entryId),
         category: normalizeEntryCategory(entryContext.category, triples) || '',
         englishSentences: trimmedOrArray(entryContext.englishSentences) || [],
         triples
-    };
+    }, {
+        datasetId: toOptionalPositiveInteger(entryContext.datasetId)
+    });
 }
 
 /**
@@ -486,7 +522,8 @@ function normalizeDatasetReviewState(review) {
         canReview: Boolean(review.canReview),
         showReviewButton: Boolean(review.showReviewButton),
         reviewAvailable: Boolean(review.reviewAvailable),
-        reviewableCount: toIntegerNormalized(review.reviewableCount ?? 0)
+        reviewableCount: toIntegerNormalized(review.reviewableCount ?? 0),
+        blockedBySelfAnnotation: Boolean(review.blockedBySelfAnnotation)
     };
 }
 
@@ -564,5 +601,7 @@ module.exports = {
     mapDatasetSectionDTO,
     mapSentenceValidationDTOs,
     mapSavedAnnotationDTO,
+    mapDatasetLlmCredentialDTO,
+    mapDatasetLlmCredentialDTOs,
     normalizeIncomingEntryContext
 };

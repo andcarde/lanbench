@@ -293,6 +293,29 @@ function createDatasetsController({
     }
 
     /**
+     * Renames a dataset (administrators only; enforced by the service).
+     * @param {*} request - HTTP request.
+     * @param {*} response - HTTP response.
+     * @returns {Promise<*>} JSON response.
+     */
+    async function renameDataset(request, response) {
+        const actorId = resolveSessionUserId(request);
+        if (actorId === null)
+            return respondUnauthenticated(response);
+
+        const datasetId = toPositiveInteger(request.params.id);
+        if (datasetId === null)
+            return respondInvalidPayload(response, 'El id del dataset es inválido.');
+
+        try {
+            const payload = await service.renameDataset(actorId, datasetId, request.body?.name);
+            return response.status(200).json(payload);
+        } catch (caughtError) {
+            return respondWithApiError(response, /** @type {any} */ (caughtError));
+        }
+    }
+
+    /**
      * Fully deletes a dataset and its dependencies.
      * @param {*} request - HTTP request.
      * @param {*} response - HTTP response.
@@ -349,6 +372,7 @@ function createDatasetsController({
         listDatasetPermissions,
         addDatasetPermission,
         updateDatasetPermission,
+        renameDataset,
         deleteDataset,
         getDatasetStatistics
     };

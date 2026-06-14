@@ -90,6 +90,14 @@ function buildPrisma(overrides = {}) {
              */
             async findMany() { return []; },
             ...(overrides.entry || {})
+        },
+        annotation: {
+            /**
+             * Gets many from the corresponding source.
+             * @returns {Promise<*>} Result produced by the function.
+             */
+            async findMany() { return []; },
+            ...(overrides.annotation || {})
         }
     };
 }
@@ -124,20 +132,15 @@ describe('reviews-repository (T4.2)', () => {
     });
 
     describe('findReviewableEntries', () => {
-        it('excluye entries del propio reviewer y entries con review activa o terminal', async () => {
+        it('excluye entries del propio reviewer y entries con review activa (no terminales)', async () => {
             /** @type {any[]} */
             const captured = [];
             const repo = createReviewsRepository({
                 prisma: buildPrisma({
                     entry: {
-                        /**
-                         * Gets many from the corresponding source.
-                         * @param {*} args - Value of args used by the function.
-                         * @returns {Promise<*>} Result produced by the function.
-                         */
-                        async findMany(args) {
+                        async findMany(/** @type {*} */ args) {
                             captured.push(args);
-                            return [{ entryId: 5, annotations: [{ userId: 9 }] }];
+                            return [{ entryId: 5, annotations: [{ userId: 9 }], reviews: [] }];
                         }
                     }
                 })
@@ -147,14 +150,65 @@ describe('reviews-repository (T4.2)', () => {
 
             assert.equal(result.length, 1);
             assert.equal(captured[0].where.status, 'annotated');
+            assert.deepEqual(captured[0].where.dataset, { isReviewEnabled: true });
             assert.deepEqual(captured[0].where.annotations.none, { userId: 3 });
 
+            // Only active reviews block now (§4.6: terminal reviews no longer
+            // block on their own; the entry status decides whether the chain
+            // is reopenable).
             const blockingStatuses = captured[0].where.reviews.none.status.in;
             assert.ok(blockingStatuses.includes(REVIEW_PENDING));
             assert.ok(blockingStatuses.includes(REVIEW_IN_PROGRESS));
-            assert.ok(blockingStatuses.includes(REVIEW_COMPLETED));
-            assert.ok(blockingStatuses.includes(REVIEW_DISPUTED));
+            assert.ok(!blockingStatuses.includes(REVIEW_COMPLETED));
+            assert.ok(!blockingStatuses.includes(REVIEW_DISPUTED));
             assert.ok(!blockingStatuses.includes(REVIEW_EXPIRED));
+        });
+
+        it('descarta candidatos cuyo último round terminal lo cerró el mismo reviewer (anti-immediate-repeat)', async () => {
+            const repo = createReviewsRepository({
+                prisma: buildPrisma({
+                    entry: {
+                        async findMany() {
+                            return [
+                                // Same reviewer closed the previous round → excluded.
+                                { id: 5, annotations: [{ userId: 9 }], reviews: [{ reviewerId: 3, roundIndex: 1, cleanRound: false }] },
+                                // Different reviewer → kept.
+                                { id: 6, annotations: [{ userId: 9 }], reviews: [{ reviewerId: 8, roundIndex: 0, cleanRound: true }] }
+                            ];
+                        }
+                    }
+                })
+            });
+
+            const result = await repo.findReviewableEntries({ reviewerId: 3, limit: 5 });
+
+            assert.equal(result.length, 1);
+            assert.equal(/** @type {any} */ (result[0]).id, 6);
+        });
+    });
+
+    describe('findPreviousTerminalReview', () => {
+        it('busca terminal con roundIndex < beforeRoundIndex en orden descendente', async () => {
+            /** @type {any[]} */
+            const captured = [];
+            const repo = createReviewsRepository({
+                prisma: buildPrisma({
+                    review: {
+                        async findFirst(/** @type {*} */ args) {
+                            captured.push(args);
+                            return { id: 99, entryId: 5, roundIndex: 0, status: REVIEW_COMPLETED, cleanRound: true };
+                        }
+                    }
+                })
+            });
+
+            const result = await repo.findPreviousTerminalReview({ entryId: 5, beforeRoundIndex: 2 });
+
+            assert.equal(/** @type {any} */ (result).id, 99);
+            assert.equal(captured[0].where.entryId, 5);
+            assert.deepEqual(captured[0].where.roundIndex, { lt: 2 });
+            assert.deepEqual(captured[0].where.status.in, [REVIEW_COMPLETED, REVIEW_DISPUTED]);
+            assert.deepEqual(captured[0].orderBy, { roundIndex: 'desc' });
         });
     });
 
@@ -226,37 +280,100 @@ describe('reviews-repository (T4.2)', () => {
     });
 
     describe('upsertDecision', () => {
-        it('usa upsert con clave compuesta (reviewId, criterionCode)', async () => {
+        it('crea una decision nueva con (reviewId, sentenceIndex, criterionCode)', async () => {
             /** @type {any[]} */
-            const captured = [];
+            const found = [];
+            /** @type {any[]} */
+            const created = [];
             const repo = createReviewsRepository({
                 prisma: buildPrisma({
                     reviewDecision: {
-                        /**
-                         * Asynchronously runs the logic of upsert.
-                         * @param {*} args - Value of args used by the function.
-                         * @returns {Promise<*>} Result produced by the function.
-                         */
-                        async upsert(args) {
-                            captured.push(args);
-                            return { id: 9, ...args.create };
-                        }
+                        async findFirst(/** @type {*} */ args) { found.push(args); return null; },
+                        async create(/** @type {*} */ args) { created.push(args); return { id: 9, ...args.data }; }
                     }
                 })
             });
 
             const result = await repo.upsertDecision({
                 reviewId: 5,
-                criterionCode: 'criterion_grammar',
+                sentenceIndex: 0,
+                criterionCode: 'naturalness',
                 decision: 'accepted',
                 comment: null
             });
 
             assert.equal(/** @type {any} */ (result).id, 9);
-            assert.equal(captured[0].where.reviewId_criterionCode.reviewId, 5);
-            assert.equal(captured[0].where.reviewId_criterionCode.criterionCode, 'criterion_grammar');
-            assert.equal(captured[0].create.decision, 'accepted');
-            assert.equal(captured[0].update.decision, 'accepted');
+            assert.equal(found[0].where.reviewId, 5);
+            assert.equal(found[0].where.sentenceIndex, 0);
+            assert.equal(found[0].where.criterionCode, 'naturalness');
+            assert.equal(created[0].data.decision, 'accepted');
+        });
+
+        it('actualiza la decision existente sin crear otra', async () => {
+            /** @type {any[]} */
+            const updated = [];
+            let createCalls = 0;
+            const repo = createReviewsRepository({
+                prisma: buildPrisma({
+                    reviewDecision: {
+                        async findFirst() { return { id: 42, reviewId: 5, sentenceIndex: 0, criterionCode: 'naturalness', decision: 'accepted' }; },
+                        async update(/** @type {*} */ args) { updated.push(args); return { id: 42, ...args.data }; },
+                        async create() { createCalls++; return { id: 99 }; }
+                    }
+                })
+            });
+
+            const result = await repo.upsertDecision({
+                reviewId: 5,
+                sentenceIndex: 0,
+                criterionCode: 'naturalness',
+                decision: 'rejected',
+                comment: 'motivo'
+            });
+
+            assert.equal(/** @type {any} */ (result).id, 42);
+            assert.equal(updated[0].where.id, 42);
+            assert.equal(updated[0].data.decision, 'rejected');
+            assert.equal(createCalls, 0);
+        });
+
+        it('normaliza sentenceIndex ausente a null (criterio de nivel review)', async () => {
+            /** @type {any[]} */
+            const found = [];
+            const repo = createReviewsRepository({
+                prisma: buildPrisma({
+                    reviewDecision: {
+                        async findFirst(/** @type {*} */ args) { found.push(args); return null; },
+                        async create(/** @type {*} */ args) { return { id: 1, ...args.data }; }
+                    }
+                })
+            });
+
+            await repo.upsertDecision({
+                reviewId: 5,
+                criterionCode: 'diversity',
+                decision: 'accepted'
+            });
+
+            assert.equal(found[0].where.sentenceIndex, null);
+        });
+    });
+
+    describe('findAnnotatedSentenceIndexes', () => {
+        it('devuelve los indices de frase anotados por el annotator', async () => {
+            const repo = createReviewsRepository({
+                prisma: buildPrisma({
+                    annotation: {
+                        async findMany() {
+                            return [{ sentenceIndex: 0 }, { sentenceIndex: 1 }];
+                        }
+                    }
+                })
+            });
+
+            const result = await repo.findAnnotatedSentenceIndexes({ entryId: 3, annotatorId: 9 });
+
+            assert.deepEqual(result, [0, 1]);
         });
     });
 

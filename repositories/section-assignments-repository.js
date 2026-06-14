@@ -137,6 +137,25 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
     }
 
     /**
+     * Adds `seconds` to the `timeSpentSeconds` accumulator of the user's active
+     * assignment(s) on the dataset. This is the annotation-time source consumed
+     * by the statistics surfaces (US-14, US-21). No-op for non-positive input.
+     *
+     * @param {{ userId:number, datasetId:number, seconds:number }} input
+     * @returns {Promise<{ count:number }>}
+     */
+    async function addTimeToActiveAssignment({ userId, datasetId, seconds }) {
+        const increment = Math.floor(Number(seconds));
+        if (!Number.isFinite(increment) || increment <= 0)
+            return { count: 0 };
+
+        return deps.prisma.sectionAssignment.updateMany({
+            where: { userId, datasetId, status: ASSIGNMENT_ACTIVE },
+            data: { timeSpentSeconds: { increment } }
+        });
+    }
+
+    /**
      * Marks as `expired` every active assignment whose `expiresAt` is strictly
      * earlier than `cutoffDate`.
      *
@@ -160,6 +179,7 @@ function createSectionAssignmentsRepository({ prisma } = {}) {
         createAssignment,
         updateAssignmentStatus,
         updateUserDatasetAssignmentStatus,
+        addTimeToActiveAssignment,
         expireStaleAssignments
     };
 }

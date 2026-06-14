@@ -112,7 +112,6 @@ describe('annotations router integration', () => {
             { path: '/:datasetId/next', methods: ['get'] }
         ]);
         assert.deepEqual(userRoutes, [
-            '/tasks',
             '/register',
             '/register/moderator'
         ]);

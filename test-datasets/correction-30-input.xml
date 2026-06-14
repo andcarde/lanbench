@@ -1,0 +1,305 @@
+<?xml version="1.0" ?>
+<benchmark>
+  <entries>
+    <entry category="City" eid="1" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab, Pakistán, está dirigido por la Asamblea Provincial del Punjab.</lex>
+    </entry>
+    <entry category="City" eid="2" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">San Sebastián de los Reyes forma parte de la Comunidad de Madrid.</lex>
+    </entry>
+    <entry category="Country" eid="3" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>France | capital | Paris</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>France | capital | Paris</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of France is Paris.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La kapital de Francia es París.</lex>
+    </entry>
+    <entry category="Person" eid="4" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Albert_Einstein | birthPlace | Ulm</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Albert_Einstein | birthPlace | Ulm</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Albert Einstein was born in Ulm.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Albert Einstein was born in Ulm.</lex>
+    </entry>
+    <entry category="Writer" eid="5" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Miguel_de_Cervantes | birthPlace | Alcalá_de_Henares</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Miguel_de_Cervantes | birthPlace | Alcalá_de_Henares</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Miguel de Cervantes was born in Alcalá de Henares.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Miguel de Cervantes nacio en Alcala de Henares.</lex>
+    </entry>
+    <entry category="Food" eid="6" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spaghetti | country | Italy</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spaghetti | country | Italy</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Spaghetti comes from Italy.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Los espaguetis provienen de Italia.</lex>
+    </entry>
+    <entry category="Building" eid="7" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Empire_State_Building | location | New_York_City</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Empire_State_Building | location | New_York_City</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Empire State Building is located in New York City.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El Empire State Building se encuentra en Chicago.</lex>
+    </entry>
+    <entry category="City" eid="8" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab, Pakistán, está dirigido por la Asamblea.</lex>
+    </entry>
+    <entry category="Country" eid="9" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spain | capital | Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spain | capital | Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of Spain is Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La capital de España es Madrid.</lex>
+    </entry>
+    <entry category="Food" eid="10" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Spaghetti | country | Italy</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Spaghetti | country | Italy</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Spaghetti comes from Italy.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Italia proviene de los espaguetis.</lex>
+    </entry>
+    <entry category="Person" eid="11" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Miguel_de_Cervantes | occupation | Writer</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Miguel_de_Cervantes | occupation | Writer</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Miguel de Cervantes worked as a writer.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Miguel de Cervantes fue escritor.</lex>
+    </entry>
+    <entry category="Building" eid="12" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Empire_State_Building | architect | Shreve,_Lamb_and_Harmon</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Empire_State_Building | architect | Shreve,_Lamb_and_Harmon</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Empire State Building was designed by Shreve, Lamb and Harmon.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El Empire State Building was designed por Shreve, Lamb and Harmon.</lex>
+    </entry>
+    <entry category="City" eid="13" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Amsterdam | country | Netherlands</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Amsterdam | country | Netherlands</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Amsterdam is in the Netherlands.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Ámsterdam realiza su localización en los Países Bajos.</lex>
+    </entry>
+    <entry category="Airport" eid="14" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Madrid_Barajas_Airport | location | Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Madrid_Barajas_Airport | location | Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Madrid Barajas Airport is located in Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El aeropuerto de Madrid-Barajas está situado en Madrid.</lex>
+    </entry>
+    <entry category="City" eid="15" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">San Sebastian de los Reyes is part of the Community of Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La Comunidad de Madrid.</lex>
+    </entry>
+    <entry category="Person" eid="16" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Albert_Einstein | award | Nobel_Prize_in_Physics</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Albert_Einstein | award | Nobel_Prize_in_Physics</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Albert Einstein received the Nobel Prize in Physics.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Albert Einstein recibió el Premio Nobel de Física.</lex>
+    </entry>
+    <entry category="City" eid="17" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Punjab Pakistán está dirigido por la Asamblea Provincial del Punjab.</lex>
+    </entry>
+    <entry category="Person" eid="18" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Albert_Einstein | birthPlace | Ulm</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Albert_Einstein | birthPlace | Ulm</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Albert Einstein was born in Ulm.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Albert Einstein murió en Ulm.</lex>
+    </entry>
+    <entry category="Country" eid="19" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Italy | capital | Rome</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Italy | capital | Rome</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of Italy is Rome.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Roma es la capital de Italia.</lex>
+    </entry>
+    <entry category="Food" eid="20" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Hamburger | ingredient | Beef</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Hamburger | ingredient | Beef</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">A hamburger contains beef.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La hamburgesa contiene carne de res.</lex>
+    </entry>
+    <entry category="Person" eid="21" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Cristiano_Ronaldo | birthPlace | Funchal</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Cristiano_Ronaldo | birthPlace | Funchal</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Cristiano Ronaldo was born in Funchal.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Cristiano Ronaldo nació en Funchal.</lex>
+    </entry>
+    <entry category="Person" eid="22" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Leonardo_da_Vinci | occupation | Painter</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Leonardo_da_Vinci | occupation | Painter</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Leonardo da Vinci worked as a painter.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Leonardo da Vinci se dedicaba al arte.</lex>
+    </entry>
+    <entry category="City" eid="23" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Tokyo | country | Japan</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Tokyo | country | Japan</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Tokyo is in Japan.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Tokio está en Japón.</lex>
+    </entry>
+    <entry category="Country" eid="24" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Germany | capital | Berlin</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Germany | capital | Berlin</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of Germany is Berlin.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Berlin is the capital of Germany.</lex>
+    </entry>
+    <entry category="Person" eid="25" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Barack_Obama | birthPlace | Honolulu</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Barack_Obama | birthPlace | Honolulu</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Barack Obama was born in Honolulu.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Honolulu nació en Barack Obama.</lex>
+    </entry>
+    <entry category="Food" eid="26" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Paella | ingredient | Rice</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Paella | ingredient | Rice</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Paella contains rice.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La paella lleva arroz.</lex>
+    </entry>
+    <entry category="University" eid="27" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Massachusetts_Institute_of_Technology | city | Cambridge,_Massachusetts</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Massachusetts_Institute_of_Technology | city | Cambridge,_Massachusetts</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The Massachusetts Institute of Technology is in Cambridge, Massachusetts.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El MIT está en Cambridge.</lex>
+    </entry>
+    <entry category="Person" eid="28" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Frida_Kahlo | nationality | Mexican</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Frida_Kahlo | nationality | Mexican</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Frida Kahlo was Mexican.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">Frida Kahlo fue mexicana.</lex>
+    </entry>
+    <entry category="Airport" eid="29" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Madrid_Barajas_Airport | location | Madrid</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Madrid_Barajas_Airport | location | Madrid</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">Madrid Barajas Airport is located in Madrid.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">El aeropuerto de Madrid-Barajas está en Barcelona.</lex>
+    </entry>
+    <entry category="Country" eid="30" shape="(X (X))" shape_type="NA" size="1">
+      <originaltripleset>
+        <otriple>Japan | capital | Tokyo</otriple>
+      </originaltripleset>
+      <modifiedtripleset>
+        <mtriple>Japan | capital | Tokyo</mtriple>
+      </modifiedtripleset>
+      <lex comment="" lang="en" lid="Id1">The capital of Japan is Tokyo.</lex>
+      <lex comment="candidate" lang="es" lid="Id1">La capital de Japón es Tokio.</lex>
+    </entry>
+  </entries>
+</benchmark>

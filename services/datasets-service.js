@@ -16,6 +16,7 @@
  * @typedef {Object} DatasetsServiceDeps
  * @property {Record<string, any>} [datasetsRepository]
  * @property {Record<string, any>} [datasetsPermissionsRepository]
+ * @property {Record<string, any>} [datasetLlmCredentialsRepository]
  * @property {Record<string, any>} [usersRepository]
  * @property {(filePath:string)=>any} [readDataset]
  * @property {(input:any, filename?:any)=>any} [parseDatasetImport]
@@ -33,13 +34,14 @@ const {
     buildDatasetXml: defaultBuildDatasetXml,
     buildAnnotatedDatasetXml: defaultBuildAnnotatedDatasetXml
 } = require('../utils/dataset-xml');
-const { DATASET_COLORS, DEFAULT_DATASET_COLOR, SECTION_SIZE, DEFAULT_LANGUAGES } = require('../constants/datasets');
+const { DATASET_COLORS, DEFAULT_DATASET_COLOR, SECTION_SIZE, resolveSectionSize, DEFAULT_LANGUAGES } = require('../constants/datasets');
 const { createDatasetsRepository } = require('../repositories/datasets-repository');
 const { createDatasetsPermissionsRepository } = require('../repositories/datasets-permissions-repository');
+const { createDatasetLlmCredentialsRepository } = require('../repositories/dataset-llm-credentials-repository');
 const { createUsersRepository } = require('../repositories/users-repository');
 const { ServiceError } = require('./service-error');
 const { resolveExistingTempFilePath } = require('../utils/temp-storage');
-const { toIntegerNormalized, toBoolean } = require('../utils/validators');
+const { toIntegerNormalized, toBoolean, toPositiveInteger } = require('../utils/validators');
 const { assertDatasetAdminPermission } = require('./datasets-permissions-service');
 const { calculatePercentagesFromSectionCounters } = require('../utils/dataset-progress');
 const {
@@ -56,6 +58,7 @@ const {
 function createDatasetsService({
     datasetsRepository,
     datasetsPermissionsRepository,
+    datasetLlmCredentialsRepository,
     readDataset,
     parseDatasetImport,
     buildDatasetXml,
@@ -66,6 +69,7 @@ function createDatasetsService({
     const deps = {
         datasetsRepository: datasetsRepository || createDatasetsRepository(),
         datasetsPermissionsRepository: datasetsPermissionsRepository || createDatasetsPermissionsRepository(),
+        datasetLlmCredentialsRepository: datasetLlmCredentialsRepository || createDatasetLlmCredentialsRepository(),
         usersRepository: usersRepository || createUsersRepository(),
         readDataset: readDataset || defaultReadDataset,
         parseDatasetImport: parseDatasetImport || defaultParseDatasetImport,
@@ -82,13 +86,40 @@ function createDatasetsService({
     async function listAccessibleDatasets(userId) {
         const datasetRows = await deps.datasetsRepository.findAccessibleMany(userId);
         const reviewableCounts = await getReviewableCountsForDatasets(userId, datasetRows);
+        const selfAnnotatedCounts = await getSelfAnnotatedReviewableCountsForDatasets(userId, datasetRows);
         const annotatedEntryCounts = await getAnnotatedEntryCountsForDatasets(datasetRows);
+        const activeCredentialIds = await getActiveCredentialDatasetIds(datasetRows);
         return datasetRows.map((/** @type {*} */ row) => mapDatasetRecordToSource(row, {
             reviewableCount: reviewableCounts.get(row.id) || 0,
+            selfAnnotatedReviewableCount: selfAnnotatedCounts.get(row.id) || 0,
             annotatedEntries: annotatedEntryCounts.has(row.id)
                 ? annotatedEntryCounts.get(row.id)
-                : null
+                : null,
+            hasActiveCredential: activeCredentialIds.has(Number(row.id))
         }));
+    }
+
+    /**
+     * Returns the set of dataset ids (from `datasetRows`) that have at least
+     * one active LLM credential. Used by `listAccessibleDatasets` to gate the
+     * "Anotar" button on the frontend (and mirrors the backend enforcement in
+     * `continueDatasetService`).
+     *
+     * @param {Array<*>} datasetRows - Accessible datasets.
+     * @returns {Promise<Set<number>>}
+     */
+    async function getActiveCredentialDatasetIds(datasetRows) {
+        if (typeof deps.datasetLlmCredentialsRepository.findDatasetIdsWithActiveCredential !== 'function')
+            return new Set();
+
+        const datasetIds = (datasetRows || [])
+            .map(row => Number(row?.id))
+            .filter(datasetId => Number.isInteger(datasetId) && datasetId > 0);
+
+        if (!datasetIds.length)
+            return new Set();
+
+        return deps.datasetLlmCredentialsRepository.findDatasetIdsWithActiveCredential({ datasetIds });
     }
 
     /**
@@ -163,6 +194,41 @@ function createDatasetsService({
     }
 
     /**
+     * Per-dataset count of entries that would be reviewable but are excluded
+     * because the current user annotated them (the self-review governance rule).
+     * It explains a disabled review button: when this is the *only* reason
+     * `reviewableCount` is 0, the card tells the reviewer they annotated every
+     * pending entry themselves instead of the generic "nothing to review".
+     *
+     * @param {number} userId - Current user.
+     * @param {Array<*>} datasetRows - Accessible datasets.
+     * @returns {Promise<Map<number, number>>} Counts per dataset.
+     */
+    async function getSelfAnnotatedReviewableCountsForDatasets(userId, datasetRows) {
+        if (typeof deps.datasetsRepository.findSelfAnnotatedReviewableDatasetIds !== 'function')
+            return new Map();
+
+        const datasetIds = (datasetRows || [])
+            .map(row => Number(row?.id))
+            .filter(datasetId => Number.isInteger(datasetId) && datasetId > 0);
+
+        if (!datasetIds.length)
+            return new Map();
+
+        const rows = await deps.datasetsRepository.findSelfAnnotatedReviewableDatasetIds({ userId, datasetIds });
+        const counts = new Map();
+
+        for (const row of rows || []) {
+            const datasetId = Number(row?.datasetId);
+            if (!Number.isInteger(datasetId) || datasetId <= 0)
+                continue;
+            counts.set(datasetId, (counts.get(datasetId) || 0) + 1);
+        }
+
+        return counts;
+    }
+
+    /**
      * Lists the accessible datasets already mapped to a client-ready DTO.
      * @param {*} userId - User identifier.
      * @returns {Promise<Array<*>>} List of DTOs.
@@ -184,11 +250,21 @@ function createDatasetsService({
             throw ServiceError.datasetNotFound();
 
         const annotatedEntryCounts = await getAnnotatedEntryCountsForDatasets([datasetRow]);
+        // Compute the reviewable count for this dataset too, so the single-dataset
+        // DTO reports `review.reviewAvailable` consistently with the list endpoint
+        // (otherwise a freshly reviewable section would never surface the Revisión
+        // affordance when the card is read on its own — P5).
+        const reviewableCounts = await getReviewableCountsForDatasets(userId, [datasetRow]);
+        const selfAnnotatedCounts = await getSelfAnnotatedReviewableCountsForDatasets(userId, [datasetRow]);
+        const activeCredentialIds = await getActiveCredentialDatasetIds([datasetRow]);
         return mapDatasetListDTO(
             mapDatasetRecordToSource(datasetRow, {
                 annotatedEntries: annotatedEntryCounts.has(datasetRow.id)
                     ? annotatedEntryCounts.get(datasetRow.id)
-                    : null
+                    : null,
+                reviewableCount: reviewableCounts.get(datasetRow.id) || 0,
+                selfAnnotatedReviewableCount: selfAnnotatedCounts.get(datasetRow.id) || 0,
+                hasActiveCredential: activeCredentialIds.has(Number(datasetRow.id))
             }),
             datasetId
         );
@@ -212,7 +288,8 @@ function createDatasetsService({
             });
         }
 
-        const totalSections = Math.ceil(annotationEntries.length / SECTION_SIZE);
+        const sectionSize = resolveSectionSize(datasetRow);
+        const totalSections = Math.ceil(annotationEntries.length / sectionSize);
         if (sectionNumber > totalSections) {
             throw new ServiceError('La sección solicitada no existe.', {
                 status: 404,
@@ -220,15 +297,15 @@ function createDatasetsService({
             });
         }
 
-        const startIndex = (sectionNumber - 1) * SECTION_SIZE;
-        const sectionEntries = annotationEntries.slice(startIndex, startIndex + SECTION_SIZE);
+        const startIndex = (sectionNumber - 1) * sectionSize;
+        const sectionEntries = annotationEntries.slice(startIndex, startIndex + sectionSize);
 
         return mapDatasetSectionDTO({
             datasetId: datasetRow.id,
             datasetName: datasetRow.name,
             totalSections,
             sectionIndex: sectionNumber,
-            sectionSize: SECTION_SIZE,
+            sectionSize,
             totalEntries: sectionEntries.length,
             startEntry: startIndex + 1,
             endEntry: startIndex + sectionEntries.length,
@@ -298,7 +375,7 @@ function createDatasetsService({
             });
         }
 
-        const totalSections = Math.ceil(Number(datasetRow.totalEntries || 0) / SECTION_SIZE);
+        const totalSections = Math.ceil(Number(datasetRow.totalEntries || 0) / resolveSectionSize(datasetRow));
         const sectionsCompleted = Number(datasetRow.sectionsCompleted || 0);
         const sectionsPending = Number(datasetRow.sectionsPending || 0);
         if (sectionsCompleted !== totalSections || sectionsPending !== 0) {
@@ -347,19 +424,31 @@ function createDatasetsService({
             throw serviceError;
         }
 
-        const name = nameFromFilename(file.originalname);
+        // The dataset name is requested from the user on creation; it defaults
+        // to the uploaded file name (without `.xml`) in the UI. We honour the
+        // provided name when present, otherwise derive it from the file.
+        const requestedName = normalizeDatasetName(options.name);
+        const name = requestedName || nameFromFilename(file.originalname);
+        assertValidDatasetName(name);
+        await assertDatasetNameAvailable(userId, name);
+
+        const description = normalizeDatasetDescription(options.description);
+        assertValidDatasetDescription(description);
+
         const totalEntries = datasetDto.entries.length;
-        const totalSections = Math.ceil(totalEntries / SECTION_SIZE);
+        const totalSections = Math.ceil(totalEntries / datasetOptions.sectionSize);
 
         const datasetRow = await deps.datasetsRepository.createOwnedDataset({
             userId,
             datasetData: {
                 name,
+                description,
                 totalEntries,
                 languages: JSON.stringify(DEFAULT_LANGUAGES),
                 llmMode: datasetOptions.llmMode,
                 isReviewEnabled: datasetOptions.isReviewEnabled,
                 hasAdditionalReviews: datasetOptions.hasAdditionalReviews,
+                sectionSize: datasetOptions.sectionSize,
                 sectionsCompleted: 0,
                 sectionsInReview: 0,
                 sectionsPending: totalSections
@@ -400,6 +489,84 @@ function createDatasetsService({
             ok: true,
             datasetId
         };
+    }
+
+    /**
+     * Renames a dataset administrable by the actor, enforcing the per-owner
+     * name-uniqueness invariant. The duplicate check runs against the datasets
+     * owned by *this dataset's owner* (not necessarily the acting admin), so the
+     * invariant "no owner has two datasets with the same name" holds regardless
+     * of who performs the rename.
+     *
+     * @param {number} actorId - Current user.
+     * @param {number} datasetId - Dataset.
+     * @param {*} rawName - Requested new name.
+     * @returns {Promise<*>} Rename result.
+     */
+    async function renameDataset(actorId, datasetId, rawName) {
+        await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
+
+        const name = normalizeDatasetName(rawName);
+        assertValidDatasetName(name);
+
+        const ownerUserId = await resolveDatasetOwnerId(datasetId, actorId);
+        await assertDatasetNameAvailable(ownerUserId, name, datasetId);
+
+        const updated = await deps.datasetsRepository.renameDataset({ datasetId, name });
+
+        return {
+            ok: true,
+            datasetId,
+            dataset: {
+                datasetId,
+                name: updated && typeof updated.name === 'string' ? updated.name : name
+            }
+        };
+    }
+
+    /**
+     * Throws when the (owner, name) pair would collide with an existing owned
+     * dataset. No-op when the repository does not expose the lookup (keeps unit
+     * tests that stub a minimal repository unaffected).
+     *
+     * @param {number} ownerUserId - Owner whose datasets are checked.
+     * @param {string} name - Candidate name.
+     * @param {number} [excludeDatasetId] - Dataset id to ignore (rename case).
+     * @returns {Promise<void>}
+     */
+    async function assertDatasetNameAvailable(ownerUserId, name, excludeDatasetId) {
+        if (typeof deps.datasetsRepository.findOwnedDatasetWithSameName !== 'function')
+            return;
+
+        const existing = await deps.datasetsRepository.findOwnedDatasetWithSameName({
+            userId: ownerUserId,
+            name,
+            excludeDatasetId
+        });
+
+        if (existing && existing.id !== excludeDatasetId) {
+            throw new ServiceError('Ya tienes un dataset con ese nombre. Elige otro.', {
+                status: 409,
+                code: 'duplicate_dataset_name'
+            });
+        }
+    }
+
+    /**
+     * Resolves the owning user of a dataset, falling back to `fallbackUserId`
+     * when the repository cannot resolve an owner (or does not expose the
+     * lookup, for minimal test stubs).
+     *
+     * @param {number} datasetId - Dataset.
+     * @param {number} fallbackUserId - User id used when no owner is found.
+     * @returns {Promise<number>}
+     */
+    async function resolveDatasetOwnerId(datasetId, fallbackUserId) {
+        if (typeof deps.datasetsRepository.findDatasetOwnerUserId !== 'function')
+            return fallbackUserId;
+
+        const ownerId = await deps.datasetsRepository.findDatasetOwnerUserId({ datasetId });
+        return Number.isInteger(ownerId) && ownerId > 0 ? ownerId : fallbackUserId;
     }
 
     /**
@@ -453,6 +620,7 @@ function createDatasetsService({
         getAccessibleDatasetXmlDownload,
         getAccessibleDatasetAnnotatedXmlDownload,
         createDataset,
+        renameDataset,
         deleteDataset
     };
 }
@@ -603,7 +771,7 @@ function flattenPersistedTriplesets(triplesets, type) {
  * @param {*} [options] - Additional counts computed separately (reviewableCount, annotatedEntries).
  * @returns {*} Base object for building DTOs.
  */
-function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEntries = /** @type {*} */ (null) } = {}) {
+function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, selfAnnotatedReviewableCount = 0, annotatedEntries = /** @type {*} */ (null), hasActiveCredential } = {}) {
     const isReviewEnabled = Boolean(datasetRow.isReviewEnabled);
     const percentages = calculatePercentagesFromSectionCounters({
         sectionsCompleted: datasetRow.sectionsCompleted,
@@ -611,19 +779,24 @@ function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEn
         sectionsPending: datasetRow.sectionsPending,
         reviewEnabled: isReviewEnabled,
         annotatedEntries,
-        totalEntries: datasetRow.totalEntries
+        totalEntries: datasetRow.totalEntries,
+        sectionSize: resolveSectionSize(datasetRow)
     });
 
-    return {
+    /** @type {Record<string, any>} */
+    const source = {
         id: datasetRow.id,
         name: datasetRow.name,
+        description: typeof datasetRow.description === 'string' && datasetRow.description.length > 0
+            ? datasetRow.description
+            : null,
         totalEntries: datasetRow.totalEntries,
         languages: parseLanguages(datasetRow.languages),
         completedPercent: percentages.completed,
         withoutReviewPercent: percentages.withoutReview,
         remainPercent: percentages.remaining,
         permissions: mapCurrentUserDatasetPermissions(datasetRow),
-        review: mapCurrentUserReviewState(datasetRow, percentages, reviewableCount),
+        review: mapCurrentUserReviewState(datasetRow, percentages, reviewableCount, selfAnnotatedReviewableCount),
         options: {
             llmMode: datasetRow.llmMode || 'none',
             isReviewEnabled,
@@ -633,6 +806,11 @@ function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, annotatedEn
             ? datasetRow.colorClass
             : DEFAULT_DATASET_COLOR
     };
+
+    if (typeof hasActiveCredential === 'boolean')
+        source.hasActiveCredential = hasActiveCredential;
+
+    return source;
 }
 
 /**
@@ -649,10 +827,29 @@ function normalizeDatasetCreationOptions(options) {
         ? rawLlmMode
         : 'none';
 
+    // Section size is an optional, declarative per-dataset value (US: P4).
+    // Anything missing or non-positive clamps to the default (10).
+    const sectionSize = toPositiveInteger(source.sectionSize) ?? SECTION_SIZE;
+
+    let isReviewEnabled = toBoolean(source.isReviewEnabled ?? source.reviewEnabled, false);
+    let hasAdditionalReviews = toBoolean(source.hasAdditionalReviews ?? source.additionalReviews, false);
+
+    // Defensive enforcement of the creation invariants (P6). Policy: NORMALISE,
+    // never reject — a crafted request cannot persist an illegal combination.
+    //   R2: llmMode = 'correction' ⇒ review ∧ additional reviews (both forced on).
+    //   R1: review disabled ⇒ additional reviews forced off.
+    if (llmMode === 'correction') {
+        isReviewEnabled = true;
+        hasAdditionalReviews = true;
+    } else if (!isReviewEnabled) {
+        hasAdditionalReviews = false;
+    }
+
     return {
         llmMode,
-        isReviewEnabled: toBoolean(source.isReviewEnabled ?? source.reviewEnabled, false),
-        hasAdditionalReviews: toBoolean(source.hasAdditionalReviews ?? source.additionalReviews, false)
+        isReviewEnabled,
+        hasAdditionalReviews,
+        sectionSize
     };
 }
 
@@ -661,19 +858,27 @@ function normalizeDatasetCreationOptions(options) {
  * @param {*} datasetRow - Persisted dataset.
  * @param {*} percentages - Computed percentages.
  * @param {number} reviewableCount - Entries pending review.
+ * @param {number} [selfAnnotatedReviewableCount] - Entries excluded from the
+ *   reviewer's queue solely because they annotated them (self-review rule).
  * @returns {*} Review state.
  */
-function mapCurrentUserReviewState(datasetRow, percentages, reviewableCount) {
+function mapCurrentUserReviewState(datasetRow, percentages, reviewableCount, selfAnnotatedReviewableCount = 0) {
     const permissions = mapCurrentUserDatasetPermissions(datasetRow);
     const safeCount = toIntegerNormalized(reviewableCount);
+    const selfAnnotatedCount = toIntegerNormalized(selfAnnotatedReviewableCount);
     const canReview = Boolean(permissions && permissions.reviewer);
     const completed = Number(percentages?.completed || 0) >= 100;
+    const showReviewButton = canReview && !completed;
 
     return {
         canReview,
-        showReviewButton: canReview && !completed,
-        reviewAvailable: canReview && !completed && safeCount > 0,
-        reviewableCount: safeCount
+        showReviewButton,
+        reviewAvailable: showReviewButton && safeCount > 0,
+        reviewableCount: safeCount,
+        // The button is shown but disabled *only* because every candidate entry
+        // was annotated by this reviewer — lets the card explain why instead of
+        // the generic "nothing to review" (self-review rule, USER-STORIES §US-13).
+        blockedBySelfAnnotation: showReviewButton && safeCount === 0 && selfAnnotatedCount > 0
     };
 }
 
@@ -735,6 +940,11 @@ function defaultReadFileAsBuffer(filename) {
     return readFileSync(resolveExistingTempFilePath(filename));
 }
 
+/** Maximum length of a dataset name (mirrors `Dataset.name` `VarChar(128)`). */
+const DATASET_NAME_MAX_LENGTH = 128;
+/** Maximum length of a dataset description (mirrors `Dataset.description` `VarChar(512)`). */
+const DATASET_DESCRIPTION_MAX_LENGTH = 512;
+
 /**
  * Derives a canonical name for a dataset from its original filename.
  * @param {*} originalname - Original name of the uploaded file.
@@ -742,9 +952,71 @@ function defaultReadFileAsBuffer(filename) {
  */
 function nameFromFilename(originalname) {
     const name = (originalname || '').replace(/\.xml$/i, '').trim();
-    if (!name || name.length > 128)
+    if (!name || name.length > DATASET_NAME_MAX_LENGTH)
         return 'NUEVO DATASET';
     return name;
+}
+
+/**
+ * Normalizes a requested dataset name: trims a string, otherwise returns `''`.
+ * @param {*} rawName - Raw name (typically from the request body).
+ * @returns {string} Trimmed name, or empty string.
+ */
+function normalizeDatasetName(rawName) {
+    return typeof rawName === 'string' ? rawName.trim() : '';
+}
+
+/**
+ * Validates a (already normalized) dataset name. Throws a `ServiceError` when
+ * empty or longer than the column limit.
+ * @param {string} name - Normalized name.
+ * @returns {void}
+ */
+function assertValidDatasetName(name) {
+    if (!name) {
+        throw new ServiceError('El nombre del dataset es obligatorio.', {
+            status: 400,
+            code: 'invalid_dataset_name'
+        });
+    }
+
+    if (name.length > DATASET_NAME_MAX_LENGTH) {
+        throw new ServiceError(`El nombre del dataset no puede superar los ${DATASET_NAME_MAX_LENGTH} caracteres.`, {
+            status: 400,
+            code: 'dataset_name_too_long'
+        });
+    }
+}
+
+/**
+ * Normalizes a dataset description: trims a string, returns `null` for empty
+ * input. Any other type (undefined, missing) becomes `null`.
+ * @param {*} rawDescription - Raw description (typically from the request body).
+ * @returns {string|null} Trimmed description, or null when absent/blank.
+ */
+function normalizeDatasetDescription(rawDescription) {
+    if (typeof rawDescription !== 'string')
+        return null;
+    const trimmed = rawDescription.trim();
+    return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * Validates a (already normalized) dataset description. Throws a `ServiceError`
+ * when longer than the column limit. Empty / `null` is valid (optional field).
+ * @param {string|null} description - Normalized description.
+ * @returns {void}
+ */
+function assertValidDatasetDescription(description) {
+    if (description === null)
+        return;
+
+    if (description.length > DATASET_DESCRIPTION_MAX_LENGTH) {
+        throw new ServiceError(`La descripción del dataset no puede superar los ${DATASET_DESCRIPTION_MAX_LENGTH} caracteres.`, {
+            status: 400,
+            code: 'dataset_description_too_long'
+        });
+    }
 }
 
 module.exports = {

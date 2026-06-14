@@ -29,6 +29,43 @@
                 >
             </div>
 
+            <section class="dataset-name-panel mb-4">
+                <h2 class="h5 mb-3">Nombre del dataset</h2>
+                <form
+                    id="datasetNameForm"
+                    class="row g-2 align-items-end"
+                    autocomplete="off"
+                >
+                    <div class="col-12 col-md-9">
+                        <label class="form-label mb-1" for="datasetNameInput"
+                            >Nombre</label
+                        >
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="datasetNameInput"
+                            maxlength="128"
+                            required
+                        />
+                    </div>
+                    <div class="col-12 col-md-3 d-grid">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="btnRenameDataset"
+                        >
+                            Guardar nombre
+                        </button>
+                    </div>
+                </form>
+
+                <div
+                    class="alert d-none mt-3 mb-0"
+                    id="datasetNameMessage"
+                    role="alert"
+                ></div>
+            </section>
+
             <section class="options-panel mb-4">
                 <h2 class="h5 mb-3">Opciones</h2>
                 <div class="row g-3 align-items-end">
@@ -116,6 +153,224 @@
                             que se tratarán los valores como constantes tras su
                             creación.
                         </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section class="llm-credentials-panel mb-4 d-none" id="llmCredentialsPanel">
+                <h2 class="h5 mb-1">Credenciales de IA</h2>
+                <p class="text-muted">
+                    Registra una clave por proveedor para este dataset. La clave
+                    se guarda cifrada y nunca se muestra completa.
+                </p>
+
+                <form
+                    id="addCredentialForm"
+                    class="row g-2 align-items-end"
+                    autocomplete="off"
+                >
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="credProvider"
+                            >Proveedor</label
+                        >
+                        <select class="form-select" id="credProvider">
+                            <option value="groq">Groq</option>
+                            <option value="google-ai-studio">
+                                Google AI Studio
+                            </option>
+                            <option value="openai-compatible">
+                                OpenAI-compatible
+                            </option>
+                            <option value="anthropic">Anthropic</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="credModelSelect"
+                            >Modelo</label
+                        >
+                        <div class="input-group" id="credModelPickerGroup">
+                            <select
+                                class="form-select"
+                                id="credModelSelect"
+                                aria-label="Modelos disponibles del proveedor"
+                            ></select>
+                            <button
+                                class="btn btn-outline-secondary"
+                                type="button"
+                                id="btnReloadModels"
+                                title="Recargar los modelos del proveedor"
+                                aria-label="Recargar los modelos del proveedor"
+                            >
+                                &#x21bb;
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            class="form-control d-none"
+                            id="credModel"
+                            placeholder="llama-3.3-70b-versatile"
+                            aria-label="Modelo (entrada manual)"
+                        />
+                        <div
+                            class="form-text d-none"
+                            id="credModelStatus"
+                            aria-live="polite"
+                        ></div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="credApiBase"
+                            >URL base (opcional)</label
+                        >
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="credApiBase"
+                            placeholder="https://api.groq.com/openai/v1"
+                        />
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <label class="form-label mb-1" for="credApiKey"
+                            >API key</label
+                        >
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="credApiKey"
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+                    <div class="col-12 col-md-1 d-grid">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="btnAddCredential"
+                        >
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+
+                <div
+                    class="alert d-none mt-3"
+                    id="credentialMessage"
+                    role="alert"
+                ></div>
+
+                <div class="table-responsive mt-3">
+                    <table class="table align-middle credentials-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Modelo</th>
+                                <th>Clave</th>
+                                <th class="text-center">Activa</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="credentialsTableBody">
+                            <tr>
+                                <td colspan="5" class="text-muted">
+                                    Cargando credenciales...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <input
+                        type="file"
+                        id="credentialsJsonInput"
+                        accept="application/json,.json"
+                        hidden
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        id="btnLoadCredentialsJson"
+                    >
+                        Cargar desde JSON
+                    </button>
+                </div>
+            </section>
+
+            <div
+                class="modal fade"
+                id="modalCredentialsImport"
+                tabindex="-1"
+                aria-labelledby="modalCredentialsImportLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5
+                                class="modal-title"
+                                id="modalCredentialsImportLabel"
+                            >
+                                Importación de credenciales
+                            </h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"
+                            ></button>
+                        </div>
+                        <div
+                            class="modal-body"
+                            id="modalCredentialsImportBody"
+                        ></div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="modal fade"
+                id="modalCredentialCheck"
+                tabindex="-1"
+                aria-labelledby="modalCredentialCheckLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5
+                                class="modal-title"
+                                id="modalCredentialCheckLabel"
+                            >
+                                Comprobación de la credencial
+                            </h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"
+                            ></button>
+                        </div>
+                        <div
+                            class="modal-body"
+                            id="modalCredentialCheckBody"
+                        ></div>
                         <div class="modal-footer">
                             <button
                                 type="button"
@@ -221,6 +476,13 @@
                         aria-labelledby="reviewStatsTab"
                     >
                         <div id="reviewStatsTable"></div>
+                        <div id="reviewRoundsBlock" class="review-rounds-block mt-4 d-none">
+                            <h3 class="h6 mb-2">
+                                Distribución de rondas de revisión
+                            </h3>
+                            <p class="text-muted mb-2" id="reviewRoundsAverage"></p>
+                            <div id="reviewRoundsHistogram" class="review-rounds-histogram"></div>
+                        </div>
                     </div>
                 </div>
             </section>

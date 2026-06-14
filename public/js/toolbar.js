@@ -22,16 +22,60 @@
         const isModerator = Boolean(sessionUser && sessionUser.isModerator === true);
         const links = [];
 
-        if (isModerator) {
+        // The dataset listing is the canonical home for every authenticated user.
+        links.push({ href: "/datasets", label: "Datasets" });
+
+        if (isModerator)
             links.push({ href: "/reviewer", label: "Revisión" });
-            links.push({ href: "/tasks", label: "Administración" });
-        }
+
+        // Personal statistics are available to every authenticated user.
+        links.push({ href: "/my-stats", label: "Mis estadísticas" });
 
         return {
             isModerator,
             links,
             badgeLabel: isModerator ? MODERATOR_BADGE_LABEL : null
         };
+    }
+
+    /**
+     * Decides whether a toolbar link matches the current location, so it can be
+     * highlighted as active. Pure (no DOM), so it is unit-testable. A link is
+     * active when its href equals the pathname, or the pathname is nested under
+     * the link's path (e.g. `/datasets/3/admin` matches `/datasets`, and
+     * `/my-stats/foo` matches `/my-stats`).
+     * @param {string} href - The link's href.
+     * @param {string} pathname - The current `location.pathname`.
+     * @returns {boolean} True when the link should be marked active.
+     */
+    function isActiveToolbarLink(href, pathname) {
+        const linkPath = normalisePath(href);
+        const current = normalisePath(pathname);
+
+        if (linkPath === current)
+            return true;
+
+        if (linkPath === "/")
+            return false;
+
+        return current.startsWith(linkPath + "/");
+    }
+
+    /**
+     * Strips the query/hash and any trailing slashes from a URL path. Uses a
+     * character scan (no end-anchored quantifier) to stay lint-clean.
+     * @param {string} value - Raw href or pathname.
+     * @returns {string} Normalised path (never empty — "/" at minimum).
+     */
+    function normalisePath(value) {
+        let path = String(value || "");
+        const cut = path.search(/[?#]/);
+        if (cut >= 0)
+            path = path.slice(0, cut);
+        let end = path.length;
+        while (end > 0 && path.charCodeAt(end - 1) === 47 /* "/" */)
+            end -= 1;
+        return path.slice(0, end) || "/";
     }
 
     /**
@@ -59,9 +103,15 @@
         const nav = document.createElement("nav");
         nav.className = "app-toolbar-links";
 
+        const currentPath = (typeof window !== "undefined" && window.location)
+            ? window.location.pathname
+            : "/";
+
         for (const linkDef of links) {
             const anchor = document.createElement("a");
             anchor.className = "app-toolbar-link";
+            if (isActiveToolbarLink(linkDef.href, currentPath))
+                anchor.classList.add("is-active");
             anchor.setAttribute("data-role-link", linkDef.href);
             anchor.href = linkDef.href;
             anchor.textContent = linkDef.label;
@@ -98,7 +148,7 @@
         toolbar.className = "app-toolbar";
         toolbar.innerHTML = `
             <div class="app-toolbar-inner">
-                <a class="app-toolbar-brand" href="/tasks">Lanbench</a>
+                <span class="app-toolbar-brand">Lanbench</span>
                 <div class="app-toolbar-actions">
                     <button type="button" class="btn btn-danger app-toolbar-logout" id="appToolbarLogoutButton">
                         Cerrar sesión
@@ -170,7 +220,8 @@
 
     if (typeof module !== "undefined" && module.exports) {
         module.exports = {
-            buildToolbarLinksForUser
+            buildToolbarLinksForUser,
+            isActiveToolbarLink
         };
     }
 

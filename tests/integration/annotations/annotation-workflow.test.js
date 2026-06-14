@@ -32,8 +32,11 @@ const SENTENCES_BY_EID = {
 };
 
 const passwordHasher = createPasswordHasher();
-const inputContexts = JSON.parse(fs.readFileSync(INPUT_FILE_PATH, 'utf8'));
-const inputContextByEid = new Map(inputContexts.map((/** @type {*} */ ctx) => [ctx.eid, ctx]));
+// The expected-triples fixture is read inside `before` (not at module load) so
+// the suite can load and skip cleanly when MySQL is absent, instead of crashing
+// the whole `test:integration` run on a missing/renamed fixture.
+/** @type {Map<number, any>} */
+let inputContextByEid = new Map();
 
 let baseUrl = '';
 /** @type {any} */
@@ -54,6 +57,9 @@ describe('annotation workflow integration', function () {
 
         assert.ok(fs.existsSync(XML_FILE_PATH), `Falta el fichero ${XML_FILE_PATH}`);
         assert.ok(fs.existsSync(INPUT_FILE_PATH), `Falta el fichero ${INPUT_FILE_PATH}`);
+
+        const inputContexts = JSON.parse(fs.readFileSync(INPUT_FILE_PATH, 'utf8'));
+        inputContextByEid = new Map(inputContexts.map((/** @type {*} */ ctx) => [ctx.eid, ctx]));
 
         const freePort = await getFreePort();
         baseUrl = `http://127.0.0.1:${freePort}`;

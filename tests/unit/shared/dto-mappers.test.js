@@ -64,8 +64,26 @@ describe('dto-mappers', () => {
             canReview: true,
             showReviewButton: true,
             reviewAvailable: false,
-            reviewableCount: 0
+            reviewableCount: 0,
+            blockedBySelfAnnotation: false
         });
+    });
+
+    it('mapDatasetListDTO propaga blockedBySelfAnnotation (regla de auto-revision)', () => {
+        const dto = mapDatasetListDTO({
+            id: 8,
+            name: 'Self-annotated',
+            totalEntries: 10,
+            review: {
+                canReview: true,
+                showReviewButton: true,
+                reviewAvailable: false,
+                reviewableCount: 0,
+                blockedBySelfAnnotation: true
+            }
+        });
+
+        assert.equal(/** @type {any} */ (dto.review).blockedBySelfAnnotation, true);
     });
 
     it('mapDatasetListDTO expone las opciones de LLM del dataset', () => {
@@ -85,6 +103,30 @@ describe('dto-mappers', () => {
             isReviewEnabled: false,
             hasAdditionalReviews: true
         });
+    });
+
+    it('mapDatasetListDTO propaga hasActiveCredential cuando viene definido', () => {
+        const dtoWithActive = mapDatasetListDTO({
+            id: 11,
+            name: 'Con credencial',
+            totalEntries: 1,
+            hasActiveCredential: true
+        });
+        const dtoWithoutActive = mapDatasetListDTO({
+            id: 12,
+            name: 'Sin credencial',
+            totalEntries: 1,
+            hasActiveCredential: false
+        });
+        const dtoOmitted = mapDatasetListDTO({
+            id: 13,
+            name: 'Sin flag',
+            totalEntries: 1
+        });
+
+        assert.equal(/** @type {any} */ (dtoWithActive).hasActiveCredential, true);
+        assert.equal(/** @type {any} */ (dtoWithoutActive).hasActiveCredential, false);
+        assert.equal(/** @type {any} */ (dtoOmitted).hasActiveCredential, undefined);
     });
 
     it('mapDatasetSectionDTO produce el DatasetSectionDTO canonico desde la forma plana', () => {

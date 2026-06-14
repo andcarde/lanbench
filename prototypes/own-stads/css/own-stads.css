@@ -7,8 +7,8 @@
     --proto-toolbar-height: 64px;
     --proto-blue: linear-gradient(90deg, #0f4c97 0%, #1d63b8 100%);
     --proto-shadow: 0 8px 24px rgba(8, 42, 86, 0.18);
-    --proto-accepted: #198754;
-    --proto-rejected: #dc3545;
+    --stat-annotation: #0f4c97;
+    --stat-review: #198754;
 }
 
 body {
@@ -74,7 +74,7 @@ body {
 
 /* ----------------------------- Stat cards -------------------------------- */
 
-.proto-stat-card {
+.stat-card {
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 0.6rem;
     background-color: #fff;
@@ -82,52 +82,40 @@ body {
     height: 100%;
 }
 
-.proto-stat-value {
-    font-size: 2rem;
+.stat-value {
+    font-size: 1.9rem;
     font-weight: 700;
     line-height: 1.1;
     color: #0f4c97;
 }
 
-.proto-stat-label {
-    font-size: 0.82rem;
+.stat-label {
+    font-size: 0.78rem;
     color: #6c757d;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    margin-top: 0.2rem;
 }
 
-.proto-stat-value.value-disputed { color: var(--proto-rejected); }
-.proto-stat-value.value-accepted { color: var(--proto-accepted); }
+.stat-value.value-annotation { color: var(--stat-annotation); }
+.stat-value.value-review { color: var(--stat-review); }
 
-/* ----------------------------- Recent activity --------------------------- */
+/* ----------------------------- Per-dataset table ------------------------- */
 
-.stats-recent {
-    display: grid;
-    gap: 0.5rem;
-}
-
-.stats-recent-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0.65rem;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 0.4rem;
-    font-size: 0.86rem;
-}
-
-.stats-recent-row .outcome {
-    font-weight: 600;
-    border-radius: 999px;
-    padding: 0.05rem 0.6rem;
+.stats-table thead th {
     font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
 }
 
-.outcome.completed { background: #d1e7dd; color: #0a3622; }
-.outcome.disputed  { background: #f8d7da; color: #58151c; }
+.stats-table tbody td {
+    font-size: 0.9rem;
+}
 
-.stats-recent-row .meta {
-    margin-left: auto;
-    color: #6c757d;
-    font-size: 0.78rem;
+.card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
 }

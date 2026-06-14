@@ -1,0 +1,61 @@
+/* =============================================================================
+   "Mis estadísticas" page styles (US-14). The shared app toolbar
+   (public/js/toolbar.js + public/css/toolbar.css) is injected at the top.
+   ========================================================================== */
+
+:root {
+    --stat-annotation: #0f4c97;
+    --stat-review: #198754;
+}
+
+body {
+    background-color: #f5f7fb;
+}
+
+/* ----------------------------- Stat cards -------------------------------- */
+
+.stat-card {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 0.6rem;
+    background-color: #fff;
+    padding: 1rem 1.1rem;
+    height: 100%;
+}
+
+.stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #0f4c97;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 0.2rem;
+}
+
+.stat-value.value-annotation { color: var(--stat-annotation); }
+.stat-value.value-review { color: var(--stat-review); }
+
+/* ----------------------------- Per-dataset table ------------------------- */
+
+.stats-table thead th {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
+}
+
+.stats-table tbody td {
+    font-size: 0.9rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
