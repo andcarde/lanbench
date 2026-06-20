@@ -1,0 +1,454 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
+  <diagram name="Página-1" id="pXIUJb-_qyEAHZ2bxy3T">
+    <mxGraphModel dx="2046" dy="722" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-1" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="941" y="10" width="690" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-4" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="165" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-5" value="Yo aigo el resumen pero necesito una lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="225" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-6" value="Con un lápiz puedo hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="285" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-7" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-8" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="230" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-9" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="290" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-18" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="991" y="345" width="560" height="225" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-19" value="&lt;b&gt;C&lt;/b&gt;&lt;div&gt;&lt;b&gt;H&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;E&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;C&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;K&lt;/b&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1571" y="345" width="30" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-24" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#67AB9F;fillColor=#9AC7BF;" parent="1" vertex="1">
+          <mxGeometry x="991" y="345" width="550" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-23" value="Oración 3" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1281" y="345" width="270" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-22" value="&lt;b&gt;Oración 2&lt;/b&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;fillColor=#F8A497;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="991" y="345" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-27" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="966" y="35" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-25" value="- La palabra &#39;aigo&#39; no existe. ¿Quisiste decir &#39;hago&#39;?" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1001" y="385" width="280" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-15" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="981" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-16" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1211" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-17" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1441" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-28" value="- Discordancia de género. &quot;una lápiz&quot; -&amp;gt; &quot;un lápiz&quot;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="415" width="280" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-30" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1011" y="455" width="530" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-29" value="Accept Suggerence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1421" y="455" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-68" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="931" y="1320" width="715" height="565" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-69" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1066" y="1475" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-70" value="Yo hago el resumen pero necesito un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1066" y="1535" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-71" value="Con un lápiz puedo hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1066" y="1595" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-72" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="986" y="1480" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-73" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="986" y="1540" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-74" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="986" y="1600" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-75" value="&lt;b style=&quot;&quot;&gt;SEND&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#92B5FC;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1126" y="1665" width="290" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-76" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="961" y="1345" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-77" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="976" y="1370" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-78" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1206" y="1370" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-79" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1436" y="1370" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-81" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-809" y="10" width="690" height="565" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-82" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-679" y="165" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-83" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-679" y="225" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-84" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-679" y="285" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-85" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-759" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-86" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-759" y="230" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-87" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-759" y="290" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-89" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="-784" y="35" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-90" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-769" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-91" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-539" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-92" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-309" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-93" value="&lt;b&gt;CHECK&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="-639" y="365" width="310" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-94" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="61" y="10" width="690" height="565" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-95" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="191" y="165" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-96" value="Yo aigo el resumen pero necesito una lápiz" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="191" y="225" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-97" value="Con un lápiz puedo hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="191" y="285" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-98" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="111" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-99" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="111" y="230" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-100" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="111" y="290" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-102" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="86" y="35" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-103" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="101" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-104" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="331" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-105" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="561" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-106" value="&lt;b&gt;CHECK&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="271" y="360" width="310" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-107" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1791" y="10" width="690" height="570" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-108" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1921" y="165" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-109" value="Yo aigo el resumen pero necesito una lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1921" y="225" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-110" value="Con un lápiz puedo hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1921" y="285" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-111" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-112" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="230" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-113" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="290" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-115" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="345" width="560" height="225" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-116" value="&lt;b&gt;C&lt;/b&gt;&lt;div&gt;&lt;b&gt;H&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;E&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;C&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;K&lt;/b&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="2421" y="345" width="30" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-117" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#67AB9F;fillColor=#9AC7BF;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="345" width="550" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-118" value="&lt;b&gt;Oración 3&lt;/b&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;fillColor=#FFDD6E;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="2131" y="345" width="270" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-119" value="Oración 2" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;fillColor=#F8CECC;strokeColor=#B85450;" parent="1" vertex="1">
+          <mxGeometry x="1841" y="345" width="300" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-120" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1816" y="35" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-121" value="- Falta una coma. -&amp;gt; &quot;Con un lápiz, puedo hacer el resumen" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1861" y="400" width="330" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-122" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1831" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-123" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="2061" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-124" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="2291" y="60" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-126" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1861" y="455" width="530" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-131" value="Con un lápiz, puedo hacer el resumen" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1861" y="455" width="410" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-132" value="Yo hago el resumen pero necesito un lápiz" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="455" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-135" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-81" target="pGFt519Xm5QGMHj8Ruj_-94" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1" y="270" as="sourcePoint" />
+            <mxPoint x="51" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-136" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-94" target="pGFt519Xm5QGMHj8Ruj_-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="681" y="190" as="sourcePoint" />
+            <mxPoint x="731" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-137" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-1" target="pGFt519Xm5QGMHj8Ruj_-107" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1751" y="190" as="sourcePoint" />
+            <mxPoint x="1801" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-143" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="-129" y="200" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-140" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-143" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-142" value="Fullfill fields" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-143" vertex="1">
+          <mxGeometry x="70" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-145" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="741" y="200" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-146" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-145" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-147" value="Check" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-145" vertex="1">
+          <mxGeometry x="70" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-148" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="1606" y="200" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-149" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-148" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-150" value="Cambio pestaña a Oración 3" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-148" vertex="1">
+          <mxGeometry x="70" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-151" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="1291" y="600" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-152" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-151" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-153" value="Pulso Accept Sugerence" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-151" vertex="1">
+          <mxGeometry x="70" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-154" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="941" y="700" width="690" height="520" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-155" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="855" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-156" value="Yo aigo el resumen pero necesito una lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="915" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-157" value="Con un lápiz puedo hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1071" y="975" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-158" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="860" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-159" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="920" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-160" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="991" y="980" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-162" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="991" y="1035" width="550" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-163" value="&lt;b&gt;C&lt;/b&gt;&lt;div&gt;&lt;b&gt;H&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;E&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;C&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;K&lt;/b&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1571" y="1035" width="30" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-164" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#67AB9F;fillColor=#9AC7BF;" parent="1" vertex="1">
+          <mxGeometry x="991" y="1035" width="550" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-167" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="966" y="725" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-169" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="981" y="750" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-170" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1211" y="750" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-171" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1441" y="750" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-173" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1001" y="1120" width="530" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-176" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-1" target="pGFt519Xm5QGMHj8Ruj_-154" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1641" y="303" as="sourcePoint" />
+            <mxPoint x="1801" y="303" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-178" value="&lt;b&gt;Oración 3&lt;/b&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;size=10;fillColor=#FFDD6E;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="991" y="1035" width="550" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-179" value="- Falta una coma. -&amp;gt; &quot;Con un lápiz, puedo hacer el resumen" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1001" y="1080" width="330" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-180" value="Accept Suggerence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1001" y="1155" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-181" value="Con un lápiz, puedo hacer el resumen" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1001" y="1120" width="410" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-182" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-107" target="pGFt519Xm5QGMHj8Ruj_-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1641" y="303" as="sourcePoint" />
+            <mxPoint x="1801" y="303" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-184" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="1611" y="460" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-185" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-184" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-186" value="Cambio pestaña a Oración 2" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-184" vertex="1">
+          <mxGeometry x="70" y="20" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-187" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-154" target="pGFt519Xm5QGMHj8Ruj_-68" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1296" y="585" as="sourcePoint" />
+            <mxPoint x="1401" y="1310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-188" value="" style="group;fillColor=none;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="1291" y="1235" width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-189" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="pGFt519Xm5QGMHj8Ruj_-188" vertex="1">
+          <mxGeometry width="210" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-215" value="Accept the suggerence and check" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="pGFt519Xm5QGMHj8Ruj_-188" vertex="1">
+          <mxGeometry x="75" y="25" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-192" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1766" y="1330" width="715" height="565" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-193" value="Yo resumo pero dame un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1901" y="1485" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-194" value="Yo hago el resumen pero necesito un lápiz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1901" y="1545" width="530" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-195" value="Con un lápiz podría hacer el resumen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="1901" y="1605" width="535" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-196" value="Oración 1:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1821" y="1490" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-197" value="Oración 2:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1821" y="1550" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-198" value="Oración 3:" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1821" y="1610" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-200" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1796" y="1355" width="640" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-201" value="Predicate: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="1811" y="1380" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-202" value="Subject: &amp;lt;subject&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="2041" y="1380" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-203" value="Object: &amp;lt;predicate&amp;gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="2271" y="1380" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-80" value="&lt;b&gt;CHECK&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#99FF99;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="2006" y="1677.5" width="290" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-205" value="" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="1011" y="495" width="530" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-204" value="Reject Suggerence (need explanation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEE2F5;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1011" y="495" width="530" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-206" value="&lt;i&gt;&lt;font&gt;Write here the brief explanation for rejection&lt;/font&gt;&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#9C9C9C;" parent="1" vertex="1">
+          <mxGeometry x="1149.13" y="525" width="243.75" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-208" value="Reject" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1301" y="1155" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-209" value="Accept Suggerence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1861" y="495" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-210" value="Reject" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="2161" y="495" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-211" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.no_symbol;fillColor=#F8312A;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1151" y="505" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-213" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.polygon;polyCoords=[[0.26,0],[0.74,0],[0.83,0.09],[0.83,0.53],[0.74,0.62],[0.26,0.62],[0.17,0.53],[0.17,0.09]];polyline=0;" parent="1" vertex="1">
+          <mxGeometry x="1641" y="1580" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-214" value="Modifico la oración 3" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="1671" y="1605" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="pGFt519Xm5QGMHj8Ruj_-217" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.996;exitY=0.674;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.002;entryY=0.657;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="pGFt519Xm5QGMHj8Ruj_-68" target="pGFt519Xm5QGMHj8Ruj_-192" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1781" y="1600" as="sourcePoint" />
+            <mxPoint x="1831" y="1550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

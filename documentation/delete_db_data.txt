@@ -1,0 +1,17 @@
+USE lanbench;
+TRUNCATE annotationalertdecision;
+TRUNCATE activesessions;
+TRUNCATE annotation;
+TRUNCATE permits;
+TRUNCATE reviewcomment;
+TRUNCATE reviewdecision;
+TRUNCATE section;
+TRUNCATE sectionassignment;
+TRUNCATE lex;
+TRUNCATE link;
+TRUNCATE dbpedialink;
+TRUNCATE entry;
+TRUNCATE evaluationcriterion;
+TRUNCATE dataset;
+TRUNCATE review;
+
