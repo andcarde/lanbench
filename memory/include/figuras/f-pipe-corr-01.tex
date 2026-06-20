@@ -1,0 +1,78 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{arrows.meta,positioning}
+
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily\scriptsize,
+    stage/.style={
+        rectangle,
+        draw=black,
+        rounded corners=2pt,
+        minimum width=2.55cm,
+        minimum height=1.1cm,
+        align=center,
+        fill=gray!8
+    },
+    io/.style={
+        rectangle,
+        draw=black,
+        rounded corners=2pt,
+        minimum width=2.45cm,
+        minimum height=1.1cm,
+        align=center,
+        fill=gray!18
+    },
+    decision/.style={
+        rectangle,
+        draw=black,
+        rounded corners=2pt,
+        minimum width=2.65cm,
+        minimum height=1.1cm,
+        align=center,
+        fill=gray!25,
+        font=\sffamily\scriptsize\bfseries
+    },
+    note/.style={
+        rectangle,
+        draw=black,
+        dashed,
+        rounded corners=2pt,
+        align=center,
+        fill=white,
+        font=\sffamily\scriptsize,
+        inner sep=4pt
+    },
+    flow/.style={-{Latex[length=2.2mm]}, thick},
+    soft/.style={-{Latex[length=1.8mm]}, dashed, thick},
+    label/.style={font=\sffamily\scriptsize, fill=white, inner sep=1pt}
+]
+
+\node[io] (candidate) {\textbf{candidata}\\frase + contexto RDF};
+\node[stage, right=0.42cm of candidate] (rules) {\textit{rule-checker}\\reglas locales};
+\node[stage, right=0.42cm of rules] (llm) {\textbf{LLM}\\validacion semantica};
+\node[stage, right=0.42cm of llm] (coverage) {\textit{coverage-checker}\\cobertura RDF};
+\node[stage, right=0.42cm of coverage] (merger) {\textit{alert-merger}\\consolida avisos};
+\node[decision, right=0.42cm of merger] (verdict) {veredicto unico\\\texttt{ok} \textbar{} \texttt{warning} \textbar{} \texttt{error}};
+
+\draw[flow] (candidate) -- (rules);
+\draw[flow] (rules) -- (llm);
+\draw[flow] (llm) -- (coverage);
+\draw[flow] (coverage) -- (merger);
+\draw[flow] (merger) -- (verdict);
+
+\node[note, below=0.78cm of coverage, minimum width=7.8cm] (summary) {
+    \textit{alert-merger} combina \texttt{baseResult}, \texttt{semanticResult}
+    y \texttt{coverage.alerts}; si el LLM falla, conserva la pasada determinista.
+};
+
+\draw[soft] (rules.south) to[out=-90,in=180] (summary.west);
+\draw[soft] (llm.south) -- (summary.north west);
+\draw[soft] (coverage.south) -- (summary.north);
+\draw[soft] (summary.north east) to[out=90,in=-90] (merger.south);
+
+\end{tikzpicture}
+\end{document}

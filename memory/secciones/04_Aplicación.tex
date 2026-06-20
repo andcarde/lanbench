@@ -1,106 +1,941 @@
 
 \chapter{Descripción de la aplicación}
 
-En este capítulo se presenta la definición de roles e historias de usuario asociadas a la aplicación propuesta, relacionando los distintos perfiles de usuario, sus necesidades y las funcionalidades que se deben implementar. A través de este metodología, se busca estructurar los casos de uso principales, así como explicitar las principales restricciones que permitirán validar el sistema en el contexto del dataset WebNLG en español.
+En este capítulo se presenta la definición de roles e historias de usuario
+asociadas a la aplicación propuesta, \texttt{lanbench}, relacionando los
+distintos perfiles, sus necesidades y las funcionalidades que el sistema debe
+ofrecer. Mediante esta metodología se estructuran los casos de uso principales
+y se explicitan las restricciones que permitirán validar el sistema en el
+contexto del dataset WebNLG en español. A continuación, se describen la
+documentación oficial del proyecto, su arquitectura, los tipos de prueba
+automatizada empleados y las tecnologías sobre las que se ha construido.
 
 \section{Metodología}
 
-Las historias de usuario, muy utilizadas para el desarrollo de software, en especial, en metodologías ágiles permiten alinear la acción o caso de uso que se quiere implementar junto con su finalidad y los roles a los que está orientada. También se pueden definir restricciones y criterios de aceptación, estos últimos útiles para validar el sistema con respecto a los requisitos.
+Las historias de usuario constituyen un instrumento ampliamente utilizado en el
+desarrollo de software, en particular en las metodologías ágiles. Su
+formulación canónica, popularizada por Cohn~\cite{Cohn2004_UserStories}, sigue
+la estructura ``como~$\langle$rol$\rangle$, quiero~$\langle$capacidad$\rangle$,
+para~$\langle$beneficio$\rangle$'', y permite alinear cada acción o caso de uso
+con su finalidad y con los roles a los que va destinado. Asimismo, las
+historias se acompañan de criterios de aceptación que delimitan el alcance
+funcional y resultan especialmente útiles para validar el sistema frente a los
+requisitos establecidos. El conjunto se contrasta habitualmente con el catálogo
+de propiedades INVEST (\textit{Independent, Negotiable, Valuable, Estimable,
+	Small, Testable})~\cite{Cohn2004_UserStories}, que actúa como heurística de
+calidad para detectar historias demasiado grandes, ambiguas o no comprobables.
+
+Esta metodología se complementa con la documentación de proyecto descrita en la
+Sección~\ref{sec:doc-proyecto}, de modo que los criterios de aceptación de las
+historias se trasladan a casos de prueba automatizados, manteniendo la
+trazabilidad bidireccional entre requisito funcional, implementación y
+verificación.
 
 \section{Roles}
 
-Para empezar vamos a definir los roles principales: anotador, evaluador, agente IA (ayuda en generación y en validación) y administrador.
+El sistema distingue dos planos de rol que se combinan pero nunca se colapsan
+en una única etiqueta:
 
 \begin{itemize}
-\item Anotador: Usuario encargado de transformar triples RDF en texto en lenguaje natural y validar correcciones. Su responsabilidad general será la de ampliar la cobertura semántica y corregir las traducciones automáticas.
-\item Revisor: Usuario encargado de validar las anotaciones, supone una segunda capa que garantiza la calidad. Tendrá un trabajo de grano más fino, como poner énfasis en la evaluación del contexto y en el registro del lenguaje.
-\item Agente IA: Sistema encargado de la generación de traducciones y de evaluar, grosso modo, las anotaciones. Primariamente, se propone a una API de Google Traductor y a un LLM de software libre como \textit{Llama 3} para realizar la evaluación preliminar, es decir, previa al revisor.
-\item Administrador: Usuario responsable del sistema y capaz de permitir el acceso a los demás usuarios asignándoles un rol. Entre sus responsabilidades tendrá la de gestionar el dataset y monitorizar las métricas de calidad.
+	\item \textbf{Roles de servidor}: definen la capacidad global del usuario sobre la
+	      aplicación. Existen únicamente dos: \textit{normal} (por defecto) y
+	      \textit{moderator} (elevado, con capacidad para crear datasets, acceder a la
+	      API de administración y gestionar criterios).
+	\item \textbf{Roles de dataset}: definen la capacidad del usuario sobre un dataset
+	      concreto, distinguiendo entre propiedad, anotación, revisión y administración.
 \end{itemize}
 
-Una vez definidos los roles de usuario, vamos a esbozar el perfil de cada rol, es decir, los conocimientos previos para ejercerlo.
+La Tabla~\ref{tab:roles-permisos} sintetiza la matriz de capacidades de cada
+rol funcional sobre las operaciones más relevantes de la aplicación.
+
+\begin{table}[ht]
+	\centering
+	\footnotesize
+	\begin{tabular}{p{5.4cm}cccc}
+		\hline
+		\textbf{Operación}                                                   & \textbf{Anotador} & \textbf{Revisor} & \textbf{Administrador} & \textbf{Moderador} \\
+		\hline
+		Registro e inicio de sesión                                          & \checkmark        & \checkmark       & \checkmark             & \checkmark         \\
+		Listado de \textit{datasets}                                         & \checkmark        & \checkmark       & \checkmark             & \checkmark         \\
+		Creación de \textit{dataset}                                         &                   &                  &                        & \checkmark         \\
+		Anotación sobre el \textit{dataset}                                  & \checkmark        &                  & \checkmark$^{*}$       &                    \\
+		Revisión sobre el \textit{dataset}                                   &                   & \checkmark       & \checkmark$^{*}$       &                    \\
+		Concesión de \textit{permits} a otros usuarios                       &                   &                  & \checkmark             &                    \\
+		Gestión de credenciales LLM por \textit{dataset}                     &                   &                  & \checkmark             &                    \\
+		Lanzamiento de anotación automática asistida                         &                   &                  & \checkmark             &                    \\
+		Consulta de estadísticas globales del \textit{dataset}               &                   &                  & \checkmark             &                    \\
+		Consulta de estadísticas personales                                  & \checkmark        & \checkmark       & \checkmark             & \checkmark         \\
+		Descarga de XML original                                             & \checkmark        & \checkmark       & \checkmark             & \checkmark         \\
+		Descarga de XML extendido (dataset\newline completado)               & \checkmark        & \checkmark       & \checkmark             & \checkmark         \\
+		Acceso a la API de administración                                    &                   &                  &                        & \checkmark         \\
+		Gestión de criterios de evaluación                                   &                   &                  &                        & \checkmark         \\
+		\hline
+	\end{tabular}
+	\caption{Capacidades de cada rol sobre las operaciones de la aplicación.
+		\checkmark indica que el rol dispone de la capacidad; $^{*}$ depende de
+		\textit{permits} explícitos sobre el \textit{dataset}.}
+	\label{tab:roles-permisos}
+\end{table}
+
+A partir de esta separación se derivan los cuatro roles funcionales sobre los
+que se articulan las historias de usuario:
 
 \begin{itemize}
-\item Anotador y revisor: Conocimiento de español (C1 mínimo) e inglés (B2 mínimo), es el participante del \textit{crowdsourcing}. Mientras el anotador no tiene por qué tener un conocimiento muy específico, el revisor puede mejorar la calidad al ser lingüista (capacidad para detectar múltiples patrones del lenguaje y disociarlos según dominio o contexto) o ingeniero de NLP (\textit{natural language processing}), puesto que un conocimiento de las dificultades que los modelos mantienen a la hora de ejecutar tareas NLP como la generación de triples RDF, puede ayudar a detectar problemáticas e inconsistencias en las anotaciones.
-\item Administrador: Puede orientarse a un perfil académico como estudiantes de inteligencia artificial, ingeniería ontológica o generación de lenguaje natural y a un perfil profesional como científicos de datos o lingüistas computacionales.
+	\item \textbf{Anotador}: usuario encargado de transformar tripletas RDF en texto en
+	      lenguaje natural y de corregir las traducciones automáticas. Su responsabilidad
+	      principal es ampliar la cobertura semántica del corpus.
+	\item \textbf{Revisor}: usuario encargado de validar las anotaciones. Constituye una
+	      segunda capa orientada a la garantía de calidad, con un trabajo de grano más
+	      fino centrado en la evaluación del contexto y del registro lingüístico.
+	\item \textbf{Agente IA}: componente automático responsable de la generación de
+	      propuestas y de la asistencia a la validación de las anotaciones. La
+	      implementación actual contempla proveedores compatibles con OpenAI, así como
+	      Groq, Google AI Studio y Anthropic, configurables por dataset mediante
+	      credenciales propias.
+	\item \textbf{Administrador}: usuario responsable del sistema, capaz de habilitar el
+	      acceso a otros usuarios mediante la asignación de roles. Entre sus competencias
+	      se incluyen la gestión del dataset y la supervisión de las métricas de calidad.
 \end{itemize}
+
+Una vez definidos los roles, se esboza el perfil asociado a cada uno, es decir,
+los conocimientos previos necesarios para ejercerlo:
+
+\begin{itemize}
+	\item \textbf{Anotador y revisor}: requieren un nivel de español equivalente al C1
+	      del MCER y un nivel de inglés equivalente al B2 del MCER; ambos perfiles
+	      intervienen como participantes del proceso de \textit{crowdsourcing}. Mientras
+	      que el anotador no precisa una formación especializada, la calidad del revisor
+	      mejora cuando posee bien un perfil lingüístico, capaz de detectar patrones del
+	      lenguaje y de disociarlos por dominio o contexto, bien un perfil de
+	      procesamiento del lenguaje natural (PLN), dado que el conocimiento de las
+	      dificultades específicas de los modelos en tareas como la generación a partir
+	      de tripletas RDF facilita la detección de inconsistencias.
+	\item \textbf{Administrador}: orientado tanto a perfiles académicos ---estudiantes de
+	      inteligencia artificial, ingeniería ontológica o generación de lenguaje
+	      natural--- como a perfiles profesionales ---científicos de datos o lingüistas
+	      computacionales---.
+\end{itemize}
+
+\section{Decisiones de diseño funcional}
+\label{sec:diseno-funcional}
+
+Antes de presentar el catálogo de historias de usuario conviene fijar las
+decisiones de diseño funcional que las motivan. Estas decisiones afectan a la
+integración del modelo de lenguaje, al control de concurrencia, a la
+trazabilidad estadística y a la gobernanza del \textit{dataset}.
+
+\subsection{Integración de modelos de lenguaje en la anotación y revisión}
+
+Las pruebas preliminares realizadas con gestores de modelos ejecutados en
+local, en particular Ollama, permitieron constatar limitaciones relevantes en
+términos de latencia y de calidad de salida. Estas limitaciones se observaron
+al emplear modelos de menor tamaño, como Llama~3 con 7\,000 millones de
+parámetros o Qwen con 3\,000 millones de parámetros.
+
+En tales condiciones, incluso tras aplicar una capa intensiva de \textit{prompt
+	engineering}, no se obtuvieron resultados suficientemente consistentes para un
+flujo de trabajo de anotación y validación de calidad académica. Por ello se
+adopta como criterio operativo la utilización preferente de modelos servidos en
+la nube, sin renunciar a la posibilidad de ejecución local como opción
+secundaria para contextos con mayores restricciones de privacidad o
+conectividad.
+
+En este contexto, la alternativa seleccionada es Groq, plataforma de inferencia
+en la nube que proporciona acceso mediante API a modelos abiertos de altas
+prestaciones y que permite la gestión de claves privadas con caducidad para
+sesiones o proyectos concretos. Asimismo, su compatibilidad con interfaces de
+tipo OpenAI simplifica la integración dentro de arquitecturas software ya
+existentes y reduce el coste de migración tecnológica.
+
+A efectos metodológicos, se recomienda no emplear modelos inferiores a la
+familia Llama~3 con 70\,000 millones de parámetros, dado que las pruebas
+exploratorias realizadas mostraron una mejora apreciable de la fiabilidad de
+las sugerencias automáticas en tareas de corrección y reformulación cuando se
+alcanza este umbral.
+
+A partir de estas pruebas, se establece un sistema de clasificación jerárquica
+de errores con codificación fija. En particular, el sistema contempla las
+siguientes categorías: error ortográfico, error gramatical, error sintáctico,
+error de traducción, error de correspondencia con RDF y error de diversidad,
+entendido este último como la repetición sustancial de una frase previamente
+incluida. Cuando una salida presenta varios defectos simultáneamente, el
+sistema asigna únicamente el primer código de error aplicable según el orden
+anterior. Junto con dicha clasificación, el modelo propone automáticamente una
+alternativa corregida que, de acuerdo con su evaluación, subsana el error
+detectado.
+
+No obstante, este mecanismo no se concibe como una autoridad cerrada, sino como
+una ayuda supervisada. Por ello, el usuario puede rechazar la clasificación
+emitida por el modelo siempre que acompañe dicha acción de un comentario
+justificativo en el que explicite el carácter de falso positivo de la
+detección. Este requisito introduce trazabilidad sobre las discrepancias entre
+humano y modelo y, adicionalmente, permite construir en el futuro un
+repositorio de casos conflictivos de gran utilidad para la evaluación
+comparativa de distintos LLMs y para el refinamiento posterior del sistema.
+
+Desde el punto de vista funcional, tanto en la creación como en la gestión del
+\textit{dataset} puede determinarse el rol operativo del LLM. Se distinguen
+tres modalidades. En la primera, denominada \textit{ninguno}, no existe
+intervención automática del modelo. En la segunda, denominada
+\textit{corrector}, el sistema analiza la frase introducida por el usuario,
+aplica el algoritmo de detección jerárquica previamente descrito y propone una
+reformulación corregida. En la tercera, denominada \textit{creativo}, el modelo
+genera directamente una propuesta de lexicalización procurando evitar los
+errores tipificados, de modo que el anotador humano actúa principalmente como
+editor o validador posterior. En esta última modalidad no se exige comentario
+justificativo cuando el usuario modifica la propuesta, ya que la intervención
+humana forma parte natural del proceso creativo y de refinamiento.
+
+\subsection{Concurrencia en anotación y revisión}
+
+La aplicación debe permitir la anotación y la revisión concurrente de un mismo
+\textit{dataset} sin que ello produzca duplicidades de trabajo ni una
+sobrecarga excesiva en el servidor. Para ello, se introduce el concepto de
+\textit{sección}, entendida como un conjunto de entradas reservado
+temporalmente en memoria para un usuario cuando este inicia una tarea de
+anotación o revisión. Mientras la sesión permanezca activa, dicha sección queda
+asociada de forma exclusiva a ese usuario, liberándose automáticamente al
+cierre de sesión.
+
+Cada usuario dispone, como máximo, de una única sección asignada por
+combinación de \textit{dataset} y rol, distinguiéndose de manera independiente
+los roles de anotación y revisión. Si en un momento dado todas las secciones
+disponibles de un \textit{dataset} se encuentran ya asignadas, el sistema
+informa de esta circunstancia al usuario y evita nuevas reservas. Esta política
+permite controlar el acceso concurrente de una forma más eficiente que un
+esquema de bloqueo a nivel de entrada individual.
+
+En una primera iteración del sistema, el tamaño de las secciones se fija en
+diez elementos. Se trata de una decisión de compromiso entre dos objetivos
+contrapuestos. Por una parte, un tamaño elevado reduce la frecuencia de
+interacción con el servidor, pero puede disminuir la eficiencia colectiva en
+las fases finales de completado del \textit{dataset}, cuando quedan pocas
+entradas disponibles. Por otra parte, un tamaño demasiado pequeño incrementa el
+coste de gestión en el servidor debido al mayor número de operaciones de
+reserva, liberación y reasignación. La elección inicial de un tamaño fijo
+responde, por tanto, a un criterio pragmático de simplicidad y rendimiento,
+aunque se prevé su parametrización en versiones futuras.
+
+La introducción de secciones se justifica por dos razones fundamentales. En
+primer lugar, evita que varios usuarios realicen de forma simultánea el mismo
+trabajo sobre las mismas entradas. En segundo lugar, impide que el sistema
+tenga que gestionar bloqueos de grano excesivamente fino, esto es, a nivel de
+una única entrada, lo que encarecería notablemente el control de concurrencia y
+dificultaría la escalabilidad operativa de la plataforma.
+
+\subsection{Estadísticas, trazabilidad y análisis del trabajo}
+
+Con objeto de reforzar la trazabilidad del proceso de construcción del
+\textit{dataset}, se incorpora un apartado de estadísticas dentro de la página
+de gestión, accesible exclusivamente para usuarios con rol de administrador.
+Este módulo permite confirmar la autoría de las tareas de anotación y revisión
+realizadas sobre un \textit{dataset} concreto, así como visualizar el tiempo de
+trabajo asociado a cada usuario y actividad.
+
+La función principal de este componente no es únicamente descriptiva, sino
+también de control metodológico. La identificación de autorías y tiempos de
+dedicación facilita auditorías internas, permite analizar la distribución real
+de la carga de trabajo y proporciona evidencias empíricas sobre el grado de
+participación de cada colaborador en el proceso de curación del corpus.
+
+En fases futuras, este módulo podrá ampliarse con estimaciones analíticas
+derivadas de los propios datos de uso generados por la plataforma. En
+particular, resulta de interés incorporar métricas desagregadas según tipos de
+entrada del \textit{dataset}, complejidad semántica, categoría ontológica o
+nivel de intervención correctiva requerida, de modo que pueda caracterizarse
+con mayor precisión el coste real de anotación y revisión para distintos
+subconjuntos del corpus.
+
+\subsection{Permisos y gobernanza del \textit{dataset}}
+
+La página de gestión incorpora también mecanismos para la concesión de permisos
+de anotación, revisión y administración sobre cada \textit{dataset}. Este
+diseño responde a una lógica de gobernanza explícita en la que los distintos
+niveles de acceso no solo controlan la operatividad de la plataforma, sino que
+delimitan responsabilidades diferenciadas dentro del ciclo de vida del recurso.
+
+En la evolución prevista del sistema se contempla, además, la introducción de
+un modelo formal de propiedad (\textit{ownership}). Bajo este esquema, el
+propietario del \textit{dataset} será el único usuario con capacidad para
+eliminarlo, modificar sus propiedades básicas y alterar los permisos de
+administración. Esta separación entre propiedad y administración resulta
+relevante desde el punto de vista organizativo, ya que permite descentralizar
+tareas de gestión cotidiana sin perder un nivel último de control institucional
+sobre el recurso.
+
+Los administradores, por su parte, pueden consultar las estadísticas del
+\textit{dataset} y conceder permisos de anotación y revisión a otros usuarios.
+Adicionalmente, se prevé que en futuras versiones puedan generar URL de
+invitación asociadas a un \textit{dataset} y a uno o varios roles concretos.
+Tales enlaces se configurarán para un único uso o para múltiples usos, de modo
+que se facilite la incorporación controlada de nuevos colaboradores sin
+necesidad de asignación manual individual. Este mecanismo resulta especialmente
+adecuado para campañas de anotación distribuidas o para entornos docentes y de
+investigación con equipos variables.
 
 \section{Historias de usuario}
 
-A continuación se definen las historias de usuario, primero clasificándolas por usuario y luego seccionándolas por la finalidad:
+A continuación se enumeran las historias de usuario agrupadas por bloque
+funcional\footnote{La numeración no es estrictamente correlativa: los
+	identificadores US-15, US-16, US-18, US-22 y US-23 corresponden a historias
+	propuestas durante la elaboración inicial del catálogo que fueron
+	posteriormente descartadas o fusionadas con otras. Se conserva la numeración
+	original por trazabilidad con la documentación interna del proyecto.}. La
+Tabla~\ref{tab:us-catalogo} ofrece un catálogo consolidado del conjunto,
+organizado por rol y bloque funcional.
 
-\section*{1. Anotador}
+\begin{table}[ht]
+	\centering
+	\footnotesize
+	\begin{tabular}{llp{8.5cm}}
+		\hline
+		\textbf{Código} & \textbf{Actor}          & \textbf{Título}                                               \\
+		\hline
+		US-01           & Anotador                & Registro e inicio de sesión                                   \\
+		US-02           & Anotador                & Listado de \textit{datasets} disponibles                      \\
+		US-03           & Anotador                & Visualización legible de tripletas RDF                        \\
+		US-04           & Anotador                & Asignación de secciones de trabajo                            \\
+		US-05           & Anotador                & Redacción de sentencias en español a partir de tripletas      \\
+		US-06           & Anotador                & Redacción apoyada en la referencia en inglés                  \\
+		US-07           & Anotador                & Edición de propuestas generadas automáticamente               \\
+		US-08           & Anotador                & Alertas automáticas al finalizar la anotación                 \\
+		US-09           & Anotador                & Validación de cobertura RDF                                   \\
+		US-10           & Anotador                & Corrección de errores lingüísticos y de referencia            \\
+		US-11           & Anotador                & Estadísticas personales del trabajo                           \\
+		US-12           & Anotador                & Consulta de errores subsanados en revisión                    \\
+		US-13           & Revisor                 & Evaluación humana por criterios de calidad                    \\
+		US-14           & Revisor                 & Estadísticas personales del trabajo de revisión               \\
+		US-17           & Agente IA               & Generación de alertas por incongruencia                       \\
+		US-19           & Administrador           & Subida de \textit{dataset} RDF con opciones declarativas      \\
+		US-20           & Administrador           & Descarga de los avances del \textit{dataset}                  \\
+		US-21           & Administrador           & Estadísticas por usuario y promedios ponderados               \\
+		US-24           & Administrador           & Configuración dinámica de criterios de evaluación (pendiente) \\
+		US-25           & Sistema                 & Registro horario de peticiones con redacción de sensibles     \\
+		US-26           & Sistema                 & Registro diario de errores 500                                \\
+		US-27           & Visitante               & Registro directo como moderador mediante código               \\
+		US-28           & Operador                & Generación de lotes de códigos de un solo uso                 \\
+		US-29           & Usuario con acceso      & Descarga del XML original del \textit{dataset}                \\
+		US-30           & Usuario con acceso      & Descarga del XML extendido (\textit{dataset} completado)      \\
+		US-31           & Admin. \textit{dataset} & Gestión cifrada de credenciales LLM por \textit{dataset}      \\
+		US-32           & Admin. \textit{dataset} & Nombrado y renombrado del \textit{dataset}                    \\
+		US-33           & Admin. \textit{dataset} & Anotación automática asistida por IA                          \\
+		US-34           & Admin. \textit{dataset} & Descripción breve opcional del \textit{dataset}               \\
+		US-35           & Admin. \textit{dataset} & Selección de modelo de IA del catálogo del proveedor          \\
+		\hline
+	\end{tabular}
+	\caption{Catálogo consolidado de historias de usuario, organizado por
+		actor y título. La historia US-24 figura como pendiente: su implementación
+		forma parte del trabajo futuro
+		(\S\ref{sec:limitaciones-trabajo-futuro}).}
+	\label{tab:us-catalogo}
+\end{table}
 
-\subsection*{Gestión básica}
-US-01: Como anotador, quiero registrarme e iniciar sesión para acceder a la plataforma de anotación.
+\subsection{Anotador}
 
-US-02: Como anotador, quiero ver un listado de datasets disponibles para seleccionar sobre cuál trabajar.
-
-\subsection*{Visualización de triples}
-US-03: Como anotador, quiero ver un conjunto de triples RDF de forma natural para entender la información a verbalizar.
-
-US-04: Como anotador, quiero seleccionar los triples agrupados por complejidad para orientar el foco de la sesión.
-
-\subsection*{Generación de texto}
-US-05: Como anotador, quiero escribir sentencias en español a partir de los triples para generar datos de entrenamiento.
-
-US-06: Como anotador, quiero escribir sentencias en español a partir del inglés para generar datos de entrenamiento.
-
-US-07: Como anotador, quiero editar sentencias generadas automáticamente para corregir errores.
-
-US-08: Como anotador, quiero ver alertas automáticas tras terminar el trabajo para corregir errores.
-
+\subsubsection{Gestión básica}
 \begin{itemize}
-\item US-08-R-01: Las alertas deben cubrir errores ortográficos, gramaticales (sintaxis) y semánticos. En caso de que el anotador decida omitir las alertas deberá explicar el porqué de cada omisión para que lo revalide el revisor.
+	\item \textbf{US-01}: como anotador, quiero registrarme e iniciar sesión para acceder
+	      a la plataforma de anotación.
+	\item \textbf{US-02}: como anotador, quiero ver el listado de datasets disponibles
+	      para seleccionar sobre cuál trabajar.
 \end{itemize}
 
-\subsection*{Validación}
-US-09: Como anotador, quiero validar si un texto cubre todos los triples para asegurar calidad.
-
-US-10: Como anotador, quiero corregir errores como falta de variedad lingüística en las sentencias, entidad señalada incorrecta (RDF) o faltas ortográficas entre otras en textos generados.
-
-\subsection*{Productividad}
-US-11: Como anotador, quiero ver estadísticas de mi trabajo como nº anotaciones realizadas para ver mi progreso.
-
-US-12: Como anotador, quiero ver errores corregidos en revisión para evitar volverlos a cometer.
-
-\section*{2. Revisor}
-
-\subsection*{Evaluación humana}
-US-13: Como revisor, quiero evaluar textos generados según criterios como naturalidad o fluidez, adecuación o completitud, cobertura o diversidad para medir calidad.
-
+\subsubsection{Visualización de tripletas}
 \begin{itemize}
-\item US-13-R-01: Se debe aceptar obligatoriamente por cada criterio, eso ayuda a mantener el foco en la corrección. Así, cada check será una fase de corrección y hasta que no dé check para el criterio actual no me aparecerá el siguiente criterio y su opción de check.
-\item US-12-R-02: Debo poder cambiar el texto para corregir errores. Pero será necesario comentar brevemente el porqué de esa corrección, tanto para re-corrección como para el usuario anotador.
+	\item \textbf{US-03}: como anotador, quiero visualizar un conjunto de tripletas RDF
+	      de forma natural para comprender la información que debe verbalizarse.
+	\item \textbf{US-04}: como anotador, quiero recibir las tripletas agrupadas en
+	      secciones de trabajo para que la sesión resulte manejable.
 \end{itemize}
 
-US-14: Como revisor, quiero ver estadísticas de mi trabajo como número de anotaciones revisadas para ver mi progreso.
+\subsubsection{Generación de texto}
+\begin{itemize}
+	\item \textbf{US-05}: como anotador, quiero redactar sentencias en español a partir
+	      de las tripletas RDF para generar datos de entrenamiento.
+	\item \textbf{US-06}: como anotador, quiero redactar sentencias en español a partir
+	      de la referencia en inglés para apoyarme en ella sin perder el foco en la
+	      cobertura RDF.
+	\item \textbf{US-07}: como anotador, quiero editar las sentencias generadas
+	      automáticamente para corregir errores antes de guardarlas.
+	\item \textbf{US-08}: como anotador, quiero recibir alertas automáticas al finalizar
+	      una anotación para corregir errores ortográficos, gramaticales y semánticos.
+\end{itemize}
 
-\section*{3. Agente IA}
+\paragraph{Refinamientos de US-08.}
+\begin{itemize}
+	\item \textbf{US-08-R-01}: las alertas deben cubrir errores ortográficos,
+	      gramaticales (sintaxis) y semánticos. En caso de omitirlas, el anotador deberá
+	      justificar cada omisión, de modo que el revisor pueda revalidarla.
+\end{itemize}
 
-\subsection*{Generación automática}
-US-15: Como sistema, quiero generar texto automáticamente a partir de triples RDF para asistir a los anotadores.
+\subsubsection{Validación}
+\begin{itemize}
+	\item \textbf{US-09}: como anotador, quiero validar si un texto cubre todas las
+	      tripletas para garantizar la calidad de la anotación.
+	\item \textbf{US-10}: como anotador, quiero corregir errores lingüísticos y de
+	      referencia ---falta de variedad lingüística, entidad RDF incorrecta o erratas
+	      ortográficas, entre otros--- en los textos generados.
+\end{itemize}
 
-US-16: Como sistema, quiero generar traducciones automáticamente a partir de triples RDF para asistir a los anotadores.
+\subsubsection{Productividad}
+\begin{itemize}
+	\item \textbf{US-11}: como anotador, quiero consultar estadísticas de mi trabajo ---por
+	      ejemplo, número de anotaciones realizadas--- para conocer mi progreso.
+	\item \textbf{US-12}: como anotador, quiero consultar los errores corregidos en
+	      revisión para evitar reincidir en ellos.
+\end{itemize}
 
-US-17: Como sistema, quiero generar alertas cuando discrepe de la validez de una traducción para ayudar a detectar errores.
+\subsection{Revisor}
 
-\subsection*{Asistencia inteligente}
-US-18: Como sistema, quiero generar alertas cuando se detecte poca diversidad lingüística entre dos o más sentencias.
+\subsubsection{Evaluación humana}
+\begin{itemize}
+	\item \textbf{US-13}: como revisor, quiero evaluar los textos generados conforme a
+	      criterios de calidad ---naturalidad, fluidez, adecuación, completitud, cobertura
+	      y diversidad--- para medir la adecuación de la anotación.
+\end{itemize}
 
-\section*{4. Administrador}
+\paragraph{Refinamientos de US-13.}
+\begin{itemize}
+	\item \textbf{US-13-R-01}: la evaluación se realiza por frase. Los cinco criterios de
+	      frase (naturalidad, fluidez, adecuación, completitud y cobertura) se aplican
+	      como un asistente secuencial: hasta que el criterio actual no se decide, el
+	      siguiente permanece bloqueado. Se permite retroceder y reescribir una decisión
+	      anterior dentro de la misma frase.
+	\item \textbf{US-13-R-02}: existe un criterio adicional, la diversidad, decidido una
+	      única vez para el conjunto de la entrada por ser comparativo entre frases. Solo
+	      se aplica cuando la entrada contiene más de una frase.
+	\item \textbf{US-13-R-03}: la decisión es binaria. Una decisión negativa exige
+	      introducir un motivo (de longitud máxima 280 caracteres) y, en los criterios de
+	      frase, una corrección obligatoria del texto que debe diferir del original.
+	\item \textbf{US-13-R-04}: el revisor no puede revisar sus propias anotaciones. La
+	      cola de revisión excluye automáticamente cualquier entrada anotada por el
+	      usuario que solicita la revisión.
+\end{itemize}
 
-\subsection*{Gestión de datasets}
-US-19: Como administrador, quiero subir datasets RDF para utilizarlos en la plataforma.
+\subsubsection{Productividad}
+\begin{itemize}
+	\item \textbf{US-14}: como revisor, quiero consultar estadísticas de mi propio
+	      trabajo ---número de revisiones cerradas y tiempo medio por revisión--- para
+	      conocer mi progreso y mi ritmo.
+\end{itemize}
 
-US-20: Como administrador, quiero poder descargar avances en el dataset RDF para utilizarlos fuera de la plataforma.
+\subsection{Agente IA}
 
-US-21: Como administrador, quiero ver estadísticas de cantidad de triples, cobertura de la tarea de traducción, errores de traducción automática subsanados en anotación, errores de anotación subsanados en revisión y cadenas en disputa (errores en revisión tras detectar errores en anotación).
+\subsubsection{Asistencia inteligente}
+\begin{itemize}
+	\item \textbf{US-17}: como sistema, quiero generar alertas cuando detecte que una
+	      traducción puede no ser válida con respecto al contexto RDF o a la referencia.
+\end{itemize}
 
-\subsection*{Gestión de usuarios}
-US-22: Como administrador, quiero gestionar roles (anotador, revisor, admin).
+\subsubsection{Credenciales y modelos por dataset}
+\begin{itemize}
+	\item \textbf{US-31}: como administrador del dataset, quiero registrar, activar y
+	      comprobar mis propias claves de proveedor de IA, de modo que la validación
+	      asistida del dataset utilice mi credencial en lugar de la global. Las claves se
+	      almacenan cifradas y nunca se devuelven al cliente en claro.
+	\item \textbf{US-33}: como administrador del dataset, en un dataset con modo
+	      \texttt{generation}, quiero lanzar la anotación automática asistida por IA: el
+	      sistema bloquea \textit{N} secciones, las anota una a una en segundo plano y
+	      permite reintentar o cancelar tras un fallo del proveedor.
+	\item \textbf{US-35}: como administrador del dataset, quiero seleccionar el modelo de
+	      IA a partir de la lista pública de modelos que ofrece el proveedor (Groq,
+	      Google AI Studio), con un mecanismo de introducción manual como respaldo y
+	      mensajes de error claros cuando el catálogo no esté disponible.
+\end{itemize}
 
-US-23: Como administrador, quiero monitorizar la actividad de los usuarios.
+\subsection{Administrador}
 
-\subsection*{Configuración}
-US-24: Como administrador, quiero configurar criterios de evaluación personalizados.
+\subsubsection{Gestión de datasets}
+\begin{itemize}
+	\item \textbf{US-19}: como administrador, quiero subir datasets RDF para utilizarlos
+	      en la plataforma. El formulario de creación expone, además del nombre y la
+	      descripción, las opciones declarativas \textit{tamaño de sección}, \textit{uso
+		      de LLM}, \textit{revisión} y \textit{revisiones adicionales tras corrección}.
+	\item \textbf{US-20}: como administrador, quiero descargar los avances del dataset
+	      RDF para utilizarlos fuera de la plataforma.
+	\item \textbf{US-21}: como administrador del dataset, quiero consultar estadísticas
+	      por usuario y un promedio general ponderado de los tiempos de anotación y
+	      revisión, junto con la cobertura, los errores subsanados en anotación y los
+	      errores subsanados en revisión.
+	\item \textbf{US-32}: como administrador del dataset, quiero nombrar un dataset al
+	      crearlo (con el nombre del fichero como valor por defecto) y renombrarlo
+	      posteriormente desde la página de administración, manteniendo la unicidad del
+	      nombre por propietario.
+	\item \textbf{US-34}: como administrador del dataset, quiero adjuntar una descripción
+	      breve opcional al crear el dataset, de modo que la página de visualización
+	      muestre, bajo el nombre, una explicación del contenido.
+\end{itemize}
+
+\subsubsection{Configuración}
+\begin{itemize}
+	\item \textbf{US-24}: como administrador, quiero configurar criterios de evaluación
+	      personalizados para el proceso de revisión.
+\end{itemize}
+
+\subsection{Operación y auditoría}
+
+\begin{itemize}
+	\item \textbf{US-25}: como sistema, quiero registrar las peticiones que incluyan
+	      datos en formato JSON o de formulario en ficheros horarios para disponer de
+	      trazabilidad operativa. Los campos sensibles, como las contraseñas, se redactan
+	      antes de escribirse y la escritura se serializa en un único hilo.
+	\item \textbf{US-26}: como sistema, quiero registrar exclusivamente los errores 500
+	      en un fichero diario específico para facilitar el diagnóstico técnico, sin
+	      incluir respuestas 403 ni 404.
+\end{itemize}
+
+\subsection{Registro de moderadores}
+
+\begin{itemize}
+	\item \textbf{US-27}: como visitante en posesión de un código de moderador válido,
+	      quiero registrarme directamente como moderador para acceder a la superficie de
+	      administración sin necesidad de intervención operativa posterior. El código es
+	      de uso único y consta de exactamente dieciséis caracteres alfanuméricos.
+	\item \textbf{US-28}: como operador, quiero generar lotes de códigos de uso único,
+	      mediante un script controlado, para distribuirlos entre quienes deban
+	      registrarse como moderadores.
+\end{itemize}
+
+\subsection{Descargas desde la visualización del dataset}
+
+\begin{itemize}
+	\item \textbf{US-29}: como usuario con acceso a un dataset, quiero descargar el XML
+	      original desde la pestaña \textit{Visualización del XML} para inspeccionarlo o
+	      reutilizarlo fuera de la plataforma.
+	\item \textbf{US-30}: como usuario con acceso a un dataset íntegramente completado,
+	      quiero descargar el XML extendido con las anotaciones en español incorporadas,
+	      de modo que el corpus anotado pueda reutilizarse externamente.
+\end{itemize}
+
+\section{Dependencias entre capacidades}
+
+Las historias de usuario no son independientes: el valor del sistema solo se
+manifiesta cuando ciertas capacidades existen previamente. La cadena principal
+de dependencias es la siguiente:
+
+\begin{enumerate}
+	\item Gestión de usuarios y sesiones.
+	\item Control de roles y permisos.
+	\item Subida y almacenamiento de datasets.
+	\item Acceso al dataset y segmentación en secciones.
+	\item Anotación de sentencias.
+	\item Validación automática.
+	\item Revisión humana.
+	\item Estadísticas, exportación y seguimiento.
+\end{enumerate}
+
+Sin autenticación no existe trazabilidad por usuario; sin permisos no es
+posible repartir el trabajo de manera segura; sin la subida del dataset no hay
+base sobre la que anotar; sin segmentación no se puede escalar el trabajo
+multiusuario; sin validación no se alcanza el objetivo de calidad del corpus;
+sin revisión humana no se cierra el ciclo de aseguramiento de calidad; y sin
+registros no se dispone de auditoría suficiente para diagnosticar los errores
+del servidor.
+
+\section{Documentación oficial del proyecto}
+\label{sec:doc-proyecto}
+
+La documentación funcional, técnica y de planificación se aloja en la carpeta
+\texttt{docu\allowbreak menta\allowbreak tion/} del repositorio. Cada documento cumple un propósito
+específico y se actualiza siguiendo políticas distintas, lo que garantiza la
+trazabilidad entre la intención del producto, su diseño y su evolución a lo
+largo del tiempo. Los documentos principales son los siguientes:
+
+\begin{itemize}
+	\item \textbf{Historias de usuario}: actúa como referencia funcional única y fuente
+	      de verdad para describir qué hace el producto y para quién. Recoge el propósito
+	      del proyecto, su alcance, los roles, las historias de usuario con sus criterios
+	      de aceptación y las relaciones de dependencia entre capacidades.
+	\item \textbf{Diseño técnico}: complementa a las historias de usuario explicando el
+	      \textit{cómo}. Contiene el modelo de datos, las claves y restricciones, los
+	      procedimientos internos (sesiones activas, asignación de secciones, flujo de
+	      anotación y revisión), la convención de nombres de la API y la estructura por
+	      capas.
+	\item \textbf{Auditorías de arquitectura}: capturan, mediante \textit{snapshots}
+	      numerados, el estado no funcional del código (deuda técnica, acoplamientos
+	      indebidos, código duplicado, dependencias muertas, desviaciones de estilo). Los
+	      archivos previos no se reescriben: cada auditoría posterior arranca con los
+	      hallazgos heredados como línea base.
+	\item \textbf{Auditorías de cobertura funcional}: registran, historia a historia, el
+	      grado de cobertura efectiva del catálogo de historias de usuario, distinguiendo
+	      entre las capas implicadas y las pruebas asociadas.
+	\item \textbf{Planes de épica y de tarea}: agrupan las historias de usuario en
+	      bloques manejables (épicas) y descomponen estas en tareas y subtareas
+	      verificables. Su naturaleza es desechable: una vez cerrada la épica, las reglas
+	      duraderas que se hayan descubierto durante su ejecución se migran a las
+	      historias de usuario o al diseño técnico.
+	\item \textbf{Documentos de evaluación de la IA}: recogen los protocolos y los
+	      resultados de las pruebas realizadas sobre la calidad de la generación y la
+	      corrección asistidas por modelos de lenguaje.
+\end{itemize}
+
+A esta documentación de proyecto se añaden los archivos \texttt{CLAUDE.md} y
+\texttt{DOCUMENTATION.md}, situados en la raíz del repositorio, que definen,
+respectivamente, las normas de colaboración con los agentes que asisten al
+desarrollo y el mapa global de toda la documentación.
+
+\section{Arquitectura general del proyecto}
+
+El sistema se ha construido como un monolito modular por capas, ejecutado sobre
+Node.js y orquestado mediante contenedores Docker. La separación de
+responsabilidades se materializa en una serie de paquetes que se invocan en
+cascada desde la frontera HTTP hasta la persistencia, y que se complementan con
+utilidades transversales.
+
+\begin{itemize}
+	\item \textbf{Rutas} (\texttt{routes/}): exponen los \textit{endpoints} web y de la
+	      API. Su responsabilidad se limita a declarar la superficie HTTP y enlazarla con
+	      el controlador adecuado, sin contener lógica de negocio.
+	\item \textbf{Middlewares} (\texttt{middlewares/}): resuelven cuestiones
+	      transversales a las rutas: autenticación, control de acceso por rol, subida de
+	      ficheros, registro de peticiones y captura de errores.
+	\item \textbf{Controladores} (\texttt{controllers/}): traducen las peticiones HTTP en
+	      invocaciones a los servicios, validan el formato de entrada, normalizan la
+	      salida y gestionan los códigos de estado. Son adaptadores y no contienen reglas
+	      de negocio.
+	\item \textbf{Servicios} (\texttt{services/}): concentran los casos de uso de la
+	      aplicación. Coordinan repositorios, dominio y utilidades para implementar las
+	      reglas funcionales descritas en las historias de usuario.
+	\item \textbf{Contratos} (\texttt{contracts/}): definen los DTO de la API y las
+	      funciones de proyección que aíslan la representación externa de las entidades
+	      internas, evitando filtraciones del modelo persistente hacia el cliente.
+	\item \textbf{Repositorios} (\texttt{repositories/}): encapsulan el acceso a la base
+	      de datos mediante el cliente de Prisma y exponen operaciones de lectura y
+	      escritura coherentes con las invariantes del dominio.
+	\item \textbf{Entidades} (\texttt{entities/}) y \textbf{dominio} (\texttt{domain/}):
+	      contienen el modelo conceptual y la lógica pura que no depende de la
+	      infraestructura.
+	\item \textbf{Utilidades} (\texttt{utils/}) y \textbf{constantes}
+	      (\texttt{constants/}): proporcionan funciones auxiliares ---lectura y escritura
+	      de XML, validadores, clientes de proveedores LLM--- y catálogos de códigos y
+	      configuraciones funcionales.
+\end{itemize}
+
+La capa de presentación reside en \texttt{public/}, sirviendo las páginas HTML
+estáticas que consumen la API. La persistencia se apoya en MariaDB, gestionada
+mediante el esquema declarativo de Prisma situado en \texttt{prisma/}. El
+conjunto se despliega como tres contenedores Docker ---aplicación, base de datos
+y un explorador SQL genérico---, lo que garantiza la reproducibilidad del entorno
+de ejecución.
+
+La Figura~\ref{fig:arquitectura-capas} representa gráficamente la cascada
+descrita.
+
+\begin{figure}[H]
+	\centering
+	\resizebox{\linewidth}{!}{%
+		\begin{tikzpicture}[
+				font=\sffamily\scriptsize,
+				main/.style={
+						rectangle,
+						draw=black,
+						fill=gray97,
+						minimum width=7.2cm,
+						minimum height=0.82cm,
+						align=center
+					},
+				side/.style={
+						rectangle,
+						draw=black,
+						fill=white,
+						minimum width=3.7cm,
+						minimum height=0.72cm,
+						align=center
+					},
+				stack/.style={
+						rectangle,
+						draw=black,
+						fill=gray75,
+						minimum width=2.9cm,
+						minimum height=0.72cm,
+						align=center
+					},
+				arrow/.style={-{Latex[length=2.2mm]}, thick},
+				support/.style={-{Latex[length=1.8mm]}, dashed}
+			]
+			\node[main] (browser) {\textbf{Navegador}\\Interfaz HTML consumidora de la API};
+			\node[main, below=0.42cm of browser] (public) {\textbf{\texttt{public/}}\\Páginas HTML, CSS y JavaScript servidas por Express};
+			\node[main, below=0.42cm of public] (routes) {\textbf{\texttt{routes/}}\\Superficie HTTP web y API};
+			\node[main, below=0.42cm of routes] (middlewares) {\textbf{\texttt{middlewares/}}\\Autenticación, roles, subida de ficheros, registro y errores};
+			\node[main, below=0.42cm of middlewares] (controllers) {\textbf{\texttt{controllers/}}\\Adaptadores HTTP, validación de entrada y códigos de respuesta};
+			\node[main, below=0.42cm of controllers] (services) {\textbf{\texttt{services/}}\\Casos de uso y coordinación de reglas funcionales};
+			\node[main, below=0.42cm of services] (repositories) {\textbf{\texttt{repositories/}}\\Acceso persistente mediante cliente Prisma};
+			\node[main, below=0.42cm of repositories] (prisma) {\textbf{\texttt{prisma/schema.prisma}}\\Modelo declarativo y cliente ORM};
+			\node[main, below=0.42cm of prisma] (mariadb) {\textbf{MariaDB}\\Persistencia relacional};
+
+			\node[side, right=0.75cm of controllers] (contracts) {\textbf{\texttt{contracts/}}\\DTO y proyecciones de API};
+			\node[side, right=0.75cm of services] (domain) {\textbf{\texttt{domain/}} / \textbf{\texttt{entities/}}\\Modelo conceptual y lógica pura};
+			\node[side, left=0.75cm of services] (utils) {\textbf{\texttt{utils/}} / \textbf{\texttt{constants/}}\\XML, validadores, clientes LLM y catálogos};
+
+			\node[stack, left=0.75cm of routes] (node) {\textbf{Node.js}\\runtime};
+			\node[stack, left=0.75cm of middlewares] (express) {\textbf{Express}\\servidor HTTP};
+			\node[stack, left=0.75cm of prisma] (orm) {\textbf{Prisma}\\ORM};
+
+			\draw[arrow] (browser) -- (public);
+			\draw[arrow] (public) -- (routes);
+			\draw[arrow] (routes) -- (middlewares);
+			\draw[arrow] (middlewares) -- (controllers);
+			\draw[arrow] (controllers) -- (services);
+			\draw[arrow] (services) -- (repositories);
+			\draw[arrow] (repositories) -- (prisma);
+			\draw[arrow] (prisma) -- (mariadb);
+
+			\draw[support] (contracts) -- (controllers);
+			\draw[support] (contracts) -- (services);
+			\draw[support] (domain) -- (services);
+			\draw[support] (utils) -- (services);
+			\draw[support] (utils) -- (controllers);
+			\draw[support] (node) -- (routes);
+			\draw[support] (express) -- (middlewares);
+			\draw[support] (orm) -- (prisma);
+		\end{tikzpicture}%
+	}
+	\caption{Arquitectura en capas de \texttt{lanbench}: cascada de rutas,
+		\textit{middlewares}, controladores, servicios, contratos, repositorios y
+		entidades sobre Node.js, Express y Prisma, con persistencia en MariaDB y
+		capa de presentación HTML servida desde \texttt{public/}.}
+	\label{fig:arquitectura-capas}
+\end{figure}
+
+\section{Modelo de datos}
+\label{sec:modelo-datos}
+
+El modelo de datos se declara de forma única en el fichero
+\texttt{prisma/schema.\-prisma} y se materializa sobre MariaDB a través del
+cliente generado por Prisma. La elección de un \textit{ORM} declarativo
+responde a dos requisitos: por un lado, mantener la coherencia entre el modelo
+conceptual y el esquema físico mediante un único artefacto versionable; por
+otro, ofrecer un cliente tipado que reduzca la superficie de errores en los
+repositorios.
+
+Las entidades principales se organizan en cinco grupos funcionales:
+
+\begin{itemize}
+	\item \textbf{Usuarios y sesiones}. La entidad \texttt{User} almacena la cuenta, su
+	      rol global de servidor y los registros de actividad. La entidad
+	      \texttt{ActiveSession} representa la reserva temporal de una sección por parte
+	      de un usuario en un modo concreto (anotación o revisión).
+	\item \textbf{Datasets}. La entidad \texttt{Dataset} es la raíz funcional del sistema
+	      y agrupa los metadatos ---nombre, descripción, idiomas, modo de uso del LLM,
+	      tamaño de sección y banderas de revisión---. Cada dataset es responsable de su
+	      propio ciclo de vida y de las credenciales LLM asociadas mediante
+	      \texttt{Dataset\-Llm\-Credential}.
+	\item \textbf{Particionado del trabajo}. Las entidades \texttt{Section} y
+	      \texttt{Section\-Assignment} materializan respectivamente la división estática
+	      del dataset en bloques de tamaño fijo y la asignación dinámica de cada bloque a
+	      un usuario durante una ventana temporal acotada. La separación entre ambas
+	      resuelve el control de concurrencia a un grano adecuado, equivalente al
+	      concepto de \textit{lease} en sistemas distribuidos.
+	\item \textbf{Contenido}. La entidad \texttt{Entry} representa una \textit{entry} del
+	      corpus WebNLG y enlaza, mediante relaciones de cardinalidad uno-a-muchos, los
+	      conjuntos de tripletas RDF originales y modificados, las lexicalizaciones de
+	      referencia y las verbalizaciones en español producidas por la plataforma.
+	\item \textbf{Permisos y trazabilidad}. La entidad \texttt{Permit} asocia un usuario
+	      y un dataset con uno o varios roles funcionales (\textit{anotador},
+	      \textit{revisor}, \textit{administrador}), independientes del rol global. Sobre
+	      esta separación se sostienen tanto la gobernanza descrita en el capítulo
+	      anterior como la trazabilidad de autorías necesaria para las estadísticas.
+\end{itemize}
+
+Esta organización mantiene una correspondencia uno-a-uno entre las invariantes
+del dominio (un usuario no puede tener más de una sección activa por modo en un
+mismo dataset, un revisor no puede revisar sus propias anotaciones, etc.) y las
+restricciones físicas declaradas en el esquema (claves compuestas, índices
+únicos y reglas de borrado en cascada controlado). El resultado es un modelo
+defensivo: las violaciones funcionales son rechazadas por la propia base de
+datos, evitando que dependan exclusivamente de la lógica aplicativa.
+
+\section{Modelo de seguridad y de autenticación}
+\label{sec:modelo-seguridad}
+
+El modelo de seguridad de \texttt{lanbench} se articula en cuatro planos
+coordinados que cubren autenticación, autorización, protección de secretos y
+trazabilidad.
+
+\subsection{Autenticación basada en sesiones}
+La plataforma emplea sesiones HTTP gestionadas mediante
+\texttt{express-session}, con identificadores opacos almacenados en una
+\textit{cookie} con atributos \texttt{HttpOnly} y \texttt{SameSite}. Las
+credenciales del usuario se contrastan contra una huella derivada con un
+algoritmo de \textit{key stretching} (bcrypt) y no se conservan en claro. Esta
+aproximación se considera adecuada para una aplicación monolítica desplegada
+bajo un único origen y resulta coherente con las recomendaciones OWASP en
+materia de gestión de sesiones~\cite{OWASPASVS2024}.
+
+\subsection{Autorización en capas}
+El control de acceso se realiza en dos niveles concatenados. Los
+\textit{middlewares} de rol global comprueban el rol de servidor del usuario
+antes de exponer la superficie de administración. A continuación, los
+\textit{middlewares} de rol por dataset consultan la entidad \texttt{Permit}
+para autorizar la operación sobre un dataset concreto. Esta concatenación
+responde al principio de mínimo privilegio: ningún usuario obtiene capacidades
+sobre un recurso por el mero hecho de poseer un rol global.
+
+\subsection{Gestión cifrada de credenciales LLM}
+Las claves de los proveedores de inteligencia artificial se almacenan
+exclusivamente en su forma cifrada en el campo \texttt{api\_key\_cipher} de
+\texttt{Dataset\-Llm\-Credential}. Una representación abreviada de los últimos
+cuatro caracteres (\texttt{key\_last4}) se conserva para confirmación visual
+sin reexponer la clave completa. Las claves nunca se devuelven al cliente en
+claro, en línea con la historia US-31. La rotación de claves se traduce, en
+este modelo, en una sobrescritura de la entidad sin necesidad de migraciones
+adicionales.
+
+\subsection{Trazabilidad operativa}
+La capa de \textit{middlewares} produce dos registros complementarios. El
+primero, descrito en US-25, registra de forma horaria todas las peticiones que
+incluyen datos serializados (JSON o formulario), redactando previamente los
+campos sensibles ---contraseñas, tokens, claves--- mediante una lista negra
+explícita. El segundo, descrito en US-26, persiste únicamente los errores 500
+en un fichero diario, excluyendo las respuestas 403 y 404 para evitar el ruido
+habitual de \textit{scanners} automatizados. Ambos ficheros se serializan a
+través de un único hilo de escritura, garantizando que no se produzca
+corrupción por concurrencia.
+
+\subsection{Superficie residual}
+Las amenazas residuales contempladas son las clásicas del Top~10
+OWASP~\cite{OWASPTop10_2021}: inyección a través de los campos textuales del
+editor de anotaciones, secuestro de sesión por exposición accidental del
+identificador y desviaciones de configuración entre entornos. Las dos primeras
+se mitigan mediante el uso de Prisma como capa de parametrización de consultas
+(que impide la concatenación directa de cadenas en SQL) y la activación de la
+\textit{cookie} segura en producción. La tercera se controla mediante el
+archivo \texttt{.env.example} y la separación estricta entre claves de
+desarrollo y de producción.
+
+\section{Tipos de pruebas automatizadas}
+
+La calidad del sistema se sostiene sobre una batería de pruebas automatizadas
+estructurada en dos niveles, complementada por una verificación específica del
+esquema de base de datos.
+
+\begin{itemize}
+	\item \textbf{Pruebas unitarias} (626 casos en la \textit{snapshot} v0.5):
+	      ejercitan módulos individuales ---controladores, servicios, repositorios,
+	      \textit{middlewares}, entidades, mapeadores DTO y funciones auxiliares--- de
+	      forma aislada. Los límites externos, como la base de datos o el transporte
+	      HTTP, se sustituyen por dobles de prueba, lo que permite ejecutarlas en
+	      milisegundos y mantener un ciclo de realimentación corto durante el
+	      desarrollo.
+	\item \textbf{Pruebas de integración} (46 casos en la \textit{snapshot} v0.5):
+	      recorren flujos completos de principio a fin ---registro y autenticación,
+	      importación de un dataset, asistente de revisión, entre otros--- invocando al
+	      cliente real de Prisma y tratando la aplicación Express como una caja negra.
+	      Su objetivo es detectar incompatibilidades entre componentes que las pruebas
+	      unitarias no pueden observar por construcción.
+	\item \textbf{Verificación del esquema de base de datos}: un script específico
+	      contrasta el esquema activo en MariaDB con el modelo declarado en Prisma. Se
+	      ejecuta de forma independiente del marco de pruebas funcional y constituye una
+	      salvaguarda tras cada actualización del esquema.
+\end{itemize}
+
+En conjunto, la \textit{snapshot} v0.5 del repositorio reúne
+\textbf{672 casos de prueba en verde}, según se resume en la
+Tabla~\ref{tab:tests-por-tipo}. El inventario completo ---con el fichero, el
+nombre humano de cada caso y la historia de usuario que cubre--- se mantiene
+en el documento \texttt{documentation/TESTS.md} del repositorio, que actúa
+como catálogo canónico de la suite y reemplaza al \textit{placeholder}
+T-TRAZ-01 originalmente previsto en
+\texttt{doc-process-memory/MEMORY-PROBLEMS-1.md} (§8.2). Cada prueba se
+asocia, cuando aplica, a la historia de usuario que cubre, manteniendo así
+la trazabilidad funcional.
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lr}
+		\hline
+		\textbf{Categoría}                                              & \textbf{Nº de casos} \\
+		\hline
+		\multicolumn{2}{l}{\textit{Pruebas unitarias}}                                         \\
+		\quad Entidades                                                 & 14                   \\
+		\quad Autenticación y sesiones                                  & 23                   \\
+		\quad Usuarios                                                  & 30                   \\
+		\quad \textit{Datasets}                                         & 187                  \\
+		\quad Anotaciones                                               & 55                   \\
+		\quad Revisiones                                                & 107                  \\
+		\quad Administración                                            & 16                   \\
+		\quad Estadísticas personales (\textit{Me})                     & 16                   \\
+		\quad Reglas lingüísticas en español                            & 43                   \\
+		\quad Ollama y clientes LLM                                     & 48                   \\
+		\quad XML                                                       & 50                   \\
+		\quad Herramientas de operación                                 & 8                    \\
+		\quad Contratos, \textit{mappers} y utilidades compartidas      & 150                  \\
+		\hline
+		\textbf{Subtotal de pruebas unitarias}                          & \textbf{626}         \\
+		Pruebas de integración                                          & 46                   \\
+		\hline
+		\textbf{Total}                                                  & \textbf{672}         \\
+		\hline
+	\end{tabular}
+	\caption[Distribución de los casos de prueba automatizados por
+		subsistema según la \textit{snapshot} v0.5 del catálogo canónico.]{Distribución
+		de los casos de prueba automatizados por subsistema,
+		según la \textit{snapshot} v0.5 del catálogo canónico mantenido en
+		\texttt{documentation/TESTS.md}. Los subtotales por subsistema
+		consolidan las tablas de la v0.4 con las altas de la v0.5; refactorizaciones
+		intermedias han renombrado o unificado un número reducido de casos sin
+		alterar las cifras agregadas que aporta el documento (626/46/672).}
+	\label{tab:tests-por-tipo}
+\end{table}
+
+Existen, además, comandos auxiliares para filtrar por nombre, ejecutar un
+único archivo o listar el conjunto de pruebas sin ejecutarlas, lo que
+facilita el aislamiento de regresiones.
+
+\section{Tecnologías utilizadas}
+
+A continuación se enumeran las tecnologías clave sobre las que descansa la
+aplicación, con una breve indicación del uso concreto que se les ha dado en el
+proyecto. Salvo donde se indica lo contrario, se trata de proyectos de software
+libre con amplia trayectoria en el ecosistema web.
+
+\begin{itemize}
+	\item \textbf{JavaScript / Node.js}: lenguaje y entorno de ejecución del servidor. Se
+	      ha empleado JavaScript moderno tanto en el código del servidor como en el de
+	      los scripts auxiliares y en la lógica del cliente, lo que ha permitido
+	      reutilizar utilidades y mantener una única base de conocimiento en el equipo.
+	\item \textbf{Express.js}: marco web minimalista para Node.js. Es la base sobre la
+	      que se construyen las rutas, los \textit{middlewares} y la composición de la
+	      aplicación, gestionando el ciclo de petición y respuesta sobre el que se apoya
+	      el resto de capas.
+	\item \textbf{express-session}: complemento de Express dedicado a la gestión de
+	      sesiones. Persiste el identificador de sesión en el cliente y mantiene el
+	      estado autenticado del usuario, condición previa para aplicar la lógica de
+	      roles y permisos.
+	\item \textbf{Prisma}: \textit{ORM} declarativo. El esquema
+	      \texttt{prisma/schema.prisma} actúa como fuente única de verdad del modelo
+	      relacional; el cliente generado se utiliza en todos los repositorios para
+	      ejecutar operaciones tipadas contra MariaDB.
+	\item \textbf{MariaDB}: sistema gestor de bases de datos relacional compatible con
+	      MySQL. Almacena los datasets importados, las entradas, las tripletas, las
+	      anotaciones, las revisiones y la trazabilidad de usuarios y roles.
+	\item \textbf{Docker y Docker Compose}: herramienta de contenedorización y
+	      orquestación local. Permite ejecutar la aplicación, la base de datos y un
+	      explorador SQL como servicios coordinados, garantizando que el entorno de
+	      desarrollo sea reproducible entre máquinas.
+	\item \textbf{Multer}: \textit{middleware} de Express especializado en la subida de
+	      archivos. Se utiliza para recibir los datasets XML cargados por los
+	      administradores antes de su procesamiento.
+	\item \textbf{fast-xml-parser}: analizador de XML eficiente para Node.js. Se emplea
+	      para transformar los datasets WebNLG en estructuras manejables, así como para
+	      reconstruir el XML extendido con las anotaciones en español.
+	\item \textbf{Bootstrap}: marco de componentes y rejilla CSS. Aporta una capa visual
+	      homogénea a las páginas servidas desde \texttt{public/} y reduce el esfuerzo
+	      invertido en estilos personalizados.
+	\item \textbf{jQuery}: biblioteca de manipulación del DOM y de peticiones asíncronas.
+	      Se utiliza puntualmente en las páginas para simplificar la comunicación con la
+	      API y la actualización dinámica de la interfaz.
+	\item \textbf{Prisma Studio y Adminer}: exploradores gráficos del modelo relacional
+	      empleados de forma complementaria durante el desarrollo para inspeccionar el
+	      contenido de la base de datos sin escribir consultas SQL manuales.
+	\item \textbf{Mocha}: ejecutor de pruebas. Coordina las pruebas unitarias e
+	      integración, organiza los \textit{suites} y produce los informes en consola.
+	\item \textbf{Chai}: biblioteca de aserciones que acompaña a Mocha. Aporta un
+	      lenguaje expresivo para describir las expectativas en los casos de prueba.
+	\item \textbf{testdouble y proxyquire}: utilidades para crear dobles de prueba y para
+	      sustituir dependencias en tiempo de ejecución. Permiten aislar el código bajo
+	      prueba del resto del sistema.
+	\item \textbf{ESLint}: analizador estático de código. Se ha configurado con reglas
+	      adicionales orientadas a seguridad y a buenas prácticas para detectar problemas
+	      antes de que lleguen al repositorio.
+\end{itemize}

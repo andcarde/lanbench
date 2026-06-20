@@ -8,8 +8,8 @@
 \input{include/Preambulo}
 %%-----------------------------------------------
 %% Cargar datos relativos al TFM:
-%% (actualizar estos datos en secciones/_DatosTFM.tex) 
-\input{secciones/_DatosTFM}
+%% (actualizar estos datos en _DatosTFM.tex)
+\input{_DatosTFM}
 
 
 %%% Apaños de Mariano Rico. Desde aquí... %%%
@@ -29,6 +29,10 @@
 %%-----------------------------------------------
 \input{secciones/00_Resumen}
 \tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
 
 %%-----------------------------------------------
 %% Numeración arábiga:
@@ -42,6 +46,8 @@
 
 \input{secciones/04_Aplicación}
 
+\input{secciones/05_Experimento}
+
 \input{secciones/06_Resultados}
 
 % ultima seccion, numerada, para la bibliografia
@@ -49,8 +55,8 @@
 %%-----------------------------------------------
 %% Anexos
 \appendix
-\clearpage 
-\addcontentsline{toc}{chapter}{Anexo}
-\input{secciones/05_Anexos}
+\clearpage
+\addcontentsline{toc}{chapter}{Anexos}
+\input{secciones/07_Anexos}
 %%---------------------------------------------------------
 \end{document}

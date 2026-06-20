@@ -7,11 +7,22 @@
 %%***********************************************
 \documentclass[a4paper,11pt]{book}
 \usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage[T2A,T1]{fontenc} % T1 (latín, por defecto) + T2A para cirílico (ej. ruso de WebNLG)
 \usepackage[english,spanish,es-lcroman]{babel}
 \usepackage{bookman}
+% Bookman se mantiene como fuente del cuerpo; solo la monoespaciada (listados,
+% verbatim) pasa a Computer Modern Typewriter (cmtt), que sí tiene definición
+% T2A en esta distribución (t2acmtt.fd) y, por tanto, glifos cirílicos.
+\renewcommand{\ttdefault}{cmtt}
+% verbatim fija la codificación por defecto (T1) vía \normalfont; forzamos T2A en
+% su fuente para que el cirílico (cmtt lo tiene en T2A) se componga sin error.
+\makeatletter
+\renewcommand{\verbatim@font}{\normalfont\ttfamily\fontencoding{T2A}\selectfont}
+\makeatother
 \decimalpoint
 \usepackage{graphicx}
+\usepackage{pgfgantt}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage{amsfonts,amsgen,amsmath,amssymb}
 \usepackage[top=3cm, bottom=3cm, right=2.54cm, left=2.54cm]{geometry}
 \usepackage{afterpage}
@@ -19,6 +30,8 @@
 \usepackage[pdfborder={0 0 0}]{hyperref} 
 \usepackage{pdfpages}
 \usepackage{url}
+\usepackage{pdflscape}
+\usepackage{float}
 \usepackage[stable]{footmisc}
 \usepackage{parskip} % para separar párrafos con espacio.
 \usepackage{hyperref}

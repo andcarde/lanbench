@@ -1,98 +1,293 @@
 
 \chapter{Introducción}
 
-\section{Propósito del trabajo}
+\section{Contexto}
 
-// Explicar WebNLG previamente a este apartado.
+\subsection{WebNLG}
 
-El objetivo principal de este Trabajo de Fin de Máster es ampliar el \textit{dataset} WebNLG mediante la incorporación de traducciones en forma de pares clave--valor que permitan la conversión del español (lenguaje natural) a tripletas RDF.
+WebNLG~\cite{Gardent2017,Gardent2017acl} es un \textit{dataset} que relaciona
+conjuntos de tripletas RDF procedentes de DBpedia con sentencias en lenguaje
+natural, redactadas y verificadas manualmente. Su finalidad principal es servir
+de \textit{benchmark} para entrenar, y evaluar sistemas de
+generación de lenguaje natural (NLG). En torno a él se han organizado tres
+desafíos de evaluación competitiva:
 
-El \textit{dataset}, considerado de manera aislada, resulta insuficiente para desempeñar tareas de traducción directa entre entrada y salida en lenguaje natural, dado que el espacio combinatorio de posibles oraciones en español es extremadamente amplio. Por ejemplo, una estimación conservadora del número de oraciones sintácticamente válidas de longitud 10 palabras puede situarse en torno a $10^{23}$. En consecuencia, el propósito fundamental no es construir un traductor determinista, sino generar un volumen de datos suficientemente representativo que permita entrenar modelos de aprendizaje automático y evaluar cuantitativamente su rendimiento.
+\begin{itemize}
+	\item \textbf{WebNLG 2017}~\cite{Gardent2017}: primera edición, centrada en la
+	      generación de texto en inglés a partir de conjuntos de hasta siete tripletas de
+	      DBpedia. El corpus inglés, en su versión enriquecida, comprende 25\,298 textos
+	      que describen 9\,674 conjuntos de tripletas repartidos en 15
+	      dominios~\cite{CastroFerreira2019}.
+	\item \textbf{WebNLG+ 2020}~\cite{CastroFerreira2020}: segunda edición, bilingüe
+          (inglés y
+	      ruso) y, por primera vez, \textbf{bidireccional}: junto a la tarea de
+	      generación (RDF $\rightarrow$ texto) se introdujo una tarea de análisis
+	      semántico (\textit{semantic parsing}, texto $\rightarrow$ RDF).
+	\item \textbf{WebNLG 2023}~\cite{Cripwell2023}: edición orientada a lenguas con
+	      escasez de recursos (bretón, galés, irlandés y maltés), con conjuntos de prueba
+	      traducidos profesionalmente desde el inglés y datos de entrenamiento obtenidos
+	      por traducción automática.
+\end{itemize}
+
+\subsection{DBpedia}
+
+DBpedia~\cite{Auer2007,Lehmann2015} es un repositorio que manteniene una base de
+conocimiento expresada en una ontología, construida mediante la extracción automática de
+información estructurada de
+Wikipedia, principalmente de sus fichas de datos multilingües (\textit{infoboxes}). El
+conocimiento extraído se publica como tripletas RDF y es accesible mediante consultas SPARQL, lo que la ha convertido en uno
+de los nodos centrales de la iniciativa \textit{Linked Open Data}. Cada
+artículo de Wikipedia da lugar a un recurso identificado bajo el espacio de
+nombres \texttt{dbr:}, mientras que las clases y propiedades de la ontología se
+agrupan bajo \texttt{dbo:}.
+
+DBpedia resulta especialmente relevante para este trabajo por ser la fuente de
+la que se extraen las tripletas del corpus WebNLG, descrito a continuación.
+Cabe señalar, además, la existencia de un capítulo en español del proyecto
+(DBpedia en español), construido a partir de la Wikipedia en castellano y
+mantenido por el Ontology Engineering Group de la Universidad Politécnica de
+Madrid~\cite{DBpediaSpanish}.
+
+\subsection{Tripletas RDF}
+
+RDF (\textit{Resource Description Framework}) es un modelo de representación de
+datos estandarizado por el W3C, basado en tripletas de la
+forma~\cite{W3CRDF11}:
+
+\[
+	(\text{Sujeto}, \text{Predicado}, \text{Objeto})
+\]
+
+Cada tripleta representa un hecho atómico e indivisible. Formalmente:
+
+\begin{itemize}
+	\item El \textbf{sujeto} es la entidad descrita.
+	\item El \textbf{predicado} representa una propiedad o relación.
+	\item El \textbf{objeto} es el valor de dicha propiedad o la entidad relacionada.
+\end{itemize}
+
+Cada componente se identifica mediante una URI (\textit{Uniform Resource
+	Identifier})~\cite{W3CRDF11}.
+
+\subsubsection{Ejemplo}
+
+La afirmación:
+
+\begin{quote}
+	``Madrid es la capital de España''
+\end{quote}
+
+puede representarse como:
+
+\begin{verbatim}
+<http://dbpedia.org/resource/Spain>
+<http://dbpedia.org/ontology/capital>
+<http://dbpedia.org/resource/Madrid>
+\end{verbatim}
+
+\subsubsection{Ejemplo complejo y relaciones n-arias}
+
+Conviene aclarar de partida que RDF solo admite de forma nativa relaciones
+binarias: las relaciones en las que intervienen más de dos entidades deben
+codificarse mediante grupos de tripletas que se articulan en torno a un nodo
+intermedio. Este patrón se conoce como \textit{relación n-aria} y está
+formalizado por la \textit{nota} del W3C sobre relaciones n-arias en la web
+semántica~\cite{NoyRector2006}. Se trata, por tanto, de un patrón general del
+modelado en RDF; no se corresponde con la estructura de las entradas de WebNLG,
+que son conjuntos planos de hasta siete tripletas binarias de DBpedia que
+comparten entidades.
+
+A modo de ilustración del patrón, considérese la afirmación:
+
+\begin{quote}
+	``Plutón fue considerado planeta del sistema solar. Sin embargo, la Unión Astronómica Internacional lo reclasificó como planeta enano en 2006.''
+\end{quote}
+
+Este enunciado contiene múltiples hechos:
+
+\begin{enumerate}
+	\item Plutón forma parte del sistema solar.
+	\item La Unión Astronómica Internacional realizó una reclasificación.
+	\item Dicha reclasificación tuvo lugar en 2006.
+	\item El estatus previo era ``planeta''.
+	\item El nuevo estatus es ``planeta enano''.
+\end{enumerate}
+
+Para representar adecuadamente este fenómeno es necesario introducir un nodo
+intermedio, por ejemplo \texttt{Pluto\_Reclassification\_2006}, que actúe como
+instancia de la relación y permita asociarle múltiples atributos:
+
+\begin{verbatim}
+dbr:Pluto dbo:isPartOf dbr:Solar_System
+dbr:Pluto_Reclassification_2006 dbo:subject dbr:Pluto
+dbr:Pluto_Reclassification_2006 dbo:organisation dbr:International_Astronomical_Union
+dbr:Pluto_Reclassification_2006 dbo:year "2006"^^xsd:gYear
+dbr:Pluto dbo:type dbr:Dwarf_planet
+\end{verbatim}
+
+Las \textbf{relaciones n-arias} son aquellas en las que intervienen varios
+participantes o atributos. Codificarlas exclusivamente mediante relaciones
+binarias provocaría una pérdida de información sobre la unidad del hecho; el
+nodo intermedio sirve de nexo de unión y equivale, en cierto modo, a una
+entidad de agregación en el modelado de bases de datos. Conviene distinguir
+este patrón de la \textit{reificación} RDF (\texttt{rdf:Statement}), pensada
+para hacer afirmaciones \emph{sobre} una tripleta concreta (por ejemplo, su
+procedencia) y desaconsejada por el propio W3C para representar relaciones
+n-arias~\cite{NoyRector2006}.
+
+\subsection{Lenguajes naturales}
+
+A diferencia de los lenguajes formales de la lógica o de la matemática, donde
+la sintaxis y la semántica se definen explícitamente, los lenguajes naturales
+carecen de una especificación formal cerrada: la relación entre la forma de un
+enunciado y su significado depende del uso, del contexto comunicativo y del
+conocimiento compartido entre interlocutores. Esta distinción entre
+\emph{forma} y \emph{significado} es central a la hora de evaluar lo que un
+sistema puede o no puede inferir dada la importancia del contexto
+~\cite{BenderKoller2020_NLU}.
+
+A efectos del presente trabajo, esta caracterización tiene una consecuencia
+operativa: una verbalización en español de una tripleta RDF admite múltiples
+realizaciones igualmente válidas, lo que justifica el recurso a varias
+sentencias por entrada y la necesidad de métricas de evaluación capaces
+de tolerar variabilidad léxica y sintáctica (véase la
+Sección~\ref{sec:proposito-objetivos-trabajo} y la discusión de métricas en la
+Sección posterior).
+
+\section{Planteamiento del problema}
+
+\subsection{Dirección de la tarea}
+
+El desafío de WebNLG es la generación de texto a partir de tripletas RDF. En la
+ampliación que constituye la misión de la aplicación del presente trabajo,
+esta tarea se aborda conjuntamente con la traducción de inglés a español sobre las entradas
+existentes, de modo que el \textit{benchmark} se enriquezca con un nuevo
+idioma. Cabe señalar, no obstante, que la edición WebNLG+ 2020 incluyó también
+la tarea inversa Text-to-RDF (\textit{semantic parsing}).
+
+En las tres ediciones oficiales de WebNLG (2017, 2020 y2023) el inglés actúa como
+\emph{lengua fuente} ---tanto en el lado RDF como en
+los textos originales a partir de los que se obtuvieron las referencias, por lo que
+se debería mantener como fuente en la ampliación al español. Es relevante señalar que
+el volumen de datos publicado en 2023 es distinto del corpus enriquecido de 2017,
+que como se ha mencionado proporciona 25\,298 pares en inglés~\cite{CastroFerreira2019},
+pues para 2023 se distribuyen
+13\,200 ítems de entrenamiento con textos traducidos automáticamente desde el
+inglés y 1\,778 ítems de test por idioma, traducidos profesionalmente.
+
+\subsection{Limitaciones de los modelos automáticos}
+
+Los modelos actuales basados en grandes modelos de lenguaje (LLMs) presentan
+diversas limitaciones documentadas en la literatura
+~\cite{Ji2023,Bender2021_StochasticParrots,BenderKoller2020_NLU}:
+
+\begin{itemize}
+    \item \textbf{Alucinaciones}: generación de información inexistente o no soportada
+	      por la fuente, fenómeno revisado de manera sistemática por Ji et
+	      al.~\cite{Ji2023}.
+	\item \textbf{Errores semánticos}: mayor propensión a inconsistencias conceptuales,
+	      asociadas a la ausencia de una representación explícita del significado más
+	      allá de la forma del texto de entrenamiento~\cite{BenderKoller2020_NLU}.
+	\item \textbf{Pérdida de información}: omisión de hechos secundarios presentes en la
+	      entrada estructurada. Esto puede producir una cobertura incompleta de las tripletas.
+	\item \textbf{Errores de contexto}: dificultad para resolver referencias indirectas,
+	      ironía o conocimiento implícito. Por la dirección de la tarea, este limitación
+          tiene nulo impacto en la generación de texto a partir de tripletas RDF.
+\end{itemize}
 
 \section{Propósito y objetivos del trabajo}
+\label{sec:proposito-objetivos-trabajo}
 
-El objetivo general de este Trabajo de Fin de Máster es ampliar el corpus
-WebNLG con verbalizaciones en español alineadas con sus conjuntos de tripletas
-RDF, de modo que habilite la tarea de conversión de las tripletas RDF al español (lenguaje
-natural) a tripletas RDF.
+El objetivo general de este Trabajo de Fin de Máster es crear una aplicación web
+que automatice la ampliación del corpus WebNLG con verbalizaciones en español
+alineadas con sus conjuntos de tripletas RDF. Esto habilita tanto la tarea de conversión de las tripletas RDF al
+español (lenguaje natural) como la inversa.
 
-Conviene subrayar que no e puede construir un dataset completo porque el espacio combinatorio de oraciones válidas en español es inabarcable\footnote{A modo de ilustración del orden de
-magnitud: con un vocabulario activo de $10^4$ palabras, el número de
-secuencias de longitud 10 es $10^{40}$; aun suponiendo que solo una de cada
-$10^{17}$ fuese sintácticamente válida, restarían en torno a $10^{23}$
-oraciones posibles.}. En consecuencia, el propósito no es construir un traductor determinista,
-sino generar un volumen de datos suficientemente representativo para entrenar
+Conviene subrayar que no se puede construir un \textit{dataset} completo porque
+el espacio combinatorio de oraciones válidas en español es
+inabarcable\footnote{A modo de ilustración del orden de magnitud, adaptando al
+	español la argumentación combinatoria de Pinker~\cite{Pinker1994}: con un
+	vocabulario activo de $10^4$ palabras, el número de secuencias de longitud
+	10 es $10^{40}$; aun suponiendo que solo una de cada $10^{17}$ fuese
+	sintácticamente válida, restarían en torno a $10^{23}$ oraciones posibles.}. En
+consecuencia, el propósito no es construir un traductor determinista, sino
+generar un volumen de datos suficientemente representativo para entrenar
 modelos de aprendizaje automático y medir su capacidad de generalización.
 
 Este objetivo general se concreta en los siguientes objetivos específicos:
 
 \begin{enumerate}
-    \item \textbf{OE1}: construir un corpus de verbalizaciones en español
-    alineadas con las tripletas RDF de WebNLG, mediante traducción automática
-    con preservación de las restricciones estructurales sujeto--predicado--objeto.
-    \item \textbf{OE2}: diseñar e implementar un \textit{pipeline} de
-    corrección automática que detecte y subsane los errores introducidos por
-    la traducción.
-    \item \textbf{OE3}: garantizar la reproducibilidad del proceso mediante el
-    registro sistemático de configuraciones, versiones y resultados, y la
-    publicación de los recursos generados.
+	\item \textbf{OE1}: diseñar e implementar un \textit{pipeline} de corrección
+	      automática que detecte y subsane los errores introducidos por la traducción.
+	\item \textbf{OE2}: garantizar la reproducibilidad de los experimentos mediante
+          el registro de modelos, \textit{prompts}, versiones, y la publicación de los
+	      recursos utilizados.
 \end{enumerate}
-
-\section{DBpedia}
-
-DBpedia~\cite{Auer2007,Lehmann2015} es una base de conocimiento multilingüe
-construida mediante la extracción automática de información estructurada de
-Wikipedia, principalmente de sus fichas de datos (\textit{infoboxes}). El
-conocimiento extraído se publica como tripletas RDF conformes a una ontología
-común y es accesible mediante consultas SPARQL, lo que la ha convertido en uno
-de los nodos centrales de la iniciativa \textit{Linked Open Data}. Cada
-artículo de Wikipedia da lugar a un recurso identificado bajo el espacio de
-nombres \texttt{dbr:}, mientras que las clases y propiedades de la ontología
-se agrupan bajo \texttt{dbo:}.
-
-DBpedia resulta especialmente relevante para este trabajo por ser la fuente de
-la que se extraen las tripletas del corpus WebNLG, descrito a continuación.
-Cabe señalar, además, la existencia de un capítulo en español del proyecto
-(DBpedia en español), construido a partir de la Wikipedia en castellano.
 
 \section{Evaluación de modelos de generación}
 
-// Poner las referencias bibliográficas a la definición de cada métrica
-
-El rendimiento de los modelos de aprendizaje automático en tareas de generación o traducción se evalúa mediante métricas automáticas. Entre las más relevantes se encuentran las siguientes:
+El rendimiento de los modelos de aprendizaje automático en tareas de generación
+o traducción se evalúa mediante métricas automáticas. Entre las más relevantes
+se encuentran las siguientes:
 
 \subsection{BLEU}
 
-BLEU (\textit{Bilingual Evaluation Understudy}) mide la coincidencia de \textit{n-gramas} entre el texto generado y el texto de referencia. Se trata de una comparación posicional que tomando S1 como el texto generado, S2 el texto de referencia y S(i) el \textit{n-grama} con posición i en S, se define como:
-\begin{verbatim}
-int score = 0;
-for x in [0, length(S1)):
-    if S1(x) == S2(x):
-        score++;
-score = score / length(S1)
-\end{verbatim}
+BLEU (\textit{Bilingual Evaluation Understudy})~\cite{Papineni2002} mide la
+coincidencia de \textit{n-gramas} entre el texto candidato y una o varias
+referencias. No se trata de una comparación posicional, sino de la media
+geométrica de las precisiones modificadas de \textit{n-gramas} (con conteo
+\textit{recortado}, de modo que un mismo \textit{n-grama} no se contabilice más
+veces de las que aparece en la referencia), multiplicada por una penalización
+por brevedad que castiga los candidatos más cortos que la referencia:
 
-La implementación real, por tanto, considera coincidencias de $n$-gramas y aplica penalizaciones por longitud. Sin embargo, BLEU es muy poco robusta dado que no valora la semántica, no capturando adecuadamente sinónimos ni variaciones en el orden de palabras.
+\[
+	\text{BLEU} \;=\; BP \cdot \exp\!\left(\sum_{n=1}^{N} w_n \log p_n\right),
+	\qquad
+	BP \;=\;
+	\begin{cases}
+		1             & \text{si } c > r,   \\[2pt]
+		e^{(1 - r/c)} & \text{si } c \le r,
+	\end{cases}
+\]
+
+donde $p_n$ es la precisión modificada de $n$-gramas, $w_n$ los pesos
+(típicamente $1/N$ con $N=4$), $c$ la longitud del candidato y $r$ la de la
+referencia. BLEU presenta una robustez limitada, dado que no valora la
+semántica y, por tanto, no captura adecuadamente sinónimos ni variaciones en el
+orden de las palabras.
 
 \subsection{METEOR}
 
-METEOR incorpora correspondencias basadas en sinónimos y raíces léxicas, lo que mejora la sensibilidad semántica respecto a BLEU. Sin embargo, depende de recursos lingüísticos adicionales, como bases léxicas o diccionarios.
+METEOR~\cite{Banerjee2005} incorpora correspondencias basadas en sinónimos y
+raíces léxicas, lo que mejora la sensibilidad semántica respecto a BLEU. Sin
+embargo, depende de recursos lingüísticos adicionales, como bases léxicas o
+diccionarios.
 
-- chrF++: Parecido a BLEU, pero trabaja a nivel de carácter y no de palabra. Aprovecha que los lenguajes naturales tienen comportamiento flexivo, esto es la capacidad de generar palabras parecidas para significados parecidos (ej: residuo, residual. Morfema: residu. Lexema: -o, -al). Por contra, da falsos positivos (bastón vs pastón, varicela vs manivela) ya que no diferencia morfema de lexema y da similitud entre morfemas parecidos cuando sus significados son muy diferentes.
 \subsection{TER}
 
-TER (\textit{Translation Edit Rate}) mide el número mínimo de operaciones de edición (inserciones, eliminaciones, sustituciones o reordenaciones) necesarias para transformar el texto generado en el texto de referencia. Aunque proporciona una interpretación intuitiva basada en distancia de edición, continúa siendo limitada en la captación de equivalencias semánticas. En última instancia considera una sola solución cuando la riqueza de un lenguaje soporta múltiples expresiones, en las que encontramos sinónimos, hiperónimos, elementos deícticos y ordenaciones alternativas.
+TER (\textit{Translation Edit Rate})~\cite{Snover2006} mide el número mínimo de
+operaciones de edición (inserciones, eliminaciones, sustituciones o
+reordenaciones) necesarias para transformar el texto generado en el texto de
+referencia. Aunque proporciona una interpretación intuitiva basada en distancia
+de edición, continúa siendo limitada en la captación de equivalencias
+semánticas. En última instancia, considera una sola solución cuando la riqueza
+de un lenguaje admite múltiples expresiones, entre las que se encuentran
+sinónimos, hiperónimos, elementos deícticos y ordenaciones alternativas.
 
 \subsection{BERTScore}
 
-BERTScore calcula la similitud semántica mediante representaciones vectoriales (\textit{embeddings}) obtenidas a partir de modelos tipo BERT. Esta métrica permite comparar palabras en un espacio semántico continuo, superando parcialmente las limitaciones estrictamente léxicas.
+BERTScore~\cite{ZhangBERTScore2020} calcula la similitud semántica mediante
+representaciones vectoriales (\textit{embeddings}) obtenidas a partir de
+modelos tipo BERT. Esta métrica permite comparar palabras en un espacio
+semántico continuo, superando parcialmente las limitaciones estrictamente
+léxicas.
 
 \subsection{COMET}
 
 COMET (\textit{Crosslingual Optimized Metric for Evaluation of
-Translation})~\cite{Rei2020} representa una generación posterior de métricas:
-en lugar de definirse mediante una fórmula fija, se trata de un modelo
-neuronal entrenado para predecir juicios humanos de calidad. Construido sobre
+	Translation})~\cite{Rei2020} representa una generación posterior de métricas:
+en lugar de definirse mediante una fórmula fija, se trata de un modelo neuronal
+entrenado para predecir juicios humanos de calidad. Construido sobre
 codificadores multilingües preentrenados, COMET recibe el texto fuente, la
 hipótesis generada y la referencia, y produce una puntuación que correlaciona
 con la valoración humana sustancialmente mejor que las métricas léxicas. Su
@@ -104,125 +299,115 @@ la interpretación de las puntuaciones.
 
 chrF~\cite{Popovic2015} calcula una medida F sobre \textit{n-gramas} de
 caracteres; su extensión chrF++~\cite{Popovic2017} incorpora adicionalmente
-\textit{n-gramas} de palabra (unigramas y bigramas). Esta aproximación resulta especialmente útil en lenguas flexivas, donde diferentes formas comparten una raíz común (por ejemplo, ``residuo'' y ``residual''). Sin embargo, puede producir falsos positivos en casos donde la similitud ortográfica no implica cercanía semántica (por ejemplo, ``bastón'' y ``pastón''). Esta comparación por caracteres se trata de una heurística que permite detectar similitudes entre el lexema de las palabras, pero que al carecer de conocimiento semántico, no diferencia los morfemas del lexema ni detecta sinónimos o expresiones similares pero morfológicamente diferentes.
+\textit{n-gramas} de palabra (unigramas y bigramas). Esta aproximación resulta
+especialmente útil en lenguas flexivas, donde diferentes formas comparten una
+raíz común (por ejemplo, ``residuo'' y ``residual''). Sin embargo, puede
+producir falsos positivos en casos donde la similitud ortográfica no implica
+cercanía semántica (por ejemplo, ``casado'' y ``cansado''). Esta comparación
+por caracteres constituye una heurística que permite detectar similitudes entre
+el lexema de las palabras, pero que, al carecer de conocimiento semántico, no
+diferencia los morfemas del lexema ni detecta sinónimos o expresiones similares
+pero morfológicamente diferentes.
+
+\subsection{Comparativa sintética de las métricas anteriores}
+
+La Tabla~\ref{tab:metricas-comparativa} resume los rasgos diferenciales de las
+métricas descritas. La columna \emph{Modalidad} distingue entre métricas
+léxicas, semánticas y neuronales; la columna
+\emph{Sensibilidad a sinónimos} valora la capacidad de capturar equivalencias
+léxico-semánticas que comparten significado pero no superficie. Todas las
+métricas recogidas requieren al menos un texto de referencia.
+
+\begin{table}[ht]
+	\centering
+	\footnotesize
+	\begin{tabular}{llll}
+		\hline
+		\textbf{Métrica} & \textbf{Modalidad} & \textbf{Granularidad}                  & \textbf{Sensibilidad a sinónimos} \\
+		\hline
+		BLEU             & Léxica             & \textit{n}-grama palabra               & Muy baja                          \\
+		METEOR           & Léxica/sem. ligera & Token + sinónimos                      & Media (vía recursos léxicos)      \\
+		TER              & Edición            & Palabra (operaciones)                  & Baja                              \\
+		BERTScore        & Semántica          & \textit{Token embeddings}              & Alta                              \\
+		COMET            & Neuronal           & Frase (modelo entrenado)               & Alta                              \\
+		chrF++           & Léxica             & \textit{n}-grama de carácter + palabra & Media (lenguas flexivas)          \\
+		\hline
+	\end{tabular}
+	\caption{Comparativa sintética de las métricas automáticas descritas en este
+		capítulo, con su modalidad, granularidad y sensibilidad a las
+		equivalencias por sinónimos.}
+	\label{tab:metricas-comparativa}
+\end{table}
 
 \subsection{Plataformas de evaluación}
 
-En la edición WebNLG+ 2020, los resultados de los modelos competidores con respecto a las métricas anteriores se integraron en plataformas de evaluación estandarizadas como GERBIL/BENG, que permiten comparar sistemas bajo condiciones homogéneas y mantener un \textit{leaderboard} reproducible.
+En la edición WebNLG+ 2020, los resultados de los modelos competidores con
+respecto a las métricas anteriores se integraron en plataformas de evaluación
+estandarizadas como GERBIL/BENG~\cite{GERBIL,Usbeck2015}, que permiten comparar
+sistemas bajo condiciones homogéneas y mantener un \textit{leaderboard}
+reproducible.
 
-\section{Tripletas RDF}
+\section{Planificación del trabajo}
+\label{sec:planificacion-trabajo}
 
-RDF (\textit{Resource Description Framework}) es un modelo de representación de datos basado en tripletas de la forma:
+El cronograma del Trabajo de Fin de Máster se sintetiza en la
+Figura~\ref{fig:gantt-cronograma}, que recoge los principales hitos: revisión
+del estado del arte, definición del catálogo de historias de usuario,
+iteraciones de desarrollo de la aplicación \texttt{lanbench}, integración del
+componente LLM, experimentación con los proveedores Groq y Google AI Studio,
+redacción de la memoria y depósito.
 
-\[
-(\text{Sujeto}, \text{Predicado}, \text{Objeto})
-\]
-
-Cada tripleta representa un hecho atómico e indivisible. Formalmente:
-
-\begin{itemize}
-    \item El \textbf{sujeto} es la entidad descrita.
-    \item El \textbf{predicado} representa una propiedad o relación.
-    \item El \textbf{objeto} es el valor de dicha propiedad o la entidad relacionada.
-\end{itemize}
-
-Cada componente se identifica mediante una URI (\textit{Uniform Resource Identifier}).
-
-\subsection{Ejemplo}
-
-La afirmación:
-
-\begin{quote}
-``Madrid es la capital de España''
-\end{quote}
-
-puede representarse como:
-
-\begin{verbatim}
-<http://dbpedia.org/resource/Spain>
-<http://dbpedia.org/ontology/capital>
-<http://dbpedia.org/resource/Madrid>
-\end{verbatim}
-
-\subsection{Ejemplo complejo y eventos n-arios}
-
-/* TODO Mejora
- * El ejemplo de introducción de RDF tiene que ser sencillo, no puedo explicar como se  * modela una agregación en RDF. Investigo si se utilizan eventos en WebNLG.
- */
-
-Considérese la afirmación:
-
-\begin{quote}
-``Plutón fue considerado planeta del sistema solar. Sin embargo, la Unión Astronómica Internacional lo reclasificó como planeta enano en 2006.''
-\end{quote}
-
-Este enunciado contiene múltiples hechos:
-
-\begin{enumerate}
-    \item Plutón forma parte del sistema solar.
-    \item La Unión Astronómica Internacional realizó una reclasificación.
-    \item Dicha reclasificación tuvo lugar en 2006.
-    \item El estatus previo era ``planeta''.
-    \item El nuevo estatus es ``planeta enano''.
-\end{enumerate}
-
-Para representar adecuadamente este fenómeno es necesario modelar un \textbf{evento n-ario}, por ejemplo \texttt{Pluto\_Reclassification\_2006}, que permita asociar múltiples atributos:
-
-\begin{verbatim}
-dbr:Pluto dbo:isPartOf dbr:Solar_System
-dbr:Pluto_Reclassification_2006 dbo:subject dbr:Pluto
-dbr:Pluto_Reclassification_2006 dbo:organisation dbr:International_Astronomical_Union
-dbr:Pluto_Reclassification_2006 dbo:year "2006"^^xsd:gYear
-dbr:Pluto dbo:type dbr:Dwarf_planet
-\end{verbatim}
-
-Los \textbf{eventos n-arios} son aquellos en los que intervienen varios participantes o atributos sirviendo para modelar relaciones múltiples. Si se tratara de modelar mediante relaciones binarias, se ocasionaría una pérdida de información, por tanto, estos conceptos sirven de nexo de unión equivaliendo a una agregación en el modelado de bases de datos.
-
-\section{Limitaciones de los modelos automáticos}
-
-Los modelos actuales basados en grandes modelos de lenguaje (LLMs) presentan diversas limitaciones:
-
-\begin{itemize}
-    \item \textbf{Errores semánticos}: mayor propensión a inconsistencias conceptuales.
-    \item \textbf{Pérdida de información}: omisión de hechos secundarios.
-    \item \textbf{Alucinaciones}: generación de información inexistente.
-    \item \textbf{Errores de contexto}: dificultad en la interpretación de referencias indirectas o ironía.
-\end{itemize}
-
-\section{Lenguajes naturales}
-
-Los lenguajes naturales son aquellos lenguajes desarrollados por humanos
-de forma espontánea, sin un proceso de diseño formal. No han sido planificados y permiten encapsular la complejidad a través de múltiples dependencias entre palabras. Las definiciones no dependen, como en la lógica, de unos axiomas, sino que constituyen declaraciones circulares en los que los humanos toleran la incompletitud y la inconsistencia.
-
-También se caracterizan por utilizar redundancias que evitan la pérdida de información cuando un mensaje queda incompleto, y permiten detectar inconsistencias. Son muy dependientes del contexto. Su evolución no está planificada sino que se deriva del desarrollo de una sociedad humana.
-
-\section{WebNLG}
-
-WebNLG~\cite{Gardent2017,Gardent2017acl} es un \textit{dataset} que relaciona conjuntos de
-tripletas RDF procedentes de DBpedia con verbalizaciones de su contenido en
-lenguaje natural, redactadas y verificadas manualmente. Su finalidad principal
-es servir de \textit{benchmark} estándar para entrenar, evaluar y comparar
-sistemas de generación de lenguaje natural (NLG), y en torno a él se han
-organizado tres campañas de evaluación competitiva:
-
-\begin{itemize}
-    \item \textbf{WebNLG 2017}~\cite{Gardent2017}: edición inicial, centrada
-    en la generación de texto en inglés a partir de conjuntos de hasta siete
-    tripletas de DBpedia. El corpus inglés, en su versión enriquecida,
-    comprende 25\,298 textos que describen 9\,674 conjuntos de tripletas
-    repartidos en 15 dominios~\cite{CastroFerreira2019}.
-    \item \textbf{WebNLG+ 2020}~\cite{CastroFerreira2020}: edición bilingüe
-    (inglés y ruso) y, por primera vez, \textbf{bidireccional}: junto a la
-    tarea de generación (RDF $\rightarrow$ texto) se introdujo una tarea de
-    análisis semántico (\textit{semantic parsing}, texto $\rightarrow$ RDF).
-    \item \textbf{WebNLG 2023}~\cite{Cripwell2023}: edición orientada a
-    lenguas con escasez de recursos (bretón, galés, irlandés y maltés, además
-    del ruso), con conjuntos de prueba traducidos profesionalmente desde el
-    inglés y datos de entrenamiento obtenidos por traducción automática.
-\end{itemize}
-
-\section{Dirección de la tarea}
-
-El desafío de WebNLG es la generación de texto a partir de tripletas RDF, y por esto para crear el \textit{benchmark} - ampliación que comprende este trabajo - se realiza esta tarea conjunto con la traducción de inglés a español sobre las entradas existentes. Sin embargo en el desafío el reto WebNLG+ 2020 también se incluyó la tarea inversa Text-to-RDF (semantic parsing).
-
-WebNLG v2023 tiene 25\,298 pares en inglés. En la versión de 2023 había 6 idiomas naturales: inglés, ruso, bretón, galés, irlandés y maltés. Han existido 3 versiones oficiales de WebNLG, la primera en 2017, la segunda en 2020 (inclusión del ruso) y la tercera en 2023 (inclusión de bretón, galés, irlandés y maltés).
+\begin{figure}[htbp]
+	\centering
+	\begin{ganttchart}[
+			time slot format=isodate,
+			x unit=0.06cm,
+			y unit chart=0.58cm,
+			hgrid,
+			vgrid={*{6}{draw=none}, dotted},
+			title label font=\scriptsize\bfseries,
+			title/.append style={fill=gray97},
+			group label font=\scriptsize\bfseries,
+			group label node/.append style={align=right, text width=5.6cm},
+			group height=0.25,
+			group/.append style={fill=gray45},
+			bar label font=\scriptsize,
+			bar label node/.append style={align=right, text width=5.6cm},
+			bar height=0.42,
+			bar/.append style={fill=gray75},
+			milestone label font=\scriptsize,
+			milestone label node/.append style={align=right, text width=5.6cm},
+			milestone height=0.45,
+			milestone/.append style={fill=black}
+		]{2026-02-03}{2026-06-30}
+		\gantttitlecalendar{year, month=shortname} \\
+		\ganttmilestone{Inicio del TFM}{2026-02-03} \\
+		\ganttgroup{Investigación y alcance}{2026-02-03}{2026-03-17} \\
+		\ganttbar{Estado del arte WebNLG y DBpedia}{2026-02-03}{2026-03-10} \\
+		\ganttbar{Análisis del corpus y extensión al español}{2026-02-17}{2026-03-17} \\
+		\ganttbar{Herramientas HITL, Toloka y validación}{2026-03-03}{2026-03-17} \\
+		\ganttgroup{Memoria y diseño previo}{2026-03-03}{2026-04-07} \\
+		\ganttbar{Capítulos base y enfoque metodológico}{2026-03-03}{2026-04-07} \\
+		\ganttbar{Historias de usuario, mapa y bocetos}{2026-03-17}{2026-04-07} \\
+		\ganttmilestone{Primer commit del repositorio}{2026-03-23} \\
+		\ganttgroup{Desarrollo de \texttt{lanbench}}{2026-03-23}{2026-05-21} \\
+		\ganttbar{Base: login, datasets y persistencia}{2026-03-23}{2026-04-16} \\
+		\ganttmilestone{Demo funcional inicial}{2026-04-16} \\
+		\ganttbar{Administración, anotación, revisión y XML}{2026-04-17}{2026-05-21} \\
+		\ganttbar{Pruebas automáticas, refactorización y Docker}{2026-04-16}{2026-05-21} \\
+		\ganttmilestone{Avance v0.2.0}{2026-05-19} \\
+		\ganttmilestone{Avance v0.3.x}{2026-05-21} \\
+		\ganttgroup{Integración LLM y experimentación}{2026-05-19}{2026-06-20} \\
+		\ganttbar{Credenciales, catálogo e integración Groq/Gemini}{2026-05-19}{2026-06-14} \\
+		\ganttbar{Experimento inicial con proveedores LLM}{2026-06-01}{2026-06-04} \\
+		\ganttbar{Evaluación, resultados y reproducibilidad}{2026-06-04}{2026-06-20} \\
+		\ganttmilestone{Avance v0.4.x}{2026-06-14} \\
+		\ganttmilestone{Experimento consolidado}{2026-06-20} \\
+		\ganttgroup{Cierre de memoria}{2026-04-16}{2026-06-30} \\
+		\ganttbar{Capítulos de aplicación y herramientas}{2026-04-16}{2026-06-16} \\
+		\ganttbar{Revisión final, figuras y anexos}{2026-06-14}{2026-06-20} \\
+		\ganttbar{Preparación de depósito y defensa}{2026-06-20}{2026-06-30}
+	\end{ganttchart}
+	\caption{Diagrama de Gantt del cronograma del Trabajo de Fin de Máster.}
+	\label{fig:gantt-cronograma}
+\end{figure}

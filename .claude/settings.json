@@ -41,7 +41,22 @@
             "Read(/tmp/lanbench/**)",
             "Read(C:/tmp/lanbench/**)",
             "WebFetch",
-            "WebSearch"
+            "WebSearch",
+            "Edit(//c/tmp/lanbench/memory/**)",
+            "Edit(/tmp/lanbench/memory/**)",
+            "Edit(C:/tmp/lanbench/memory/**)",
+            "Write(//c/tmp/lanbench/memory/**)",
+            "Write(/tmp/lanbench/memory/**)",
+            "Write(C:/tmp/lanbench/memory/**)",
+            "Edit(//c/tmp/lanbench/doc-planning/**)",
+            "Edit(/tmp/lanbench/doc-planning/**)",
+            "Edit(C:/tmp/lanbench/doc-planning/**)",
+            "Write(//c/tmp/lanbench/doc-planning/**)",
+            "Write(/tmp/lanbench/doc-planning/**)",
+            "Write(C:/tmp/lanbench/doc-planning/**)",
+            "Bash(pdflatex *)",
+            "Bash(latexmk *)",
+            "Bash(biber *)"
         ],
         "deny": [
             "Bash(> .claude/settings.json)",
@@ -75,9 +90,6 @@
             "Write(/tmp/lanbench/.claude/settings.json)",
             "Write(C:/tmp/lanbench/.claude/settings.json)"
         ],
-        "additionalDirectories": [
-            "\\tmp",
-            "C:/tmp/lanbench"
-        ]
+        "additionalDirectories": ["\\tmp", "C:/tmp/lanbench"]
     }
 }

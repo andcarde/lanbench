@@ -11,5 +11,65 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "SonarQube",
         "projectKey": "andcarde_lanbench"
-    }
+    },
+
+    // ===== LaTeX Workshop (TFM en memory/, compatible con Overleaf) =====
+    // El proyecto LaTeX vive en memory/ y se sube tal cual a Overleaf, que
+    // compila desde la raíz del proyecto (= contenido de memory/) con el
+    // documento principal include/plantilla_TFM.tex y rutas relativas a memory/.
+    // Aquí replicamos ese mismo comportamiento en local SIN tocar memory/:
+    //  - El raíz se detecta de forma fija a memory/include/plantilla_TFM.tex.
+    //  - TEXINPUTS/BIBINPUTS apuntan a memory/, así \input{include/...} y
+    //    \input{secciones/...} resuelven igual que en Overleaf.
+    //  - Los artefactos se generan en .texbuild/ (raíz del repo), NUNCA dentro
+    //    de memory/, para que la carpeta se mantenga limpia para Overleaf.
+    "latex-workshop.latex.search.rootFiles.include": [
+        "memory/include/plantilla_TFM.tex"
+    ],
+    "latex-workshop.latex.outDir": "%WORKSPACE_FOLDER%/.texbuild",
+    "latex-workshop.latex.tools": [
+        {
+            "name": "latexmk-tfm",
+            "command": "latexmk",
+            "args": [
+                "-pdf",
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {
+                "TEXINPUTS": "%WORKSPACE_FOLDER%/memory;",
+                "BIBINPUTS": "%WORKSPACE_FOLDER%/memory;",
+                "BSTINPUTS": "%WORKSPACE_FOLDER%/memory;"
+            }
+        }
+    ],
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "TFM (latexmk + biber)",
+            "tools": ["latexmk-tfm"]
+        }
+    ],
+    "latex-workshop.latex.recipe.default": "first",
+    "latex-workshop.view.pdf.viewer": "tab",
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.message.badbox.show": false,
+
+    // ===== LaTeX Utilities (TeXCount) =====
+    // El fichero raíz es memory/include/plantilla_TFM.tex, pero sus \input{...}
+    // son relativos a memory/ (igual que en Overleaf). LaTeX Utilities lanza
+    // texcount con cwd = directorio del raíz (memory/include/), por lo que sin
+    // ayuda no encuentra include/Preambulo, _DatosTFM, secciones/*, etc.
+    // -dir=.. sube el directorio de búsqueda de texcount a memory/.
+    "latex-utilities.countWord.args": [
+        "-merge",
+        "-inc",
+        "-incbib",
+        "-sub=none",
+        "-sum=1,1,1,1,1,1,1",
+        "-dir=..",
+        "%DOC%"
+    ]
 }

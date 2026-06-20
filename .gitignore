@@ -45,3 +45,15 @@ eslint-report.json
 # Documentación interna/local — no se publica en el remoto
 doc-agents/
 doc-planning/
+
+# Artefactos de compilación LaTeX (VS Code / LaTeX Workshop) — fuera de memory/
+.texbuild/
+# Por si algún proceso aún escribe artefactos dentro de memory/ (no debe subirse a Overleaf)
+memory/_build/
+
+# Scripts de la memoria del TFM
+scripts/memory
+
+# Artifacts de la memoria del TFM
+memory-release/
+memory-versions/
