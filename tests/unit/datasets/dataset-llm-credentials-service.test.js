@@ -27,6 +27,35 @@ function buildPermissionsRepo({ isAdmin = true, isOwned = false, llmMode = 'gene
 }
 
 /**
+ * Builds an in-memory custom-providers repository (US-36). Defaults to empty
+ * — built-in providers don't need this, so the stub is only consulted in the
+ * tests that exercise unknown provider ids.
+ * @param {Array<{ datasetId?:number, name:string, urlBase:string }>} [rows]
+ * @returns {Record<string, any>}
+ */
+function buildCustomProvidersRepo(rows = []) {
+    return {
+        async listByDataset(/** @type {*} */ _datasetId) { return rows; },
+        async findByName({ datasetId, name }) {
+            return rows.find(row =>
+                row.name === name
+                && (row.datasetId === undefined || row.datasetId === datasetId)
+            ) || null;
+        },
+        async create(payload) { rows.push(payload); return payload; },
+        async deleteByName({ datasetId, name }) {
+            const before = rows.length;
+            for (let i = rows.length - 1; i >= 0; i -= 1) {
+                const row = rows[i];
+                if (row.name === name && (row.datasetId === undefined || row.datasetId === datasetId))
+                    rows.splice(i, 1);
+            }
+            return { count: before - rows.length, credentialsRemoved: 0 };
+        }
+    };
+}
+
+/**
  * Builds a stateful in-memory credentials repository.
  * @param {Array<Record<string, any>>} [rows] - Seed rows (with apiKeyCipher).
  * @param {string} [llmMode] - Parent dataset llm_mode.
@@ -206,34 +235,63 @@ describe('dataset-llm-credentials-service (T4)', () => {
         assert.equal(result.error.includes('[REDACTED]'), true);
     });
 
-    it('saveCredential rejects an apiBase pointing to Groq website (console.groq.com / groq.com) with 400', async () => {
+    it('saveCredential derives apiBase from the built-in provider catalog regardless of any input apiBase (US-36)', async () => {
+        /** @type {any[]} */
+        const rows = [];
         const service = createDatasetLlmCredentialsService({
             datasetsPermissionsRepository: buildPermissionsRepo(),
-            credentialsRepository: buildCredentialsRepo(),
+            credentialsRepository: buildCredentialsRepo(rows),
             secretCrypto: crypto,
             llmClient: {}
         });
 
-        for (const apiBase of [
-            'https://console.groq.com/openai/v1',
-            'https://console.groq.com',
-            'https://groq.com',
-            'https://www.groq.com/openai/v1'
-        ]) {
-            await assert.rejects(
-                () => service.saveCredential(9, 1, { provider: 'groq', model: 'm', apiKey: 'k', apiBase }),
-                (/** @type {any} */ error) => {
-                    assert.equal(error.status, 400);
-                    assert.equal(error.code, 'invalid_payload');
-                    return true;
-                },
-                `expected reject for ${apiBase}`
-            );
-        }
+        // Any apiBase in the input is silently ignored: the URL is bound to the provider.
+        const ok = await service.saveCredential(9, 1, {
+            provider: 'groq',
+            model: 'm',
+            apiKey: 'k',
+            apiBase: 'https://console.groq.com/openai/v1'
+        });
 
-        // Sanity: the canonical API URL is still accepted.
-        const ok = await service.saveCredential(9, 1, { provider: 'groq', model: 'm', apiKey: 'k', apiBase: 'https://api.groq.com/openai/v1' });
         assert.equal(ok.apiBase, 'https://api.groq.com/openai/v1');
+        assert.equal(rows[0].apiBase, 'https://api.groq.com/openai/v1');
+    });
+
+    it('saveCredential rejects an unknown provider (not built-in, not registered) with 400', async () => {
+        const service = createDatasetLlmCredentialsService({
+            datasetsPermissionsRepository: buildPermissionsRepo(),
+            credentialsRepository: buildCredentialsRepo(),
+            customProvidersRepository: buildCustomProvidersRepo(),
+            secretCrypto: crypto,
+            llmClient: {}
+        });
+
+        await assert.rejects(
+            () => service.saveCredential(9, 1, { provider: 'bedrock', model: 'm', apiKey: 'k' }),
+            (/** @type {any} */ error) => {
+                assert.equal(error.status, 400);
+                assert.equal(error.code, 'invalid_payload');
+                return true;
+            }
+        );
+    });
+
+    it('saveCredential accepts a registered custom provider and derives its apiBase (US-36)', async () => {
+        /** @type {any[]} */
+        const rows = [];
+        const service = createDatasetLlmCredentialsService({
+            datasetsPermissionsRepository: buildPermissionsRepo(),
+            credentialsRepository: buildCredentialsRepo(rows),
+            customProvidersRepository: buildCustomProvidersRepo([
+                { datasetId: 1, name: 'self-hosted', urlBase: 'https://gateway.example.com/v1' }
+            ]),
+            secretCrypto: crypto,
+            llmClient: {}
+        });
+
+        const ok = await service.saveCredential(9, 1, { provider: 'self-hosted', model: 'mistral-7b', apiKey: 'sk-x' });
+        assert.equal(ok.apiBase, 'https://gateway.example.com/v1');
+        assert.equal(rows[0].apiBase, 'https://gateway.example.com/v1');
     });
 
     it('activate and delete reject an unknown provider with 404', async () => {
@@ -260,7 +318,7 @@ function buildModelCatalogStub({ models, error } = {}) {
     return {
         calls,
         supportsModelCatalog(/** @type {*} */ provider) {
-            return ['groq', 'google-ai-studio'].includes(String(provider));
+            return ['groq', 'google-ai-studio', 'openai-compatible', 'anthropic'].includes(String(provider));
         },
         async listModels(/** @type {*} */ options) {
             calls.push(options);
@@ -290,10 +348,10 @@ describe('dataset-llm-credentials-service — listProviderModels (US-35)', () =>
         assert.equal(catalog.calls[0].provider, 'groq');
     });
 
-    it('sin clave tecleada usa la credencial guardada (clave descifrada y apiBase)', async () => {
+    it('sin clave tecleada usa la credencial guardada y deriva el apiBase del proveedor (US-36)', async () => {
         const rows = [{
             provider: 'google-ai-studio',
-            apiBase: 'https://proxy.example.com/v1beta/openai',
+            apiBase: 'https://proxy.example.com/v1beta/openai', // legacy row: ignored now
             model: 'gemini-2.0-flash',
             apiKeyCipher: crypto.encryptSecret('stored-key-1234'),
             isActive: true
@@ -311,7 +369,8 @@ describe('dataset-llm-credentials-service — listProviderModels (US-35)', () =>
 
         assert.equal(result.ok, true);
         assert.equal(catalog.calls[0].apiKey, 'stored-key-1234');
-        assert.equal(catalog.calls[0].apiBase, 'https://proxy.example.com/v1beta/openai');
+        // The apiBase is now always the canonical built-in URL, not the legacy row value.
+        assert.equal(catalog.calls[0].apiBase, 'https://generativelanguage.googleapis.com/v1beta/openai');
     });
 
     it('sin clave tecleada ni credencial guardada responde 400', async () => {
@@ -330,16 +389,17 @@ describe('dataset-llm-credentials-service — listProviderModels (US-35)', () =>
         });
     });
 
-    it('rechaza con 400 un proveedor sin catálogo consultable (anthropic)', async () => {
+    it('rechaza con 400 un proveedor que no está registrado en el dataset', async () => {
         const service = createDatasetLlmCredentialsService({
             datasetsPermissionsRepository: buildPermissionsRepo(),
             credentialsRepository: buildCredentialsRepo(),
+            customProvidersRepository: buildCustomProvidersRepo(),
             secretCrypto: crypto,
             llmClient: {},
             modelCatalog: buildModelCatalogStub()
         });
 
-        await assert.rejects(() => service.listProviderModels(9, 1, { provider: 'anthropic', apiKey: 'k' }), (/** @type {any} */ error) => {
+        await assert.rejects(() => service.listProviderModels(9, 1, { provider: 'bedrock', apiKey: 'k' }), (/** @type {any} */ error) => {
             assert.equal(error.status, 400);
             return true;
         });

@@ -302,6 +302,8 @@ The *Nuevo dataset* form persists six options on the dataset:
 | **Revisión** | `Dataset.isReviewEnabled` | `false` | When `false`, US-13 is skipped for this dataset. |
 | **Revisiones adicionales tras corrección** | `Dataset.hasAdditionalReviews` | `false` | Reserved for additional review rounds (column persisted but inert today). |
 
+Terminology: `Dataset.llmMode` is the application field and `llm_mode` is the persisted/API naming used where that layer is being described. The canonical technical values are `none`, `correction` and `generation`; `generation` is the value for the automatic generation mode and should not be renamed to `creative`.
+
 **Functional rules — invariants.**
 
 The last three options are coupled by two invariants enforced in the UI and **normalised defensively** server-side (`normalizeDatasetCreationOptions`). Policy: **normalise, never reject** — a crafted request that violates the rules is silently coerced to the valid combination, so an illegal state can never be persisted.

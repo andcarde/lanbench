@@ -801,7 +801,7 @@ describe('buildFeedbackEntry', () => {
 });
 
 describe('buildReviewContextDTO', () => {
-    it('expone catalogos de frase y review, aplana triples y filtra lex inglesas', () => {
+    it('expone catalogos de frase y review, usa solo triples modified y filtra lex inglesas', () => {
         const dto = buildReviewContextDTO({
             review: { id: 1, entryId: 2, reviewerId: 3, annotatorId: 4, status: REVIEW_PENDING, assignedAt: new Date(), expiresAt: new Date(), completedAt: null },
             entry: {
@@ -823,7 +823,12 @@ describe('buildReviewContextDTO', () => {
             annotatorEmail: 'ana@lanbench.dev'
         });
 
-        assert.equal(dto.triples.length, 2);
+        assert.deepEqual(dto.triples, [{
+            subject: 'C',
+            predicate: 'p',
+            object: 'D',
+            triplesetType: 'modified'
+        }]);
         assert.deepEqual(dto.englishSentences, ['hello']);
         assert.equal(dto.phraseCriteria.length, 5);
         assert.equal(dto.reviewCriteria.length, 1);

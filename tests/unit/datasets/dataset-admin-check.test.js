@@ -9,7 +9,7 @@
 const assert = require('node:assert/strict');
 const testApi = require('node:test');
 
-const { buildCheckResultText } = require('../../../public/js/dataset-admin');
+const { buildCheckFailureText, buildCheckResultText } = require('../../../public/js/dataset-admin');
 const { createDatasetLlmCredentialsController } = require('../../../controllers/dataset-llm-credentials-controller');
 
 const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || testApi.describe);
@@ -43,6 +43,29 @@ describe('credential check — buildCheckResultText (modal text)', () => {
         assert.equal(buildCheckResultText({ ok: false }), 'Error: el modelo no respondió.');
         assert.equal(buildCheckResultText(null), 'Error: el modelo no respondió.');
         assert.equal(buildCheckResultText(undefined), 'Error: el modelo no respondió.');
+    });
+});
+
+describe('credential check — buildCheckFailureText (modal text)', () => {
+    it('returns a five-second timeout message for frontend timeouts', () => {
+        assert.equal(
+            buildCheckFailureText(null, 'timeout'),
+            'Error: la comprobación ha superado el tiempo máximo de 5 segundos.'
+        );
+    });
+
+    it('returns the server transport error when available', () => {
+        assert.equal(
+            buildCheckFailureText({ responseJSON: { message: 'servicio no disponible' } }, 'error'),
+            'Error: servicio no disponible'
+        );
+    });
+
+    it('falls back to a generic transport error', () => {
+        assert.equal(
+            buildCheckFailureText(null, 'error'),
+            'Error: no se pudo comprobar la credencial.'
+        );
     });
 });
 

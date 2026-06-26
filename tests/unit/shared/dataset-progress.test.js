@@ -60,6 +60,25 @@ describe('dataset-progress', () => {
         });
     });
 
+    it('usa el conteo real de entries revisadas cuando esta disponible', () => {
+        const progress = calculatePercentagesFromSectionCounters({
+            sectionsCompleted: 0,
+            sectionsInReview: 3,
+            sectionsPending: 0,
+            reviewEnabled: true,
+            annotatedEntries: 99,
+            reviewedEntries: 41,
+            totalEntries: 99,
+            sectionSize: 33
+        });
+
+        assert.deepEqual(progress, {
+            completed: 41,
+            withoutReview: 59,
+            remaining: 0
+        });
+    });
+
     it('cae a calculo por secciones cuando no se conocen entries anotadas', () => {
         const progress = calculatePercentagesFromSectionCounters({
             sectionsCompleted: 1,

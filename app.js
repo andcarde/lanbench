@@ -43,6 +43,7 @@ const {
 const { createAutoAnnotationController } = require('./controllers/auto-annotation-controller');
 const { createDatasetsController } = require('./controllers/datasets-controller');
 const { createDatasetLlmCredentialsController } = require('./controllers/dataset-llm-credentials-controller');
+const { createDatasetCustomProvidersController } = require('./controllers/dataset-custom-providers-controller');
 const { createAdminController } = require('./controllers/admin-controller');
 const { createUsersController } = require('./controllers/users-controller');
 const { createReviewsController } = require('./controllers/reviews-controller');
@@ -52,6 +53,7 @@ const { createAutoAnnotationService } = require('./services/auto-annotation-serv
 const { createMeStatisticsService } = require('./services/me-statistics-service');
 const { createDatasetsService } = require('./services/datasets-service');
 const { createDatasetLlmCredentialsService } = require('./services/dataset-llm-credentials-service');
+const { createDatasetCustomProvidersService } = require('./services/dataset-custom-providers-service');
 const { createDatasetsPermissionsService } = require('./services/datasets-permissions-service');
 const { createDatasetsStatisticsService } = require('./services/datasets-statistics-service');
 const { createAdminService } = require('./services/admin-service');
@@ -80,6 +82,9 @@ const {
 const {
     createDatasetLlmCredentialsRepository,
 } = require('./repositories/dataset-llm-credentials-repository');
+const {
+    createDatasetCustomProvidersRepository,
+} = require('./repositories/dataset-custom-providers-repository');
 const { warnIfDatabaseInactive } = require('./utils/database-health');
 
 /**
@@ -89,6 +94,7 @@ const { warnIfDatabaseInactive } = require('./utils/database-health');
  * @property {ReturnType<typeof createAutoAnnotationController>} autoAnnotationController
  * @property {ReturnType<typeof createDatasetsController>} datasetsController
  * @property {ReturnType<typeof createDatasetLlmCredentialsController>} datasetLlmCredentialsController
+ * @property {ReturnType<typeof createDatasetCustomProvidersController>} datasetCustomProvidersController
  * @property {ReturnType<typeof createAdminController>} adminController
  * @property {ReturnType<typeof createReviewsController>} reviewsController
  * @property {ReturnType<typeof createUsersController>} usersController
@@ -127,6 +133,7 @@ function createControllers(overrides = {}) {
     const datasetsPermissionsRepository = createDatasetsPermissionsRepository();
     const datasetsStatisticsRepository = createDatasetsStatisticsRepository();
     const datasetLlmCredentialsRepository = createDatasetLlmCredentialsRepository();
+    const datasetCustomProvidersRepository = createDatasetCustomProvidersRepository();
     const datasetsService = createDatasetsService({
         datasetsRepository,
         datasetsPermissionsRepository,
@@ -145,6 +152,12 @@ function createControllers(overrides = {}) {
     const datasetLlmCredentialsService = createDatasetLlmCredentialsService({
         datasetsPermissionsRepository,
         credentialsRepository: datasetLlmCredentialsRepository,
+        customProvidersRepository: datasetCustomProvidersRepository,
+    });
+
+    const datasetCustomProvidersService = createDatasetCustomProvidersService({
+        datasetsPermissionsRepository,
+        customProvidersRepository: datasetCustomProvidersRepository,
     });
 
     return {
@@ -182,6 +195,11 @@ function createControllers(overrides = {}) {
             overrides.datasetLlmCredentialsController ||
             createDatasetLlmCredentialsController({
                 datasetLlmCredentialsService,
+            }),
+        datasetCustomProvidersController:
+            overrides.datasetCustomProvidersController ||
+            createDatasetCustomProvidersController({
+                datasetCustomProvidersService,
             }),
         adminController:
             overrides.adminController ||
@@ -242,6 +260,7 @@ function createApp({
         createDatasetsApiRouter({
             datasetsController: controllers.datasetsController,
             datasetLlmCredentialsController: controllers.datasetLlmCredentialsController,
+            datasetCustomProvidersController: controllers.datasetCustomProvidersController,
         })
     );
     app.use(

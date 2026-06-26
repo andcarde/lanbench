@@ -60,8 +60,24 @@ describe('llm-client dispatch (T5)', () => {
 
         await dispatcher.generateJson({ prompt: 'p', providerConfig: { provider: 'groq', model: 'llama', apiKey: 'k', apiBase: 'https://b' } });
         assert.equal(sink[0].name, 'openai-compatible');
-        assert.equal(sink[0].options.providerName, 'groq');
+        // Built-in providers use their canonical label as providerName (US-36 unification).
+        assert.equal(sink[0].options.providerName, 'Groq');
         assert.equal(sink[0].options.apiBase, 'https://b');
+    });
+
+    it('routes a user-defined provider through the OpenAI-compatible client with its explicit apiBase (US-36)', async () => {
+        /** @type {any[]} */
+        const sink = [];
+        const dispatcher = loadDispatcher({ model: 'cloud' }, sink);
+
+        await dispatcher.generateJson({
+            prompt: 'p',
+            providerConfig: { provider: 'self-hosted', model: 'mistral-7b', apiKey: 'k', apiBase: 'https://gateway.example.com/v1' }
+        });
+
+        assert.equal(sink[0].name, 'openai-compatible');
+        assert.equal(sink[0].options.providerName, 'self-hosted');
+        assert.equal(sink[0].options.apiBase, 'https://gateway.example.com/v1');
     });
 
     it('routes google-ai-studio to the generic client with Google\'s OpenAI-compat apiBase by default (US-35)', async () => {
@@ -77,6 +93,20 @@ describe('llm-client dispatch (T5)', () => {
         // An explicit apiBase still wins over the default.
         await dispatcher.generateText({ prompt: 'p', providerConfig: { provider: 'google-ai-studio', model: 'gemini-2.0-flash', apiKey: 'k', apiBase: 'https://proxy.example.com' } });
         assert.equal(sink[1].options.apiBase, 'https://proxy.example.com');
+    });
+
+    it('routes openai-compatible to OpenAI by default and lets apiBase override it', async () => {
+        /** @type {any[]} */
+        const sink = [];
+        const dispatcher = loadDispatcher({ model: 'cloud' }, sink);
+
+        await dispatcher.generateJson({ prompt: 'p', providerConfig: { provider: 'openai-compatible', model: 'gpt-4o-mini', apiKey: 'k' } });
+        assert.equal(sink[0].name, 'openai-compatible');
+        assert.equal(sink[0].options.providerName, 'OpenAI-compatible');
+        assert.equal(sink[0].options.apiBase, 'https://api.openai.com/v1');
+
+        await dispatcher.generateText({ prompt: 'p', providerConfig: { provider: 'openai-compatible', model: 'custom', apiKey: 'k', apiBase: 'https://router.example.com/v1' } });
+        assert.equal(sink[1].options.apiBase, 'https://router.example.com/v1');
     });
 
     it('routes local/ollama providerConfig to the ollama client, mapping apiBase to host', async () => {

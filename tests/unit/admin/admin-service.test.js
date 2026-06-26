@@ -50,8 +50,8 @@ describe('admin-service (E5)', () => {
             disputedEntries: 1,
             activeAssignments: 1,
             progress: {
-                completed: 40,
-                withoutReview: 20,
+                completed: 41,
+                withoutReview: 19,
                 remaining: 40
             },
             updatedAt: '2026-04-25T10:00:00.000Z'

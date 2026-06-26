@@ -11,7 +11,7 @@
             crossorigin="anonymous"
         />
         <link rel="stylesheet" href="/css/toolbar.css" />
-        <link rel="stylesheet" href="/css/dataset-admin.css" />
+        <link rel="stylesheet" href="/css/dataset-admin.css?v=us36-3" />
     </head>
     <body>
         <main class="container py-4">
@@ -167,7 +167,16 @@
             </div>
 
             <section class="llm-credentials-panel mb-4 d-none" id="llmCredentialsPanel">
-                <h2 class="h5 mb-1">Credenciales de IA</h2>
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-1 flex-wrap">
+                    <h2 class="h5 mb-0">Credenciales de IA</h2>
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        id="btnOpenAddCustomProvider"
+                    >
+                        Añadir proveedor
+                    </button>
+                </div>
                 <p class="text-muted">
                     Registra una clave por proveedor para este dataset. La clave
                     se guarda cifrada y nunca se muestra completa.
@@ -178,22 +187,29 @@
                     class="row g-2 align-items-end"
                     autocomplete="off"
                 >
-                    <div class="col-12 col-md-3">
-                        <label class="form-label mb-1" for="credProvider"
+                    <div class="col-12 col-md-4">
+                        <label class="form-label mb-1" for="credProviderToggle"
                             >Proveedor</label
                         >
-                        <select class="form-select" id="credProvider">
-                            <option value="groq">Groq</option>
-                            <option value="google-ai-studio">
-                                Google AI Studio
-                            </option>
-                            <option value="openai-compatible">
-                                OpenAI-compatible
-                            </option>
-                            <option value="anthropic">Anthropic</option>
-                        </select>
+                        <div class="dropdown" id="credProviderDropdown">
+                            <button
+                                class="form-select text-start dropdown-toggle"
+                                type="button"
+                                id="credProviderToggle"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                data-provider=""
+                            >
+                                Selecciona un proveedor
+                            </button>
+                            <ul
+                                class="dropdown-menu w-100 provider-menu"
+                                id="credProviderMenu"
+                                aria-labelledby="credProviderToggle"
+                            ></ul>
+                        </div>
                     </div>
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-5">
                         <label class="form-label mb-1" for="credModelSelect"
                             >Modelo</label
                         >
@@ -213,29 +229,11 @@
                                 &#x21bb;
                             </button>
                         </div>
-                        <input
-                            type="text"
-                            class="form-control d-none"
-                            id="credModel"
-                            placeholder="llama-3.3-70b-versatile"
-                            aria-label="Modelo (entrada manual)"
-                        />
                         <div
                             class="form-text d-none"
                             id="credModelStatus"
                             aria-live="polite"
                         ></div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label mb-1" for="credApiBase"
-                            >URL base (opcional)</label
-                        >
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="credApiBase"
-                            placeholder="https://api.groq.com/openai/v1"
-                        />
                     </div>
                     <div class="col-12 col-md-2">
                         <label class="form-label mb-1" for="credApiKey"
@@ -303,6 +301,141 @@
                     </button>
                 </div>
             </section>
+
+            <div
+                class="modal fade"
+                id="modalAddCustomProvider"
+                tabindex="-1"
+                aria-labelledby="modalAddCustomProviderLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form id="addCustomProviderForm" autocomplete="off" novalidate>
+                            <div class="modal-header">
+                                <h5
+                                    class="modal-title"
+                                    id="modalAddCustomProviderLabel"
+                                >
+                                    Añadir proveedor
+                                </h5>
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Cerrar"
+                                ></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="customProviderName"
+                                        >Nombre del proveedor</label
+                                    >
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="customProviderName"
+                                        maxlength="40"
+                                        required
+                                    />
+                                    <div
+                                        class="invalid-feedback d-none"
+                                        id="customProviderNameError"
+                                    ></div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="customProviderUrl"
+                                        >URL del proveedor</label
+                                    >
+                                    <input
+                                        type="url"
+                                        class="form-control"
+                                        id="customProviderUrl"
+                                        maxlength="255"
+                                        placeholder="https://api.example.com/v1"
+                                        required
+                                    />
+                                    <div
+                                        class="invalid-feedback d-none"
+                                        id="customProviderUrlError"
+                                    ></div>
+                                </div>
+                                <div
+                                    class="alert d-none mb-0"
+                                    id="customProviderMessage"
+                                    role="alert"
+                                ></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    id="btnCancelAddCustomProvider"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                    id="btnConfirmAddCustomProvider"
+                                >
+                                    Aceptar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="modal fade"
+                id="modalDeleteCustomProvider"
+                tabindex="-1"
+                aria-labelledby="modalDeleteCustomProviderLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5
+                                class="modal-title"
+                                id="modalDeleteCustomProviderLabel"
+                            >
+                                Eliminar proveedor
+                            </h5>
+                            <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"
+                            ></button>
+                        </div>
+                        <div class="modal-body" id="modalDeleteCustomProviderBody">
+                            ¿Está seguro de eliminar el proveedor?
+                            <div class="form-text text-muted mt-2">
+                                Se eliminará también las credenciales asociadas.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                            >
+                                No
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-danger"
+                                id="btnConfirmDeleteCustomProvider"
+                            >
+                                Sí
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div
                 class="modal fade"
@@ -517,10 +650,10 @@
         ></script>
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmBlmZ5n0iHiXkBJ3oFbRV4OMHF"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"
         ></script>
         <script src="/js/toolbar.js"></script>
-        <script src="/js/dataset-admin.js"></script>
+        <script src="/js/dataset-admin.js?v=us36-3"></script>
     </body>
 </html>

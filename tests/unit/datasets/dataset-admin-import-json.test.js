@@ -24,11 +24,13 @@ describe('credentials JSON import — mapJsonProviderToKey', () => {
         assert.equal(mapJsonProviderToKey('groq'), 'groq');
         assert.equal(mapJsonProviderToKey('OpenAI-compatible'), 'openai-compatible');
         assert.equal(mapJsonProviderToKey('  openai-compatible  '), 'openai-compatible');
+        assert.equal(mapJsonProviderToKey('OpenAI'), 'openai-compatible');
+        assert.equal(mapJsonProviderToKey('OpenIA'), 'openai-compatible');
         assert.equal(mapJsonProviderToKey('Anthropic'), 'anthropic');
     });
 
     it('devuelve null para proveedores desconocidos o no string', () => {
-        assert.equal(mapJsonProviderToKey('openai'), null);
+        assert.equal(mapJsonProviderToKey('bedrock'), null);
         assert.equal(mapJsonProviderToKey(''), null);
         assert.equal(mapJsonProviderToKey(null), null);
         assert.equal(mapJsonProviderToKey(undefined), null);
@@ -86,7 +88,7 @@ describe('credentials JSON import — parseCredentialsJson', () => {
 
     it('reporta un error por cada proveedor inválido y no incluye la entrada', () => {
         const raw = JSON.stringify([
-            { proveedor: 'OpenAI', modelo: 'gpt-4', api_key: 'sk-xxx' },
+            { proveedor: 'Bedrock', modelo: 'claude', api_key: 'aws-xxx' },
             { proveedor: 'Groq', modelo: 'llama-3.3', api_key: 'gsk_yyy' }
         ]);
 
@@ -97,7 +99,7 @@ describe('credentials JSON import — parseCredentialsJson', () => {
         assert.equal(errors.length, 1);
         assert.match(errors[0], /Elemento 1/);
         assert.match(errors[0], /proveedor inválido/);
-        assert.match(errors[0], /OpenAI/);
+        assert.match(errors[0], /Bedrock/);
     });
 
     it('reporta los campos obligatorios faltantes', () => {

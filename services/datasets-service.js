@@ -88,12 +88,16 @@ function createDatasetsService({
         const reviewableCounts = await getReviewableCountsForDatasets(userId, datasetRows);
         const selfAnnotatedCounts = await getSelfAnnotatedReviewableCountsForDatasets(userId, datasetRows);
         const annotatedEntryCounts = await getAnnotatedEntryCountsForDatasets(datasetRows);
+        const reviewedEntryCounts = await getReviewedEntryCountsForDatasets(datasetRows);
         const activeCredentialIds = await getActiveCredentialDatasetIds(datasetRows);
         return datasetRows.map((/** @type {*} */ row) => mapDatasetRecordToSource(row, {
             reviewableCount: reviewableCounts.get(row.id) || 0,
             selfAnnotatedReviewableCount: selfAnnotatedCounts.get(row.id) || 0,
             annotatedEntries: annotatedEntryCounts.has(row.id)
                 ? annotatedEntryCounts.get(row.id)
+                : null,
+            reviewedEntries: reviewedEntryCounts.has(row.id)
+                ? reviewedEntryCounts.get(row.id)
                 : null,
             hasActiveCredential: activeCredentialIds.has(Number(row.id))
         }));
@@ -139,6 +143,39 @@ function createDatasetsService({
             return new Map();
 
         const rows = await deps.datasetsRepository.countAnnotatedEntriesByDataset({ datasetIds });
+        const counts = new Map();
+
+        for (const datasetId of datasetIds)
+            counts.set(datasetId, 0);
+
+        for (const row of rows || []) {
+            const datasetId = Number(row?.datasetId);
+            const count = Number(row?.count);
+            if (!Number.isInteger(datasetId) || datasetId <= 0)
+                continue;
+            counts.set(datasetId, Number.isFinite(count) && count > 0 ? Math.floor(count) : 0);
+        }
+
+        return counts;
+    }
+
+    /**
+     * Gets the number of terminally reviewed entries per dataset.
+     * @param {Array<*>} datasetRows - Accessible datasets.
+     * @returns {Promise<Map<number, number>>} Counts per dataset.
+     */
+    async function getReviewedEntryCountsForDatasets(datasetRows) {
+        if (typeof deps.datasetsRepository.countReviewedEntriesByDataset !== 'function')
+            return new Map();
+
+        const datasetIds = (datasetRows || [])
+            .map(row => Number(row?.id))
+            .filter(datasetId => Number.isInteger(datasetId) && datasetId > 0);
+
+        if (!datasetIds.length)
+            return new Map();
+
+        const rows = await deps.datasetsRepository.countReviewedEntriesByDataset({ datasetIds });
         const counts = new Map();
 
         for (const datasetId of datasetIds)
@@ -250,6 +287,7 @@ function createDatasetsService({
             throw ServiceError.datasetNotFound();
 
         const annotatedEntryCounts = await getAnnotatedEntryCountsForDatasets([datasetRow]);
+        const reviewedEntryCounts = await getReviewedEntryCountsForDatasets([datasetRow]);
         // Compute the reviewable count for this dataset too, so the single-dataset
         // DTO reports `review.reviewAvailable` consistently with the list endpoint
         // (otherwise a freshly reviewable section would never surface the Revisión
@@ -261,6 +299,9 @@ function createDatasetsService({
             mapDatasetRecordToSource(datasetRow, {
                 annotatedEntries: annotatedEntryCounts.has(datasetRow.id)
                     ? annotatedEntryCounts.get(datasetRow.id)
+                    : null,
+                reviewedEntries: reviewedEntryCounts.has(datasetRow.id)
+                    ? reviewedEntryCounts.get(datasetRow.id)
                     : null,
                 reviewableCount: reviewableCounts.get(datasetRow.id) || 0,
                 selfAnnotatedReviewableCount: selfAnnotatedCounts.get(datasetRow.id) || 0,
@@ -768,10 +809,10 @@ function flattenPersistedTriplesets(triplesets, type) {
 /**
  * Flattens an enriched dataset row into the base object used by the DTO mappers.
  * @param {*} datasetRow - Persisted dataset row.
- * @param {*} [options] - Additional counts computed separately (reviewableCount, annotatedEntries).
+ * @param {*} [options] - Additional counts computed separately (reviewableCount, annotatedEntries, reviewedEntries).
  * @returns {*} Base object for building DTOs.
  */
-function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, selfAnnotatedReviewableCount = 0, annotatedEntries = /** @type {*} */ (null), hasActiveCredential } = {}) {
+function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, selfAnnotatedReviewableCount = 0, annotatedEntries = /** @type {*} */ (null), reviewedEntries = /** @type {*} */ (null), hasActiveCredential } = {}) {
     const isReviewEnabled = Boolean(datasetRow.isReviewEnabled);
     const percentages = calculatePercentagesFromSectionCounters({
         sectionsCompleted: datasetRow.sectionsCompleted,
@@ -779,6 +820,7 @@ function mapDatasetRecordToSource(datasetRow, { reviewableCount = 0, selfAnnotat
         sectionsPending: datasetRow.sectionsPending,
         reviewEnabled: isReviewEnabled,
         annotatedEntries,
+        reviewedEntries,
         totalEntries: datasetRow.totalEntries,
         sectionSize: resolveSectionSize(datasetRow)
     });

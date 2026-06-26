@@ -19,6 +19,7 @@ const ollamaClient = require('./ollama-client');
 const groqClient = require('./groq-client');
 const openaiCompatibleClient = require('./openai-compatible-client');
 const anthropicClient = require('./anthropic-client');
+const { getBuiltinProvider } = require('../constants/llm-providers');
 
 /**
  * Google AI Studio's OpenAI-compatibility endpoint (US-35). It accepts the
@@ -26,9 +27,15 @@ const anthropicClient = require('./anthropic-client');
  * can talk to Gemini models without a dedicated adapter.
  */
 const GOOGLE_AI_STUDIO_OPENAI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/openai';
+/** Official OpenAI API base for OpenAI-compatible credentials with no custom proxy URL. */
+const OPENAI_API_BASE = 'https://api.openai.com/v1';
 
 /**
  * Resolves the client and per-call options for an explicit `providerConfig`.
+ *
+ * Any provider name that is not built-in (US-36 user-defined providers) is
+ * routed through the OpenAI-compatible client with the explicit `apiBase`
+ * resolved upstream by the credentials service.
  *
  * @param {Record<string, any>} providerConfig - `{ provider, apiBase?, model, apiKey, timeoutMs? }`.
  * @returns {{ client: { generateJson: Function, generateText: Function }, options: Record<string, any> }}
@@ -56,8 +63,20 @@ function resolveProviderRouting(providerConfig) {
         };
     }
 
-    // 'openai-compatible', 'groq' and any other OpenAI-shaped provider.
-    return { client: openaiCompatibleClient, options: { ...baseOptions, apiBase: providerConfig.apiBase, providerName: providerConfig.provider } };
+    if (provider === 'openai-compatible') {
+        return {
+            client: openaiCompatibleClient,
+            options: { ...baseOptions, apiBase: providerConfig.apiBase || OPENAI_API_BASE, providerName: 'OpenAI-compatible' }
+        };
+    }
+
+    // 'groq' (built-in, default apiBase from config) plus any user-defined
+    // provider (US-36): both reach the OpenAI-compatible client. For
+    // user-defined providers `providerConfig.apiBase` is mandatory and was
+    // resolved by the credentials service from the dataset's `DatasetCustomProvider`.
+    const builtin = getBuiltinProvider(provider);
+    const providerName = builtin ? builtin.label : (providerConfig.provider || 'custom-provider');
+    return { client: openaiCompatibleClient, options: { ...baseOptions, apiBase: providerConfig.apiBase, providerName } };
 }
 
 /**

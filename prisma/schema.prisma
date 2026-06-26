@@ -40,6 +40,7 @@ model Dataset {
   sectionAssignments SectionAssignment[]
   activeSessions     ActiveSession[]
   llmCredentials     DatasetLlmCredential[]
+  customProviders    DatasetCustomProvider[]
 
   @@map("datasets")
 }
@@ -61,6 +62,19 @@ model DatasetLlmCredential {
   @@unique([datasetId, provider], map: "uq_dataset_llm_credentials_dataset_provider")
   @@index([datasetId], map: "idx_dataset_llm_credentials_dataset")
   @@map("dataset_llm_credentials")
+}
+
+model DatasetCustomProvider {
+  datasetId Int      @map("dataset_id")
+  name      String   @db.VarChar(40)
+  urlBase   String   @map("url_base") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.DateTime(0)
+
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([datasetId, name])
+  @@index([datasetId], map: "idx_dataset_custom_providers_dataset")
+  @@map("dataset_custom_providers")
 }
 
 model ActiveSession {

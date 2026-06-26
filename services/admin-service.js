@@ -268,6 +268,7 @@ function mapDatasetSummary(summary) {
             sectionsPending: summary.sectionsPending,
             reviewEnabled: Boolean(summary.isReviewEnabled),
             annotatedEntries: toIntegerNormalized(summary.annotatedEntries),
+            reviewedEntries: toIntegerNormalized(summary.reviewedEntries) + toIntegerNormalized(summary.disputedEntries),
             totalEntries: toIntegerNormalized(summary.totalEntries),
             sectionSize: resolveSectionSize(summary)
         }),
@@ -288,6 +289,11 @@ function mapDatasetExport(dataset, exportedAt) {
             count + (Array.isArray(entry.annotations) && entry.annotations.length > 0 ? 1 : 0),
         0
     );
+    const reviewedEntries = (dataset.entries || []).reduce(
+        (/** @type {number} */ count, /** @type {*} */ entry) =>
+            count + (entry.status === 'reviewed' || entry.status === 'disputed' ? 1 : 0),
+        0
+    );
 
     return {
         exportedAt,
@@ -301,6 +307,7 @@ function mapDatasetExport(dataset, exportedAt) {
                 sectionsPending: dataset.sectionsPending,
                 reviewEnabled: Boolean(dataset.isReviewEnabled),
                 annotatedEntries,
+                reviewedEntries,
                 totalEntries: toIntegerNormalized(dataset.totalEntries),
                 sectionSize: resolveSectionSize(dataset)
             })

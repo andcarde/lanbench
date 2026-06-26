@@ -1,0 +1,3263 @@
+{
+  "meta": {
+    "source": "documentation/eval-output/experiment-dataset-gemini-2.5-flash-annotated.xml",
+    "description": "Spanish annotations produced by Gemini 2.5 Flash for the experiment-2-user dataset (before human review).",
+    "annotator": "Gemini 2.5 Flash",
+    "totalEntries": 99,
+    "exportedAt": "2026-06-25T06:51:20.524Z"
+  },
+  "entries": [
+    {
+      "eid": 1,
+      "category": "Place",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab"
+      ],
+      "modifiedTripleset": [
+        "Punjab,_Pakistan | leaderTitle | Provincial_Assembly_of_the_Punjab"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Punjab, Pakistan, is led by the Provincial Assembly of the Punjab."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Punyab, Pakistán, es liderado por la Asamblea Provincial del Punyab."
+        }
+      ]
+    },
+    {
+      "eid": 2,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Texas | capital | Austin,_Texas"
+      ],
+      "modifiedTripleset": [
+        "Texas | capital | Austin,_Texas"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Austin is the capital of Texas."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Austin es la capital de Texas."
+        }
+      ]
+    },
+    {
+      "eid": 3,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Texas | demonym | Tejano"
+      ],
+      "modifiedTripleset": [
+        "Texas | demonym | Tejano"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Texas demonym is Tejano."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El gentilicio de Texas es Tejano."
+        }
+      ]
+    },
+    {
+      "eid": 4,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Uttar_Pradesh | isPartOf | Awadh"
+      ],
+      "modifiedTripleset": [
+        "Uttar_Pradesh | isPartOf | Awadh"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Uttar Pradesh is part of Awadh."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Uttar Pradesh es parte de Awadh."
+        }
+      ]
+    },
+    {
+      "eid": 5,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | nationality | United_States"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | nationality | United_States"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Willian Anders has a nationality that is of the United States."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders es de nacionalidad estadounidense."
+        }
+      ]
+    },
+    {
+      "eid": 6,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | title | United_States_Ambassador_to_Norway"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | title | United_States_Ambassador_to_Norway"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders serves as Ambassador to Norway in the United States."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders es el Embajador de los Estados Unidos en Noruega."
+        }
+      ]
+    },
+    {
+      "eid": 7,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "South_Africa | demonym | South_Africa"
+      ],
+      "modifiedTripleset": [
+        "South_Africa | demonym | South_Africa"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "People from South Africa can say they are from South Africa."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El gentilicio de Sudáfrica es Sudáfrica."
+        }
+      ]
+    },
+    {
+      "eid": 8,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Sri_Lanka | leader | Ranil_Wickremesinghe"
+      ],
+      "modifiedTripleset": [
+        "Sri_Lanka | leader | Ranil_Wickremesinghe"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ranil Wickremesinghe is a leader of Sri Lanka."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ranil Wickremesinghe es un líder de Sri Lanka."
+        }
+      ]
+    },
+    {
+      "eid": 9,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | leader | Joe_Biden"
+      ],
+      "modifiedTripleset": [
+        "United_States | leader | Joe_Biden"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Joe Biden is a leader of the United States."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Joe Biden es un líder de los Estados Unidos."
+        }
+      ]
+    },
+    {
+      "eid": 10,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "11264_Claudiomaccone | rotationPeriod | 11473.9"
+      ],
+      "modifiedTripleset": [
+        "11264_Claudiomaccone | rotationPeriod | 11473.9"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The rotation period for 11264 Claudiomaccone is 11473.9."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El período de rotación de 11264 Claudiomaccone es de 11473.9."
+        }
+      ]
+    },
+    {
+      "eid": 11,
+      "category": "ComicsCharacter",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "The_Arrow_(comicsCharacter) | alternativeName | &amp;quot;Ralph Payne&amp;quot;"
+      ],
+      "modifiedTripleset": [
+        "The_Arrow_(comicsCharacter) | alternativeName | &amp;quot;Ralph Payne&amp;quot;"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Arrow is otherwise known as Ralph Payne."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "The Arrow es también conocido como Ralph Payne."
+        }
+      ]
+    },
+    {
+      "eid": 12,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Singapore | leader | Tony_Tan"
+      ],
+      "modifiedTripleset": [
+        "Singapore | leader | Tony_Tan"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The leader of Singapore is Tony Tan."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El líder de Singapur es Tony Tan."
+        }
+      ]
+    },
+    {
+      "eid": 13,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Siomay | dishVariation | Batagor"
+      ],
+      "modifiedTripleset": [
+        "Siomay | dishVariation | Batagor"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Batagor and Siomay are variation of the same dish."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Batagor y Siomay son variaciones del mismo plato."
+        }
+      ]
+    },
+    {
+      "eid": 14,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | currency | Euro"
+      ],
+      "modifiedTripleset": [
+        "Spain | currency | Euro"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Spain uses the euro for its currency."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "España utiliza el euro como su moneda."
+        }
+      ]
+    },
+    {
+      "eid": 15,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Sumatra | ethnicGroup | Minangkabau_people"
+      ],
+      "modifiedTripleset": [
+        "Sumatra | ethnicGroup | Minangkabau_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Minangkabau people are an ethnic group of Sumatra."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El pueblo Minangkabau es un grupo étnico de Sumatra."
+        }
+      ]
+    },
+    {
+      "eid": 16,
+      "category": "Monument",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Turkey | leader | Ahmet_Davutoğlu"
+      ],
+      "modifiedTripleset": [
+        "Turkey | leader | Ahmet_Davutoğlu"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ahmet Davutoglu is a leader of Turkey."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ahmet Davutoğlu es un líder de Turquía."
+        }
+      ]
+    },
+    {
+      "eid": 17,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Superleague_Greece | champions | Olympiacos_F.C."
+      ],
+      "modifiedTripleset": [
+        "Superleague_Greece | champions | Olympiacos_F.C."
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Olympiacos FC are previous champions of the Superleague Greece."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Olympiacos F.C. son los campeones de la Superliga de Grecia."
+        }
+      ]
+    },
+    {
+      "eid": 18,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Switzerland | leader | Johann_Schneider-Ammann"
+      ],
+      "modifiedTripleset": [
+        "Switzerland | leader | Johann_Schneider-Ammann"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Johann Schneider Ammann is the leader of Switzerland."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Johann Schneider-Ammann es el líder de Suiza."
+        }
+      ]
+    },
+    {
+      "eid": 19,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 1,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Switzerland | legislature | Federal_Assembly_(Switzerland)"
+      ],
+      "modifiedTripleset": [
+        "Switzerland | legislature | Federal_Assembly_(Switzerland)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Switzerland's legislature is formed in the Federal Assembly."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La legislatura de Suiza es la Asamblea Federal."
+        }
+      ]
+    },
+    {
+      "eid": 20,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Lahore | country | Pakistan",
+        "Allama_Iqbal_International_Airport | cityServed | Lahore"
+      ],
+      "modifiedTripleset": [
+        "Lahore | country | Pakistan",
+        "Allama_Iqbal_International_Airport | cityServed | Lahore"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Allama Iqbal International airport serves the city of Lahore in Pakistan."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto Internacional Allama Iqbal sirve a la ciudad de Lahore, Pakistán."
+        }
+      ]
+    },
+    {
+      "eid": 21,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Saranac_Lake,_New_York | isPartOf | United_States",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "modifiedTripleset": [
+        "Saranac_Lake,_New_York | isPartOf | United_States",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Adirondack Regional Airport serves the city of Saranac Lake, New York, in the United States."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto Regional de Adirondack sirve a la ciudad de Saranac Lake, Nueva York, que se encuentra en los Estados Unidos."
+        }
+      ]
+    },
+    {
+      "eid": 22,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Ethiopia | leader | Hailemariam_Desalegn",
+        "Addis_Ababa_City_Hall | country | Ethiopia"
+      ],
+      "modifiedTripleset": [
+        "Ethiopia | leader | Hailemariam_Desalegn",
+        "Addis_Ababa_City_Hall | country | Ethiopia"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Addis Ababa City Hall is located in the country of Ethiopia which is led by Hailemariam Desalegn."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Ayuntamiento de Adís Abeba está en Etiopía, país liderado por Hailemariam Desalegn."
+        }
+      ]
+    },
+    {
+      "eid": 23,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)",
+        "110_Lydia | temperature | 168.0 (kelvins)"
+      ],
+      "modifiedTripleset": [
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)",
+        "110_Lydia | temperature | 168.0 (kelvins)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "110 Lydia, with a temperature of 168.0 kelvins, has an apoapsis of 440756000.0 (kilometres)."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "110 Lydia tiene una temperatura de 168.0 kelvin y un apoapsis de 440756000.0 kilómetros."
+        }
+      ]
+    },
+    {
+      "eid": 24,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "110_Lydia | escapeVelocity | 0.0455 (kilometrePerSeconds)",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "modifiedTripleset": [
+        "110_Lydia | escapeVelocity | 0.0455 (kilometrePerSeconds)",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "110 Lydia has an escape velocity of 0.0455 km per second and an apoapsis of 440756000.0 km."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "110 Lydia tiene una velocidad de escape de 0.0455 kilómetros por segundo y una apoapsis de 440.756.000 kilómetros."
+        }
+      ]
+    },
+    {
+      "eid": 25,
+      "category": "ComicsCharacter",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Sheldon_Moldoff | nationality | Americans",
+        "Black_Pirate | creator | Sheldon_Moldoff"
+      ],
+      "modifiedTripleset": [
+        "Sheldon_Moldoff | nationality | Americans",
+        "Black_Pirate | creator | Sheldon_Moldoff"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Sheldon Moldoff is the American creator of Black Pirate."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Sheldon Moldoff es el creador estadounidense de Black Pirate."
+        }
+      ]
+    },
+    {
+      "eid": 26,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Bionico | dishVariation | Cottage_cheese",
+        "Bionico | course | Dessert"
+      ],
+      "modifiedTripleset": [
+        "Bionico | dishVariation | Cottage_cheese",
+        "Bionico | course | Dessert"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Bionico is served at the dessert course and can be varied by using cottage cheese."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Bionico es un postre y puede variar con queso cottage."
+        }
+      ]
+    },
+    {
+      "eid": 27,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Catalonia | leader | Carles_Puigdemont",
+        "Arròs_negre | region | Catalonia"
+      ],
+      "modifiedTripleset": [
+        "Catalonia | leader | Carles_Puigdemont",
+        "Arròs_negre | region | Catalonia"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Arros negre is found in the region of Catalonia and the leader of the country is Carles Puigdemont."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Arròs negre se encuentra en la región de Cataluña, cuyo líder es Carles Puigdemont."
+        }
+      ]
+    },
+    {
+      "eid": 28,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Italy | capital | Rome",
+        "Amatriciana_sauce | country | Italy"
+      ],
+      "modifiedTripleset": [
+        "Italy | capital | Rome",
+        "Amatriciana_sauce | country | Italy"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Amatriciana sauce can be found in Italy where Rome is the capital."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La salsa Amatriciana se encuentra en Italia, donde Roma es la capital."
+        }
+      ]
+    },
+    {
+      "eid": 29,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Singapore | language | English_language",
+        "Ayam_penyet | region | Singapore"
+      ],
+      "modifiedTripleset": [
+        "Singapore | language | English_language",
+        "Ayam_penyet | region | Singapore"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "English is one of the languages spoken in Singapore where ayam penyet comes from."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El inglés es uno de los idiomas que se hablan en Singapur, de donde es originario el ayam penyet."
+        }
+      ]
+    },
+    {
+      "eid": 30,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | language | Spanish_language",
+        "Ajoblanco | country | Spain"
+      ],
+      "modifiedTripleset": [
+        "Spain | language | Spanish_language",
+        "Ajoblanco | country | Spain"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Spanish language is spoken in Spain which is where Ajoblanco is from."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El ajoblanco es de España, donde se habla el idioma español."
+        }
+      ]
+    },
+    {
+      "eid": 31,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | ethnicGroup | African_Americans",
+        "Baked_Alaska | country | United_States"
+      ],
+      "modifiedTripleset": [
+        "United_States | ethnicGroup | African_Americans",
+        "Baked_Alaska | country | United_States"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "African Americans are one of the ethnic groups in the United States where the dish known as Baked Alaska can be found."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Los afroamericanos son uno de los grupos étnicos en los Estados Unidos, país donde se puede encontrar el plato conocido como Baked Alaska."
+        }
+      ]
+    },
+    {
+      "eid": 32,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Akron_Summit_Assault | ground | St._Vincent–St._Mary_High_School",
+        "St._Vincent–St._Mary_High_School | state | Ohio"
+      ],
+      "modifiedTripleset": [
+        "Akron_Summit_Assault | ground | St._Vincent–St._Mary_High_School",
+        "St._Vincent–St._Mary_High_School | state | Ohio"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "St Vincent-St Mary High School in Ohio is the ground of Akron Summit Assault."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "St. Vincent-St. Mary High School en Ohio es el campo de juego de Akron Summit Assault."
+        }
+      ]
+    },
+    {
+      "eid": 33,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 2,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The School of Business and Social Sciences at Aarhus University takes 16000 students and is affiliated to the European University Association."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus cuenta con 16.000 estudiantes y está afiliada a la Asociación de Universidades Europeas."
+        }
+      ]
+    },
+    {
+      "eid": 34,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Iraq | language | Kurdish_languages",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "modifiedTripleset": [
+        "Iraq | language | Kurdish_languages",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Al-Taqaddum Air Base serves the city of Fallujah, in the country of Iraq where the Kurdish language is spoken."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Base Aérea Al-Taqaddum sirve a la ciudad de Fallujah, que se encuentra en Irak, donde se hablan las lenguas kurdas."
+        }
+      ]
+    },
+    {
+      "eid": 35,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | location | San_Sebastián_de_los_Reyes",
+        "San_Sebastián_de_los_Reyes | country | Spain"
+      ],
+      "modifiedTripleset": [
+        "San_Sebastián_de_los_Reyes | isPartOf | Community_of_Madrid",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | location | San_Sebastián_de_los_Reyes",
+        "San_Sebastián_de_los_Reyes | country | Spain"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Adolfo Suarez Madrid- Barajas airport is located in San Sebastian de los Reyes which is in Madrid, Spain."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto Adolfo Suárez Madrid-Barajas está ubicado en San Sebastián de los Reyes, que forma parte de la Comunidad de Madrid, en España."
+        }
+      ]
+    },
+    {
+      "eid": 36,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Saranac_Lake,_New_York | isPartOf | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "modifiedTripleset": [
+        "Saranac_Lake,_New_York | isPartOf | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Adirondack Regional Airport serves the city of Saranac Lake which is part of Essex County, New York, in the United States."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto Regional de Adirondack sirve a Saranac Lake, Nueva York, que forma parte del Condado de Essex, Nueva York, en los Estados Unidos."
+        }
+      ]
+    },
+    {
+      "eid": 37,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "110_Lydia | epoch | 2006-12-31",
+        "110_Lydia | orbitalPeriod | 142603000.0",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "modifiedTripleset": [
+        "110_Lydia | epoch | 2006-12-31",
+        "110_Lydia | orbitalPeriod | 142603000.0",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The celestial body known as 110 Lydia has an orbital period of 142603000. It has an apoapsis of 440756000.0 kilometres, and an epoch date of December 31st 2006."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El cuerpo celeste 110 Lydia tiene un período orbital de 142.603.000, un apoapsis de 440.756.000 kilómetros y una época del 31 de diciembre de 2006."
+        }
+      ]
+    },
+    {
+      "eid": 38,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "11264_Claudiomaccone | epoch | 2005-11-26",
+        "11264_Claudiomaccone | temperature | 173.0 (kelvins)",
+        "11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)"
+      ],
+      "modifiedTripleset": [
+        "11264_Claudiomaccone | epoch | 2005-11-26",
+        "11264_Claudiomaccone | temperature | 173.0 (kelvins)",
+        "11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "11264 Claudiomaccone has the epoch date of 26 November 2005, a temperature of 173 kelvins and an apoapsis of 475426000 km."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "11264 Claudiomaccone tiene una época del 26 de noviembre de 2005, una temperatura de 173 kelvin y un apoapsis de 475.426.000 kilómetros."
+        }
+      ]
+    },
+    {
+      "eid": 39,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Dessert | dishVariation | Ice_cream",
+        "Bionico | ingredient | Raisin",
+        "Bionico | course | Dessert"
+      ],
+      "modifiedTripleset": [
+        "Dessert | dishVariation | Ice_cream",
+        "Bionico | ingredient | Raisin",
+        "Bionico | course | Dessert"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ice cream is a dessert, as is Bionico which contains raisins."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El helado es un tipo de postre, al igual que el biónico, que contiene pasas."
+        }
+      ]
+    },
+    {
+      "eid": 40,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Java | ethnicGroup | Javanese_people",
+        "Ayam_penyet | region | &amp;quot;Nationwide, also can be found in Malaysia and Singapore&amp;quot;",
+        "Ayam_penyet | country | Java"
+      ],
+      "modifiedTripleset": [
+        "Java | ethnicGroup | Javanese_people",
+        "Ayam_penyet | region | &amp;quot;Nationwide, also can be found in Malaysia and Singapore&amp;quot;",
+        "Ayam_penyet | country | Java"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ayam penyet is a food found in Java where the Javanese people are an ethnic group. It is made nationwide and is also found in Malaysia and Singapore."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ayam penyet es un plato de Java, donde el grupo étnico son los javaneses, y se encuentra en todo el país, así como en Malasia y Singapur."
+        }
+      ]
+    },
+    {
+      "eid": 41,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | language | Philippine_English",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Chinese_Filipino"
+      ],
+      "modifiedTripleset": [
+        "Philippines | language | Philippine_English",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Chinese_Filipino"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The dish batchoy is from the Philippines where English is spoken and the Chinese Filipino people are from."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El plato Batchoy es de Filipinas, donde se habla inglés filipino y donde se encuentra el grupo étnico chino-filipino."
+        }
+      ]
+    },
+    {
+      "eid": 42,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | language | Philippine_English",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Igorot_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | language | Philippine_English",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Igorot_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Philippine English is the language spoken in the Philippines, where Batchoy comes from. It is also the country where the Igorot people are an ethnic group."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Batchoy es de Filipinas, donde el inglés filipino es el idioma y el pueblo Igorot es un grupo étnico."
+        }
+      ]
+    },
+    {
+      "eid": 43,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Igorot_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Igorot_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Batchoy is eaten in the Philippines where Philippine Spanish is the language and one of the ethnic groups is the Igorot people."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El batchoy es un plato de Filipinas, donde el español filipino es el idioma y los igorotes son un grupo étnico."
+        }
+      ]
+    },
+    {
+      "eid": 44,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Ilocano_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Ilocano_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The llocano people are an ethnic group from the Philippines, where the spoken language is Philippine Spanish. It is also where Batchoy comes from."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Batchoy es un plato de Filipinas, donde el pueblo ilocano es un grupo étnico y el español filipino es el idioma hablado."
+        }
+      ]
+    },
+    {
+      "eid": 45,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Singapore | leader | Tony_Tan",
+        "Beef_kway_teow | country | Singapore",
+        "Singapore | leader | Halimah_Yacob"
+      ],
+      "modifiedTripleset": [
+        "Singapore | leader | Tony_Tan",
+        "Beef_kway_teow | country | Singapore",
+        "Singapore | leader | Halimah_Yacob"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Beef kway is a popular dish in Singapore, where Tony Tan and Halimah Yacob are leaders."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Beef kway teow es un plato de Singapur, donde Tony Tan y Halimah Yacob son líderes."
+        }
+      ]
+    },
+    {
+      "eid": 46,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Spain | language | Spanish_language",
+        "Ajoblanco | country | Spain"
+      ],
+      "modifiedTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Spain | language | Spanish_language",
+        "Ajoblanco | country | Spain"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ajoblanco originates from the country of Spain, where Spanish is spoken and the leader is Felipe VI of Spain."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El ajoblanco es originario de España, país donde se habla el idioma español y cuyo líder es Felipe VI de España."
+        }
+      ]
+    },
+    {
+      "eid": 47,
+      "category": "Monument",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "modifiedTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ahmet Davutoglu is the President of Turkey. The Ataturk Monument (Izmir) is located in Turkey."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ahmet Davutoğlu es el Presidente de Turquía, donde se encuentra el Monumento a Atatürk (İzmir)."
+        }
+      ]
+    },
+    {
+      "eid": 48,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Italy | leader | Sergio_Mattarella",
+        "A.S._Gubbio_1910 | ground | Italy",
+        "Italy | language | Italian_language"
+      ],
+      "modifiedTripleset": [
+        "Italy | leader | Sergio_Mattarella",
+        "A.S._Gubbio_1910 | ground | Italy",
+        "Italy | language | Italian_language"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The ground of A.S. Gubbio 1910 is located in Italy where the leader is Sergio Mattarella and Italian is the spoken language."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El campo del A.S. Gubbio 1910 está en Italia, cuyo líder es Sergio Mattarella y donde el idioma es el italiano."
+        }
+      ]
+    },
+    {
+      "eid": 49,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Peter_Stöger | club | FC_Admira_Wacker_Mödling",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | SC_Wiener_Neustadt"
+      ],
+      "modifiedTripleset": [
+        "Peter_Stöger | club | FC_Admira_Wacker_Mödling",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | SC_Wiener_Neustadt"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Peter Stöger is affiliated with the SC Wiener Neustadt club and manages 1 FC Koln. He also plays for FC Admira Wacker Modling."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Peter Stöger, quien es el entrenador del 1. FC Köln, también está asociado con los clubes FC Admira Wacker Mödling y SC Wiener Neustadt."
+        }
+      ]
+    },
+    {
+      "eid": 50,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Peter_Stöger | club | SK_Rapid_Wien",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | SC_Wiener_Neustadt"
+      ],
+      "modifiedTripleset": [
+        "Peter_Stöger | club | SK_Rapid_Wien",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | SC_Wiener_Neustadt"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "PeterStöger, manager of FC Kolin plays for both SK Rapid Wien and SC Wiener Neustadt."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Peter Stöger, entrenador del 1. FC Köln, jugó para SK Rapid Wien y SC Wiener Neustadt."
+        }
+      ]
+    },
+    {
+      "eid": 51,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Peter_Stöger | club | SK_Vorwärts_Steyr",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | First_Vienna_FC"
+      ],
+      "modifiedTripleset": [
+        "Peter_Stöger | club | SK_Vorwärts_Steyr",
+        "1._FC_Köln | manager | Peter_Stöger",
+        "Peter_Stöger | club | First_Vienna_FC"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The manager of 1. FC Koln is Peter Stoger who played football for SK Vorwärts Steyr and is attached to the club First Vienna FC."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Peter Stöger, quien es el entrenador del 1. FC Köln, jugó para el SK Vorwärts Steyr y también para el First Vienna FC."
+        }
+      ]
+    },
+    {
+      "eid": 52,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928",
+        "Aarhus | governmentType | Magistrate"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928",
+        "Aarhus | governmentType | Magistrate"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The School of Business and Social Sciences at the Aarhus University at Arhus was established in 1928. Arhus has a Magistrate government."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus, establecida en 1928, se encuentra en Aarhus, ciudad que tiene un gobierno de tipo Magistrado."
+        }
+      ]
+    },
+    {
+      "eid": 53,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 3,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "Denmark | leaderTitle | Monarchy_of_Denmark",
+        "Denmark | leader | Lars_Løkke_Rasmussen"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "Denmark | leaderTitle | Monarchy_of_Denmark",
+        "Denmark | leader | Lars_Løkke_Rasmussen"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The School of Business and Social Sciences at the Aarhus University is located in Denmark. Denmark has a monarch and Denmark's leader is called Lars Lokke Rasmussen."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus se encuentra en Dinamarca, país que tiene una Monarquía y cuyo líder es Lars Løkke Rasmussen."
+        }
+      ]
+    },
+    {
+      "eid": 54,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Poaceae | division | Flowering_plant",
+        "Alderney_Airport | 1stRunwaySurfaceType | Poaceae",
+        "Poaceae | order | Commelinids",
+        "Poaceae | class | Monocotyledon"
+      ],
+      "modifiedTripleset": [
+        "Poaceae | division | Flowering_plant",
+        "Alderney_Airport | 1stRunwaySurfaceType | Poaceae",
+        "Poaceae | order | Commelinids",
+        "Poaceae | class | Monocotyledon"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Poaceae belongs to the division of flowering plants, the order of Commelinids and the class of Monocotyledon. It constitutes the surface of the 1st runway at Alderney airport."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Poaceae, que pertenece a la división de las plantas con flores, al orden de las Commelínidas y a la clase de las Monocotiledóneas, constituye el tipo de superficie de la primera pista del aeropuerto de Alderney."
+        }
+      ]
+    },
+    {
+      "eid": 55,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders (born in British Hong Kong) was a crew member of Apollo 8 and was a fighter pilot. He retired on 1969-09-01."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, quien nació en Hong Kong Británico, fue un piloto de combate y participó en la misión Apolo 8, retirándose el 1 de septiembre de 1969."
+        }
+      ]
+    },
+    {
+      "eid": 56,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "India | leader | T._S._Thakur",
+        "Amdavad_ni_Gufa | location | Ahmedabad",
+        "Amdavad_ni_Gufa | country | India",
+        "India | leader | Narendra_Modi"
+      ],
+      "modifiedTripleset": [
+        "India | leader | T._S._Thakur",
+        "Amdavad_ni_Gufa | location | Ahmedabad",
+        "Amdavad_ni_Gufa | country | India",
+        "India | leader | Narendra_Modi"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Two of India's leaders are Narendra Modi and T S Thakur. Amdavad ni Gufa is located in Ahmedabad in the country."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Amdavad ni Gufa está ubicada en Ahmedabad, India, país que tiene como líderes a T. S. Thakur y Narendra Modi."
+        }
+      ]
+    },
+    {
+      "eid": 57,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | capital | Washington,_D.C.",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | leader | Barack_Obama"
+      ],
+      "modifiedTripleset": [
+        "United_States | capital | Washington,_D.C.",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | leader | Barack_Obama"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Washington D.C. is the capital of the USA which is led by President Barack Obama. The US is the location of 250 Delaware Avenue."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Washington D.C. es la capital de los Estados Unidos, cuyo líder es Barack Obama con el título de Presidente de los Estados Unidos, y donde se encuentra 250 Delaware Avenue."
+        }
+      ]
+    },
+    {
+      "eid": 58,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | capital | Washington,_D.C.",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | John_Roberts",
+        "250_Delaware_Avenue | location | United_States"
+      ],
+      "modifiedTripleset": [
+        "United_States | capital | Washington,_D.C.",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | John_Roberts",
+        "250_Delaware_Avenue | location | United_States"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "John Roberts is the Chief Justice in America where the leader is known as the President of the United States and the capital is Washington DC. The US is the location of 250 Delaware Avenue."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "John Roberts es el líder de los Estados Unidos, cuya capital es Washington D.C. y cuyo título de líder es Presidente de los Estados Unidos, y donde se encuentra 250 Delaware Avenue."
+        }
+      ]
+    },
+    {
+      "eid": 59,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "110_Lydia | epoch | 2006-12-31",
+        "110_Lydia | escapeVelocity | 0.0455 (kilometrePerSeconds)",
+        "110_Lydia | orbitalPeriod | 142603000.0",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "modifiedTripleset": [
+        "110_Lydia | epoch | 2006-12-31",
+        "110_Lydia | escapeVelocity | 0.0455 (kilometrePerSeconds)",
+        "110_Lydia | orbitalPeriod | 142603000.0",
+        "110_Lydia | apoapsis | 440756000.0 (kilometres)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The epoch date of 110 Lydia is December 31st 2006. It's apoapsis is 440756000.0 (kilometres), has an escape velocity of 0.0455 km/s and an apoapsis of 440756000.0 (kilometres)."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "110 Lydia tiene una época del 31 de diciembre de 2006, una velocidad de escape de 0.0455 kilómetros por segundo, un período orbital de 142,603,000.0 y un apoapsis de 440,756,000.0 kilómetros."
+        }
+      ]
+    },
+    {
+      "eid": 60,
+      "category": "ComicsCharacter",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Roger_McKenzie_(comic_book_writer) | nationality | United_States",
+        "Ben_Urich | creator | Roger_McKenzie_(comic_book_writer)",
+        "Ben_Urich | creator | Gene_Colan",
+        "Ben_Urich | fullName | &amp;quot;Benjamin Urich&amp;quot;"
+      ],
+      "modifiedTripleset": [
+        "Roger_McKenzie_(comic_book_writer) | nationality | United_States",
+        "Ben_Urich | creator | Roger_McKenzie_(comic_book_writer)",
+        "Ben_Urich | creator | Gene_Colan",
+        "Ben_Urich | fullName | &amp;quot;Benjamin Urich&amp;quot;"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The American comic book writer Roger McKenzie and Gene Colan created the character Ben Urich, who has the full name Benjamin Urich."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ben Urich, cuyo nombre completo es Benjamin Urich, fue creado por el escritor de cómics estadounidense Roger McKenzie y Gene Colan."
+        }
+      ]
+    },
+    {
+      "eid": 61,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Java | ethnicGroup | Baduy",
+        "Singapore | language | English_language",
+        "Ayam_penyet | region | Singapore",
+        "Ayam_penyet | country | Java"
+      ],
+      "modifiedTripleset": [
+        "Java | ethnicGroup | Baduy",
+        "Singapore | language | English_language",
+        "Ayam_penyet | region | Singapore",
+        "Ayam_penyet | country | Java"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ayam penyet comes from Singapore and Java. English is spoken in Singapore. Baduy are an ethnic group living in Java."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ayam penyet es un plato originario de Singapur y Java, donde los Baduy son un grupo étnico y en Singapur se habla inglés."
+        }
+      ]
+    },
+    {
+      "eid": 62,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | ethnicGroup | Ilocano_people",
+        "Philippines | language | Arabic",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | ethnicGroup | Ilocano_people",
+        "Philippines | language | Arabic",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Arabic is one of the languages spoken in the Philippines and Batchoy comes from there. Ethnic groups from the Philippines include the Ilocano people and Moro people."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Batchoy es un plato de Filipinas, donde se habla árabe y entre sus grupos étnicos se encuentran los ilocanos y los moros."
+        }
+      ]
+    },
+    {
+      "eid": 63,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | ethnicGroup | Ilocano_people",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | ethnicGroup | Ilocano_people",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The language spoken in the Philippines is Philippine Spanish and batchoy is eaten there. Ethnic groups include the llocano people and the Moro people."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El batchoy es un plato de Filipinas, donde se habla español filipino y entre sus grupos étnicos se encuentran los ilocanos y los moros."
+        }
+      ]
+    },
+    {
+      "eid": 64,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | ethnicGroup | Zamboangans",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "modifiedTripleset": [
+        "Philippines | ethnicGroup | Zamboangans",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Moro_people"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The language spoken in the Philippines is Philippine Spanish, batchoy is eaten there and the Zamboangans and Moro people can be found there."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "En Filipinas, donde se habla español filipino, se encuentran los zamboangueños y el pueblo moro, y se consume batchoy."
+        }
+      ]
+    },
+    {
+      "eid": 65,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Olympic_Stadium_(Athens) | location | Athens",
+        "AEK_Athens_F.C. | manager | Gus_Poyet",
+        "AEK_Athens_F.C. | ground | Olympic_Stadium_(Athens)",
+        "Gus_Poyet | club | Chelsea_F.C."
+      ],
+      "modifiedTripleset": [
+        "Olympic_Stadium_(Athens) | location | Athens",
+        "AEK_Athens_F.C. | manager | Gus_Poyet",
+        "AEK_Athens_F.C. | ground | Olympic_Stadium_(Athens)",
+        "Gus_Poyet | club | Chelsea_F.C."
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Olympic Stadium, in Athens, is the home ground of AEK Athens FC. the manager of which, is Gus Poyet, who played for Chelsea F.C."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El AEK Atenas F.C. tiene como estadio el Estadio Olímpico de Atenas y su entrenador es Gus Poyet, quien jugó para el Chelsea F.C."
+        }
+      ]
+    },
+    {
+      "eid": 66,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 4,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Serie_A | champions | Juventus_F.C.",
+        "A.S._Roma | manager | Luciano_Spalletti",
+        "Luciano_Spalletti | club | Virtus_Entella",
+        "A.S._Roma | league | Serie_A"
+      ],
+      "modifiedTripleset": [
+        "Serie_A | champions | Juventus_F.C.",
+        "A.S._Roma | manager | Luciano_Spalletti",
+        "Luciano_Spalletti | club | Virtus_Entella",
+        "A.S._Roma | league | Serie_A"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Luciano Spalletti plays for Virtus Entella and manages AS Roma who play in the Serie A league. Juventus FC are the champions of the league."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Luciano Spalletti juega para el Virtus Entella y dirige a la A.S. Roma, equipo que juega en la Serie A, liga de la cual la Juventus F.C. es la campeona."
+        }
+      ]
+    },
+    {
+      "eid": 67,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Harrietstown,_New_York | country | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York",
+        "Harrietstown,_New_York | isPartOf | New_York",
+        "Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "modifiedTripleset": [
+        "Harrietstown,_New_York | country | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York",
+        "Harrietstown,_New_York | isPartOf | New_York",
+        "Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Saranac Lake, New York is part of Harrietstown, New York in the United States and it is served by Adirondack Regional Airport. This airport also serves the city of Lake Placid, New York."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Saranac Lake, Nueva York, que es parte de Harrietstown, Nueva York, la cual se encuentra en el estado de Nueva York, Estados Unidos, es una de las ciudades servidas por el Aeropuerto Regional de Adirondack, que también presta servicio a Lake Placid, Nueva York."
+        }
+      ]
+    },
+    {
+      "eid": 68,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Harrietstown,_New_York | country | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York",
+        "Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "modifiedTripleset": [
+        "Harrietstown,_New_York | country | United_States",
+        "Saranac_Lake,_New_York | isPartOf | Harrietstown,_New_York",
+        "Saranac_Lake,_New_York | isPartOf | Essex_County,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Lake_Placid,_New_York",
+        "Adirondack_Regional_Airport | cityServed | Saranac_Lake,_New_York"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "A part of both Harrietstown and Essex county, in New York (United States), the the city of Saranac Lake is served by Adirondack Regional Airport. the same airport also serves the city of Lake Placid, New York."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto Regional de Adirondack sirve a Saranac Lake, Nueva York, que forma parte de Harrietstown, Nueva York, y del condado de Essex, Nueva York, ambos ubicados en los Estados Unidos, y también a Lake Placid, Nueva York."
+        }
+      ]
+    },
+    {
+      "eid": 69,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Indian_Air_Force | aircraftHelicopter | HAL_Light_Combat_Helicopter",
+        "Agra_Airport | location | Uttar_Pradesh",
+        "Agra_Airport | operatingOrganisation | Indian_Air_Force",
+        "Indian_Air_Force | transportAircraft | Boeing_C-17_Globemaster_III",
+        "Uttar_Pradesh | isPartOf | Bundelkhand"
+      ],
+      "modifiedTripleset": [
+        "Indian_Air_Force | aircraftHelicopter | HAL_Light_Combat_Helicopter",
+        "Agra_Airport | location | Uttar_Pradesh",
+        "Agra_Airport | operatingOrganisation | Indian_Air_Force",
+        "Indian_Air_Force | transportAircraft | Boeing_C-17_Globemaster_III",
+        "Uttar_Pradesh | isPartOf | Bundelkhand"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Agra Airport is in Uttar Pradesh which is part of Bundelkhand, the airport is operated by the Indian Air Force which has an aircraft-capable helicopter known as the &amp;quot;HAL Light Combat Helicopter&amp;quot; and a &amp;quot;Boeing C-17 Globemaster III&amp;quot; as a transport aircraft."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Aeropuerto de Agra, ubicado en Uttar Pradesh, que forma parte de Bundelkhand, es operado por la Fuerza Aérea India, la cual cuenta con el helicóptero de combate ligero HAL y el avión de transporte Boeing C-17 Globemaster III."
+        }
+      ]
+    },
+    {
+      "eid": 70,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Indian_Air_Force | aircraftHelicopter | HAL_Light_Combat_Helicopter",
+        "Agra_Airport | location | Uttar_Pradesh",
+        "Uttar_Pradesh | isPartOf | Awadh",
+        "Agra_Airport | operatingOrganisation | Indian_Air_Force",
+        "Uttar_Pradesh | isPartOf | Bundelkhand"
+      ],
+      "modifiedTripleset": [
+        "Indian_Air_Force | aircraftHelicopter | HAL_Light_Combat_Helicopter",
+        "Agra_Airport | location | Uttar_Pradesh",
+        "Uttar_Pradesh | isPartOf | Awadh",
+        "Agra_Airport | operatingOrganisation | Indian_Air_Force",
+        "Uttar_Pradesh | isPartOf | Bundelkhand"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Uttar Pradesh is part of both Awadh and Bundelkhand. It is the location of Agra airport which is operated by the Indian Air Force who use the HAL Light Combat helicopter."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Uttar Pradesh, que forma parte de Awadh y Bundelkhand, es la ubicación del Aeropuerto de Agra, el cual es operado por la Fuerza Aérea India, que utiliza el helicóptero de combate ligero HAL."
+        }
+      ]
+    },
+    {
+      "eid": 71,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Iraq | language | Kurdish_languages",
+        "Iraq | leader | Haider_al-Abadi",
+        "Iraq | leader | Fuad_Masum",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "modifiedTripleset": [
+        "Iraq | language | Kurdish_languages",
+        "Iraq | leader | Haider_al-Abadi",
+        "Iraq | leader | Fuad_Masum",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Al Taqaddum Air Base serves the city of Fallujah Iraq. Kurdish is spoken in Iraq where Haider al-Abadi and Fuad Masum are leaders."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Base Aérea Al-Taqaddum sirve a la ciudad de Faluya, que se encuentra en Irak, donde se hablan lenguas kurdas y donde Haider al-Abadi y Fuad Masum son líderes."
+        }
+      ]
+    },
+    {
+      "eid": 72,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Iraq | leader | Haider_al-Abadi",
+        "Iraq | officialLanguage | Arabic",
+        "Iraq | leader | Fuad_Masum",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "modifiedTripleset": [
+        "Iraq | leader | Haider_al-Abadi",
+        "Iraq | officialLanguage | Arabic",
+        "Iraq | leader | Fuad_Masum",
+        "Al-Taqaddum_Air_Base | cityServed | Fallujah",
+        "Fallujah | country | Iraq"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Al-Taqaddum Air Base serves the city of Fallujah in Iraq. Haider Al-Abadi and Fuad Masum are two leaders in Iraq where the official language is Arabic."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Base Aérea Al-Taqaddum sirve a la ciudad de Faluya, que se encuentra en Irak, un país donde el idioma oficial es el árabe y cuyos líderes son Haider al-Abadi y Fuad Masum."
+        }
+      ]
+    },
+    {
+      "eid": 73,
+      "category": "Airport",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Madrid | isPartOf | Community_of_Madrid",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | location | Alcobendas",
+        "ENAIRE | city | Madrid",
+        "Alcobendas | country | Spain",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | operatingOrganisation | ENAIRE"
+      ],
+      "modifiedTripleset": [
+        "Madrid | isPartOf | Community_of_Madrid",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | location | Alcobendas",
+        "ENAIRE | city | Madrid",
+        "Alcobendas | country | Spain",
+        "Adolfo_Suárez_Madrid–Barajas_Airport | operatingOrganisation | ENAIRE"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "ENAIRE in the city of Madrid (part of the community of Madrid) is the operating organisation for Adolfo Suarez Madrid-Barajas airport in Alcobendas, Spain."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "ENAIRE, con sede en Madrid, que forma parte de la Comunidad de Madrid, es la organización operadora del Aeropuerto Adolfo Suárez Madrid-Barajas, ubicado en Alcobendas, España."
+        }
+      ]
+    },
+    {
+      "eid": 74,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | mission | Apollo_8",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "Apollo_8 | operator | NASA",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | mission | Apollo_8",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "Apollo_8 | operator | NASA",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders served as a Fighter pilot before being a member of Apollo 8's crew, operated by NASA, alongside Frank Borman. William Anders is now retired."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, quien fue piloto de combate, participó en la misión Apolo 8, operada por la NASA, junto a Frank Borman, y actualmente está retirado."
+        }
+      ]
+    },
+    {
+      "eid": 75,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Hong Kong born William Anders is a retired fighter pilot who joined NASA in 1963, and was a crew member on Apollo 8."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, nacido en Hong Kong Británico, fue seleccionado por la NASA en 1963, es un piloto de combate retirado y participó en la misión Apolo 8."
+        }
+      ]
+    },
+    {
+      "eid": 76,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Japan | leader | Akihito",
+        "Akita,_Akita | isPartOf | Akita_Prefecture",
+        "Japan | ethnicGroup | Brazilians_in_Japan",
+        "Akita,_Akita | country | Japan",
+        "Akita_Museum_of_Art | location | Akita,_Akita"
+      ],
+      "modifiedTripleset": [
+        "Japan | leader | Akihito",
+        "Akita,_Akita | isPartOf | Akita_Prefecture",
+        "Japan | ethnicGroup | Brazilians_in_Japan",
+        "Akita,_Akita | country | Japan",
+        "Akita_Museum_of_Art | location | Akita,_Akita"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Akita Museum of Art is located in Akita, Akita which is part of Akita Prefecture, Japan. The emperor of Japan is Akihito and one of the ethnic groups in the country is the Brazilians."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Museo de Arte de Akita está ubicado en Akita, Akita, que forma parte de la Prefectura de Akita en Japón, país cuyo líder es Akihito y donde uno de los grupos étnicos son los brasileños en Japón."
+        }
+      ]
+    },
+    {
+      "eid": 77,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "London | leaderTitle | Parliament_of_the_United_Kingdom",
+        "20_Fenchurch_Street | location | United_Kingdom",
+        "United_Kingdom | capital | London",
+        "United_Kingdom | demonym | British_people",
+        "London | leader | Boris_Johnson"
+      ],
+      "modifiedTripleset": [
+        "London | leaderTitle | Parliament_of_the_United_Kingdom",
+        "20_Fenchurch_Street | location | United_Kingdom",
+        "United_Kingdom | capital | London",
+        "United_Kingdom | demonym | British_people",
+        "London | leader | Boris_Johnson"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The government of the UK is the Parliament and its capital is London. London's leader is Boris Johnson. 20 Fenchurch Street is located in the UK. The demonym for natives of the UK is the British people."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El gobierno del Reino Unido es el Parlamento, y su capital es Londres, cuyo líder es Boris Johnson; el gentilicio para los nativos del Reino Unido es el pueblo británico, y 20 Fenchurch Street se encuentra en el Reino Unido."
+        }
+      ]
+    },
+    {
+      "eid": 78,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | leader | Barack_Obama",
+        "United_States | ethnicGroup | White_Americans"
+      ],
+      "modifiedTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | leader | Barack_Obama",
+        "United_States | ethnicGroup | White_Americans"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The leader of the United States of America (where English is the primary language) is President Barack Obama. One United States ethnic group is White Americans . Additionally 250 Delaware Avenue is located in the USA."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "250 Delaware Avenue se encuentra en los Estados Unidos, un país cuyo idioma es el inglés, cuyo líder es Barack Obama con el título de Presidente de los Estados Unidos, y donde los estadounidenses blancos son un grupo étnico."
+        }
+      ]
+    },
+    {
+      "eid": 79,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | John_Roberts",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | ethnicGroup | Asian_Americans"
+      ],
+      "modifiedTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | John_Roberts",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | ethnicGroup | Asian_Americans"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "250 Delaware Avenue is located in the United States where the English language is spoken. One of the leaders is John Roberts and the country is led by the President. The Asian Americans are an ethnic group within the country."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "250 Delaware Avenue se encuentra en los Estados Unidos, donde se habla el idioma inglés, John Roberts es uno de sus líderes y el país es dirigido por el Presidente de los Estados Unidos, siendo los asiático-americanos un grupo étnico."
+        }
+      ]
+    },
+    {
+      "eid": 80,
+      "category": "Building",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | Paul_Ryan",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | ethnicGroup | White_Americans"
+      ],
+      "modifiedTripleset": [
+        "United_States | language | English_language",
+        "United_States | leaderTitle | President_of_the_United_States",
+        "United_States | leader | Paul_Ryan",
+        "250_Delaware_Avenue | location | United_States",
+        "United_States | ethnicGroup | White_Americans"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The White Americans are an ethnic group in the United States which uses the English language. The country is the location of 250 Delaware Avenue and is led by the President. One of the leaders in the country is Paul Ryan."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Los estadounidenses blancos son un grupo étnico en los Estados Unidos, donde se habla el idioma inglés, se encuentra 250 Delaware Avenue, y cuyo líder es Paul Ryan, quien ostenta el título de Presidente de los Estados Unidos."
+        }
+      ]
+    },
+    {
+      "eid": 81,
+      "category": "CelestialBody",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "11264_Claudiomaccone | epoch | 2005-11-26",
+        "11264_Claudiomaccone | orbitalPeriod | 1513.722 (days)",
+        "11264_Claudiomaccone | periapsis | 296521000.0 (kilometres)",
+        "11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)",
+        "11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)"
+      ],
+      "modifiedTripleset": [
+        "11264_Claudiomaccone | epoch | 2005-11-26",
+        "11264_Claudiomaccone | orbitalPeriod | 1513.722 (days)",
+        "11264_Claudiomaccone | periapsis | 296521000.0 (kilometres)",
+        "11264_Claudiomaccone | apoapsis | 475426000.0 (kilometres)",
+        "11264_Claudiomaccone | averageSpeed | 18.29 (kilometrePerSeconds)"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "11264 Claudiomaccone has a periapsis of 296521000.0 (kilometres),an average speed of 18.29 kms per second and its epoch date was on 26 November 2005.It has an orbital period of 1513.722 days and its apoapsis is 475426000.0 kilometres."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El 11264 Claudiomaccone tiene un período orbital de 1513.722 días, un periapsis de 296521000.0 kilómetros, un apoapsis de 475426000.0 kilómetros y una velocidad promedio de 18.29 kilómetros por segundo, con su época establecida el 26 de noviembre de 2005."
+        }
+      ]
+    },
+    {
+      "eid": 82,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Java | ethnicGroup | Javanese_people",
+        "Singapore | leader | Halimah_Yacob",
+        "Ayam_penyet | region | Singapore",
+        "Singapore | language | Standard_Chinese",
+        "Ayam_penyet | country | Java"
+      ],
+      "modifiedTripleset": [
+        "Java | ethnicGroup | Javanese_people",
+        "Singapore | leader | Halimah_Yacob",
+        "Ayam_penyet | region | Singapore",
+        "Singapore | language | Standard_Chinese",
+        "Ayam_penyet | country | Java"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ayam penyet comes from the country of Java where the Javanese are the ethnic people. Ayam penyet is also from the Singapore region where Standard Chinese is spoken and Halimah Yacob is the leader."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Ayam penyet es un plato del país de Java, donde el grupo étnico son los javaneses, y también de la región de Singapur, donde se habla chino estándar y Halimah Yacob es la líder."
+        }
+      ]
+    },
+    {
+      "eid": 83,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Philippines | ethnicGroup | Zamboangans",
+        "Philippines | officialLanguage | Philippine_English",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Chinese_Filipino"
+      ],
+      "modifiedTripleset": [
+        "Philippines | ethnicGroup | Zamboangans",
+        "Philippines | officialLanguage | Philippine_English",
+        "Philippines | language | Philippine_Spanish",
+        "Batchoy | country | Philippines",
+        "Philippines | ethnicGroup | Chinese_Filipino"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ethnic groups in the Philippines include the Zamboangans and the Chinese Filipino. The official language in the country is Philippine English and Philippine Spanish is also spoken there. A traditional dish from the Philippines is Batchoy."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Filipinas, país donde residen grupos étnicos como los zamboangueños y los chino-filipinos, tiene el inglés filipino como idioma oficial y también se habla español filipino, y es el origen del plato tradicional Batchoy."
+        }
+      ]
+    },
+    {
+      "eid": 84,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | language | Spanish_language",
+        "Ajoblanco | region | Andalusia",
+        "Andalusia | leader | Susana_Díaz",
+        "Ajoblanco | country | Spain",
+        "Spain | demonym | Spaniards"
+      ],
+      "modifiedTripleset": [
+        "Spain | language | Spanish_language",
+        "Ajoblanco | region | Andalusia",
+        "Andalusia | leader | Susana_Díaz",
+        "Ajoblanco | country | Spain",
+        "Spain | demonym | Spaniards"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ajoblanco originates in Andalusia, where the leader is Susana Diaz. It is a dish from Spain, which is home to Spaniards and where the Spanish language is spoken."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El ajoblanco es un plato de España, donde se habla español y sus habitantes son los españoles, y es originario de Andalucía, cuya líder es Susana Díaz."
+        }
+      ]
+    },
+    {
+      "eid": 85,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Ajoblanco | region | Andalusia",
+        "Andalusia | leader | Susana_Díaz",
+        "Spain | currency | Euro",
+        "Ajoblanco | country | Spain"
+      ],
+      "modifiedTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Ajoblanco | region | Andalusia",
+        "Andalusia | leader | Susana_Díaz",
+        "Spain | currency | Euro",
+        "Ajoblanco | country | Spain"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ajoblanco is from Spain where the currency is the Euro and the leaders are Susana Diaz and Felipe VI."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El ajoblanco es un plato de España, un país cuya moneda es el Euro y cuyo líder es Felipe VI, y es originario de la región de Andalucía, liderada por Susana Díaz."
+        }
+      ]
+    },
+    {
+      "eid": 86,
+      "category": "Food",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Spain | language | Spanish_language",
+        "Ajoblanco | region | Andalusia",
+        "Ajoblanco | country | Spain",
+        "Spain | ethnicGroup | Spaniards"
+      ],
+      "modifiedTripleset": [
+        "Spain | leader | Felipe_VI_of_Spain",
+        "Spain | language | Spanish_language",
+        "Ajoblanco | region | Andalusia",
+        "Ajoblanco | country | Spain",
+        "Spain | ethnicGroup | Spaniards"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ajoblanco is from the Andalusia region of Spain where Felipe VI is the leader and Spanish is Spoken. The population are known as Spaniards."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El ajoblanco es de la región de Andalucía en España, donde Felipe VI es el líder, se habla español y la población es conocida como españoles."
+        }
+      ]
+    },
+    {
+      "eid": 87,
+      "category": "Monument",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Turkey | capital | Ankara",
+        "Turkey | currency | Turkish_lira",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "modifiedTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Turkey | capital | Ankara",
+        "Turkey | currency | Turkish_lira",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Ankara is the capital of Turkey. where the Atatürk Monument (İzmir) can be found. Turkey's currency is the Turkish lira and the President and leader is Ahmet Davutoglu."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ankara es la capital de Turquía, país donde se encuentra el Monumento a Atatürk (İzmir), cuya moneda es la lira turca y cuyo líder es Ahmet Davutoğlu, quien ostenta el título de Presidente de Turquía."
+        }
+      ]
+    },
+    {
+      "eid": 88,
+      "category": "SportsTeam",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 5,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Italy | leader | Pietro_Grasso",
+        "Italy | officialLanguage | Italian_language",
+        "Italy | capital | Rome",
+        "Italy | leader | Sergio_Mattarella",
+        "A.S._Gubbio_1910 | ground | Italy"
+      ],
+      "modifiedTripleset": [
+        "Italy | leader | Pietro_Grasso",
+        "Italy | officialLanguage | Italian_language",
+        "Italy | capital | Rome",
+        "Italy | leader | Sergio_Mattarella",
+        "A.S._Gubbio_1910 | ground | Italy"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The ground of A.S. Gubbio 1910 is located in Italy, where Rome is the capital, Italian is the official language and where there are leaders called Pietro Grasso and Sergio Mattarella."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El campo del A.S. Gubbio 1910 está en Italia, donde Roma es la capital, el idioma oficial es el italiano y sus líderes son Pietro Grasso y Sergio Mattarella."
+        }
+      ]
+    },
+    {
+      "eid": 89,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | mission | Apollo_8",
+        "Apollo_8 | backupPilot | Buzz_Aldrin",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "Apollo_8 | operator | NASA",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | mission | Apollo_8",
+        "Apollo_8 | backupPilot | Buzz_Aldrin",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "Apollo_8 | operator | NASA",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders served as a fighter pilot and was a member of Apollo 8's crew. He is now retired. Frank Borman was also a crew member of the NASA operated Apollo 8. Buzz Aldrin was a back up pilot for Apollo 8."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, un piloto de combate ya retirado, participó en la misión Apolo 8, operada por la NASA, que también contó con Frank Borman como miembro de la tripulación y Buzz Aldrin como piloto de reserva."
+        }
+      ]
+    },
+    {
+      "eid": 90,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | mission | Apollo_8",
+        "William_Anders | timeInSpace | &amp;quot;8820.0&amp;quot;(minutes)",
+        "Apollo_8 | backupPilot | Buzz_Aldrin",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "William_Anders | servedAsChiefOfTheAstronautOfficeIn | 1976",
+        "Apollo_8 | operator | NASA"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | mission | Apollo_8",
+        "William_Anders | timeInSpace | &amp;quot;8820.0&amp;quot;(minutes)",
+        "Apollo_8 | backupPilot | Buzz_Aldrin",
+        "Apollo_8 | crewMembers | Frank_Borman",
+        "William_Anders | servedAsChiefOfTheAstronautOfficeIn | 1976",
+        "Apollo_8 | operator | NASA"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "Apollo 8 was operated by NASA and had the following crew: William Anders who served as Chief of the Astronaut Office in 1976 and spent 8820 minutes in space; Buzz Aldrin who was a backup pilot and Frank Borman who was a crew member."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La misión Apolo 8, operada por la NASA, contó con William Anders, quien pasó 8820 minutos en el espacio y sirvió como jefe de la Oficina de Astronautas en 1976, y Frank Borman como miembros de la tripulación, siendo Buzz Aldrin su piloto de respaldo."
+        }
+      ]
+    },
+    {
+      "eid": 91,
+      "category": "Monument",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Atatürk_Monument_(İzmir) | designer | Pietro_Canonica",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Turkey | capital | Ankara",
+        "Atatürk_Monument_(İzmir) | inaugurationDate | &amp;quot;1932-07-27&amp;quot;",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "modifiedTripleset": [
+        "Turkey | leaderTitle | President_of_Turkey",
+        "Atatürk_Monument_(İzmir) | designer | Pietro_Canonica",
+        "Turkey | leader | Ahmet_Davutoğlu",
+        "Turkey | capital | Ankara",
+        "Atatürk_Monument_(İzmir) | inaugurationDate | &amp;quot;1932-07-27&amp;quot;",
+        "Atatürk_Monument_(İzmir) | location | Turkey"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "President Ahmet Davutoglu is the leader of Turkey. The capital city is Ankara, but it is in Izmir that the Ataturk monument designed by Pietro Canonica and inaugurated on 27 July 1932 is located."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "Ahmet Davutoğlu es el líder de Turquía, ostentando el título de Presidente de Turquía, cuya capital es Ankara, y donde se encuentra el Monumento a Atatürk (İzmir), diseñado por Pietro Canonica e inaugurado el 27 de julio de 1932."
+        }
+      ]
+    },
+    {
+      "eid": 92,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "School of Business and Social Sciences at the Aarhus University in Aarhus, Denmark was established in 1928 and has 16000 students. The dean is Thomas Pallesen and they have 737 academic Staff."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus, ubicada en Aarhus, Dinamarca, fue fundada en 1928, cuenta con 16.000 estudiantes y 737 miembros de personal académico, y su decano es Thomas Pallesen."
+        }
+      ]
+    },
+    {
+      "eid": 93,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The School of Business and Social Sciences at the Aarhus University in Aarhus, Denmark was established in 1928. It has 16,000 students and its dean is Thomas Pallesen. It is affiliated to the European University Association."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus, ubicada en Aarhus, Dinamarca, fue establecida en 1928, cuenta con 16.000 estudiantes, tiene como decano a Thomas Pallesen y está afiliada a la Asociación Europea de Universidades."
+        }
+      ]
+    },
+    {
+      "eid": 94,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | latinName | &amp;quot;Universitas Aarhusiensis&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | latinName | &amp;quot;Universitas Aarhusiensis&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The School of Business and Social Sciences at the Aarhus University in Denmark was established in 1928. It has 737 academic staff and 16,000 students. Its Latin name is &amp;quot;Universitas Aarhusiensis&amp;quot;."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus en Dinamarca, establecida en 1928, cuenta con 16.000 estudiantes y 737 miembros de personal académico, está afiliada a la Asociación Europea de Universidades y su nombre en latín es \"Universitas Aarhusiensis\"."
+        }
+      ]
+    },
+    {
+      "eid": 95,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 6,
+      "sourceEid": null,
+      "originalTripleset": [
+        "Visvesvaraya_Technological_University | city | Belgaum",
+        "Acharya_Institute_of_Technology | established | 2000",
+        "Acharya_Institute_of_Technology | country | &amp;quot;India&amp;quot;",
+        "Acharya_Institute_of_Technology | numberOfPostgraduateStudents | 700",
+        "Acharya_Institute_of_Technology | campus | &amp;quot;In Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090.&amp;quot;",
+        "Acharya_Institute_of_Technology | affiliation | Visvesvaraya_Technological_University"
+      ],
+      "modifiedTripleset": [
+        "Visvesvaraya_Technological_University | city | Belgaum",
+        "Acharya_Institute_of_Technology | established | 2000",
+        "Acharya_Institute_of_Technology | country | &amp;quot;India&amp;quot;",
+        "Acharya_Institute_of_Technology | numberOfPostgraduateStudents | 700",
+        "Acharya_Institute_of_Technology | campus | &amp;quot;In Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090.&amp;quot;",
+        "Acharya_Institute_of_Technology | affiliation | Visvesvaraya_Technological_University"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The Acharya Institute of Technology has 700 Postgraduate Students, its campus is located in Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore 560090 and it is affiliated with Visvesvaraya Technological University. The University was established in 2000 and is found in Belgaum, India."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "El Acharya Institute of Technology, fundado en 2000 en India, cuenta con 700 estudiantes de posgrado y su campus se encuentra en Soldevanahalli, Acharya Dr. Sarvapalli Radhakrishnan Road, Hessarghatta Main Road, Bangalore – 560090, estando afiliado a la Visvesvaraya Technological University, que está ubicada en Belgaum."
+        }
+      ]
+    },
+    {
+      "eid": 96,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 7,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8",
+        "William_Anders | almaMater | &amp;quot;AFIT, M.S. 1962&amp;quot;"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong",
+        "William_Anders | mission | Apollo_8",
+        "William_Anders | almaMater | &amp;quot;AFIT, M.S. 1962&amp;quot;"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders was born on Oct 17, 1933 in British Hong Kong. He graduated from AFIT in 1962 with an M.S. Anders was a fighter pilot and joined NASA in 1963, where he was a member of Apollo 8. He retired on Sept 1, 1969."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, nacido el 17 de octubre de 1933 en Hong Kong Británico, fue un piloto de combate que se graduó de AFIT con una Maestría en Ciencias en 1962, fue seleccionado por la NASA en 1963, participó en la misión Apolo 8 y se retiró el 1 de septiembre de 1969."
+        }
+      ]
+    },
+    {
+      "eid": 97,
+      "category": "Astronaut",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 7,
+      "sourceEid": null,
+      "originalTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | nationality | United_States",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;",
+        "William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong"
+      ],
+      "modifiedTripleset": [
+        "William_Anders | dateOfRetirement | &amp;quot;1969-09-01&amp;quot;",
+        "William_Anders | selectedByNasa | 1963",
+        "William_Anders | nationality | United_States",
+        "William_Anders | status | &amp;quot;Retired&amp;quot;",
+        "William_Anders | birthDate | &amp;quot;1933-10-17&amp;quot;",
+        "William_Anders | occupation | Fighter_pilot",
+        "William_Anders | birthPlace | British_Hong_Kong"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "William Anders is from the US. He was born in British Hong Kong on October 17th, 1933. He was selected by NASA in 1963. He was a fighter pilot, who retired on September 1st 1969."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "William Anders, de nacionalidad estadounidense, nació en Hong Kong Británico el 17 de octubre de 1933, fue seleccionado por la NASA en 1963 como piloto de combate y se retiró el 1 de septiembre de 1969, siendo su estado actual el de retirado."
+        }
+      ]
+    },
+    {
+      "eid": 98,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 7,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | academicStaffSize | 737",
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "In 1928 the School of Business and Social Sciences at the Aarhus University was established in the city of Aarhus, Denmark. The School is affiliated with the European University Association and is led by Dean Thomas Pallesen. There are 16000 students and an academic staff of 737."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus, fundada en 1928 en la ciudad de Aarhus, Dinamarca, está afiliada a la Asociación Europea de Universidades, es dirigida por el decano Thomas Pallesen y cuenta con 16.000 estudiantes y un personal académico de 737 miembros."
+        }
+      ]
+    },
+    {
+      "eid": 99,
+      "category": "University",
+      "shape": "(X (X))",
+      "shapeType": "NA",
+      "size": 7,
+      "sourceEid": null,
+      "originalTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "European_University_Association | headquarter | Brussels",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "modifiedTripleset": [
+        "School of Business and Social Sciences at the Aarhus University | dean | &amp;quot;Thomas Pallesen&amp;quot;",
+        "School of Business and Social Sciences at the Aarhus University | city | Aarhus",
+        "School of Business and Social Sciences at the Aarhus University | numberOfStudents | 16000",
+        "European_University_Association | headquarter | Brussels",
+        "School of Business and Social Sciences at the Aarhus University | country | Denmark",
+        "School of Business and Social Sciences at the Aarhus University | affiliation | European_University_Association",
+        "School of Business and Social Sciences at the Aarhus University | established | 1928"
+      ],
+      "lex": [
+        {
+          "lid": "Id1",
+          "lang": "en",
+          "comment": "reference",
+          "text": "The city of Aarhus in Denmark is the location of the School of Business and Social Sciences at the Aarhus University which was established in 1928 and affiliated with the European University Association headquartered in Brussels. The current Dean is Thomas Pallesen and there are 16000 students."
+        },
+        {
+          "lid": "Id1",
+          "lang": "es",
+          "comment": "",
+          "text": "La Escuela de Negocios y Ciencias Sociales de la Universidad de Aarhus, ubicada en Aarhus, Dinamarca, fue fundada en 1928, está afiliada a la Asociación de Universidades Europeas con sede en Bruselas, tiene como decano a Thomas Pallesen y cuenta con 16.000 estudiantes."
+        }
+      ]
+    }
+  ]
+}

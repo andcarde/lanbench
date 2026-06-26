@@ -22,7 +22,7 @@ const { requireApiAuth, requireApiModerator } = require('../middlewares/auth');
  * @returns {import('express').Router}
  * @throws {Error} If `datasetsController` is not provided.
  */
-function createDatasetsApiRouter({ datasetsController, datasetLlmCredentialsController, uploadMiddleware } = {}) {
+function createDatasetsApiRouter({ datasetsController, datasetLlmCredentialsController, datasetCustomProvidersController, uploadMiddleware } = {}) {
     if (!datasetsController)
         throw new Error('datasetsController is required to build the datasets API router.');
 
@@ -42,6 +42,10 @@ function createDatasetsApiRouter({ datasetsController, datasetLlmCredentialsCont
     // provided, so router tests that exercise the base surface stay unaffected.
     if (datasetLlmCredentialsController)
         mountLlmCredentialsRoutes(router, datasetLlmCredentialsController);
+
+    // Per-dataset user-defined providers (US-36). Same conditional mount.
+    if (datasetCustomProvidersController)
+        mountCustomProvidersRoutes(router, datasetCustomProvidersController);
 
     router.get('/:id/statistics', datasetsController.getDatasetStatistics);
     router.get('/:id', datasetsController.getDatasetById);
@@ -77,6 +81,21 @@ function mountLlmCredentialsRoutes(router, controller) {
     router.patch('/:id/llm-credentials/:provider/activate', controller.activate);
     router.delete('/:id/llm-credentials/:provider', controller.remove);
     router.post('/:id/llm-credentials/:provider/check', controller.check);
+}
+
+/**
+ * Mounts the `/:id/custom-providers` sub-routes (admin-only, enforced in the
+ * service). The provider name travels as a path segment for the delete action,
+ * mirroring the credentials router.
+ *
+ * @param {import('express').Router} router
+ * @param {Record<string, any>} controller
+ * @returns {void}
+ */
+function mountCustomProvidersRoutes(router, controller) {
+    router.get('/:id/custom-providers', controller.list);
+    router.post('/:id/custom-providers', controller.create);
+    router.delete('/:id/custom-providers/:name', controller.remove);
 }
 
 module.exports = {

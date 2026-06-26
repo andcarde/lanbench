@@ -11,26 +11,32 @@
   "use strict";
 
   const ROLE_KEYS = ["annotator", "reviewer", "admin"];
+  /**
+   * Built-in providers, mirror of `constants/llm-providers.js`. Kept in sync
+   * manually because the frontend has no module bundler.
+   */
+  const BUILTIN_PROVIDERS = [
+    { name: "groq", label: "Groq" },
+    { name: "google-ai-studio", label: "Google AI Studio" },
+    { name: "openai-compatible", label: "OpenAI-compatible" },
+    { name: "anthropic", label: "Anthropic" }
+  ];
+  const BUILTIN_PROVIDER_NAMES = BUILTIN_PROVIDERS.map(provider => provider.name);
   /** Supported provider identifiers accepted by the JSON importer. */
-  const JSON_IMPORT_SUPPORTED_PROVIDERS = ["groq", "google-ai-studio", "openai-compatible", "anthropic"];
+  const JSON_IMPORT_SUPPORTED_PROVIDERS = BUILTIN_PROVIDER_NAMES.slice();
   /** Free-form JSON labels mapped to canonical provider ids (US-35). */
   const JSON_IMPORT_PROVIDER_ALIASES = {
     "google": "google-ai-studio",
     "google ai studio": "google-ai-studio",
     "ai-studio": "google-ai-studio",
-    "gemini": "google-ai-studio"
+    "gemini": "google-ai-studio",
+    "openai": "openai-compatible",
+    "openia": "openai-compatible"
   };
-  /** Providers whose model catalog can be queried live (US-35). */
-  const MODEL_CATALOG_PROVIDERS = ["groq", "google-ai-studio"];
-  /** Sentinel value of the "write manually" option in the model select. */
-  const MANUAL_MODEL_OPTION = "__manual__";
-  /** Manual-input placeholder per provider. */
-  const MODEL_PLACEHOLDERS = {
-    "groq": "llama-3.3-70b-versatile",
-    "google-ai-studio": "gemini-2.0-flash",
-    "openai-compatible": "gpt-4o-mini",
-    "anthropic": "claude-3-5-haiku-latest"
-  };
+  /** Provider-name pattern accepted by the backend (mirror of `PROVIDER_NAME_PATTERN`). */
+  const PROVIDER_NAME_PATTERN = /^[a-z0-9._-]{1,40}$/;
+  /** Maximum wait for credential checks before surfacing a timeout modal. */
+  const CREDENTIAL_CHECK_TIMEOUT_MS = 5000;
   const state = {
     datasetId: null,
     datasetName: "",
@@ -38,6 +44,9 @@
     isReviewEnabled: false,
     llmMode: "none",
     credentials: [],
+    customProviders: [],
+    /** Name of the provider pending deletion confirmation. */
+    pendingDeleteCustomProvider: null,
     /** Catalog cache per `provider::keyFingerprint` (page lifetime only). */
     modelCatalogCache: {}
   };
@@ -77,7 +86,12 @@
       resolveModelFieldValue,
       buildModelsRequestPayload,
       buildModelOptionsHtml,
-      catalogCacheKey
+      catalogCacheKey,
+      normaliseCustomProvider,
+      validateCustomProviderInput,
+      buildCheckFailureText,
+      buildProviderMenuHtml,
+      composeProviderList
     };
   }
 
@@ -106,19 +120,28 @@
   const $reviewStatsPane = $("#reviewStatsPane");
   const $llmCredentialsPanel = $("#llmCredentialsPanel");
   const $addCredentialForm = $("#addCredentialForm");
-  const $credProvider = $("#credProvider");
-  const $credModel = $("#credModel");
+  const $credProviderToggle = $("#credProviderToggle");
+  const $credProviderMenu = $("#credProviderMenu");
   const $credModelSelect = $("#credModelSelect");
   const $credModelPickerGroup = $("#credModelPickerGroup");
   const $credModelStatus = $("#credModelStatus");
   const $btnReloadModels = $("#btnReloadModels");
-  const $credApiBase = $("#credApiBase");
   const $credApiKey = $("#credApiKey");
   const $btnAddCredential = $("#btnAddCredential");
   const $credentialMessage = $("#credentialMessage");
   const $credentialsTableBody = $("#credentialsTableBody");
   const $btnLoadCredentialsJson = $("#btnLoadCredentialsJson");
   const $credentialsJsonInput = $("#credentialsJsonInput");
+  const $btnOpenAddCustomProvider = $("#btnOpenAddCustomProvider");
+  const $addCustomProviderForm = $("#addCustomProviderForm");
+  const $customProviderName = $("#customProviderName");
+  const $customProviderUrl = $("#customProviderUrl");
+  const $customProviderNameError = $("#customProviderNameError");
+  const $customProviderUrlError = $("#customProviderUrlError");
+  const $customProviderMessage = $("#customProviderMessage");
+  const $btnConfirmAddCustomProvider = $("#btnConfirmAddCustomProvider");
+  const $modalDeleteCustomProviderBody = $("#modalDeleteCustomProviderBody");
+  const $btnConfirmDeleteCustomProvider = $("#btnConfirmDeleteCustomProvider");
 
   /**
    * Escapes a value for safe insertion as HTML text.
@@ -304,19 +327,118 @@
   }
 
   /**
-   * Builds the create-credential payload from the form values.
+   * Builds the create-credential payload from the form values. The base URL is
+   * no longer part of the payload (US-36): it is tied to the provider, not the
+   * credential.
    * @param {*} input - Raw form values.
-   * @returns {*} Payload with trimmed provider/model/apiBase/apiKey.
+   * @returns {*} Payload with trimmed provider/model/apiKey.
    */
   function buildCredentialPayload(input) {
     const source = input && typeof input === "object" ? input : {};
-    const apiBase = String(source.apiBase || "").trim();
     return {
       provider: String(source.provider || "").trim().toLowerCase(),
       model: String(source.model || "").trim(),
-      apiBase: apiBase || null,
       apiKey: String(source.apiKey || "").trim()
     };
+  }
+
+  /**
+   * Normalizes a custom-provider row received from the backend.
+   * @param {*} raw - Raw object.
+   * @returns {{ name:string, urlBase:string, createdAt:string }}
+   */
+  function normaliseCustomProvider(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    return {
+      name: String(source.name || "").trim().toLowerCase(),
+      urlBase: String(source.urlBase || "").trim(),
+      createdAt: typeof source.createdAt === "string" ? source.createdAt : ""
+    };
+  }
+
+  /**
+   * Pure validator for the "Add provider" modal inputs. Returns the first error
+   * detected on each field, or null. Duplicate-name detection compares against
+   * both the built-in catalog and the list of already-added custom providers.
+   *
+   * @param {{ name:*, urlBase:*, builtinNames:string[], customNames:string[] }} input
+   * @returns {{ name:string|null, urlBase:string|null, hasError:boolean }}
+   */
+  function validateCustomProviderInput(input) {
+    const source = input && typeof input === "object" ? input : {};
+    const name = String(source.name || "").trim().toLowerCase();
+    const urlBase = String(source.urlBase || "").trim();
+    const builtin = Array.isArray(source.builtinNames) ? source.builtinNames : [];
+    const customs = Array.isArray(source.customNames) ? source.customNames : [];
+
+    let nameError = null;
+    if (!name) {
+      nameError = "El nombre del proveedor es obligatorio.";
+    } else if (!PROVIDER_NAME_PATTERN.test(name)) {
+      nameError = "El nombre sólo admite letras minúsculas, dígitos, '.', '_' o '-' (máx. 40).";
+    } else if (builtin.includes(name) || customs.includes(name)) {
+      nameError = "Proveedor ya añadido";
+    }
+
+    let urlError = null;
+    if (!urlBase) {
+      urlError = "La URL del proveedor es obligatoria.";
+    } else if (urlBase.length > 255 || !(urlBase.startsWith("http://") || urlBase.startsWith("https://"))) {
+      urlError = "La URL debe empezar por http:// o https:// (máx. 255).";
+    }
+
+    return { name: nameError, urlBase: urlError, hasError: Boolean(nameError || urlError) };
+  }
+
+  /**
+   * Composes the unified provider list shown in the credentials selector:
+   * built-in entries first (in declaration order), then custom ones (in
+   * insertion order). Each entry carries `isCustom`. Pure.
+   *
+   * @param {Array<{ name:string, urlBase?:string }>} customProviders
+   * @returns {Array<{ name:string, label:string, isCustom:boolean }>}
+   */
+  function composeProviderList(customProviders) {
+    const result = BUILTIN_PROVIDERS.map(provider => ({
+      name: provider.name,
+      label: provider.label,
+      isCustom: false
+    }));
+    const customs = Array.isArray(customProviders) ? customProviders : [];
+    customs.forEach(provider => {
+      const name = String((provider && provider.name) || "").trim().toLowerCase();
+      if (!name)
+        return;
+      result.push({ name, label: name, isCustom: true });
+    });
+    return result;
+  }
+
+  /**
+   * Builds the dropdown-menu markup for the provider selector. Follows the
+   * canonical Bootstrap 5 pattern (`.dropdown-item` lives on the inner
+   * `<button>`, not on the `<li>`). Custom rows include a trailing cross
+   * button. Pure (no DOM access).
+   *
+   * @param {Array<{ name:string, label:string, isCustom:boolean }>} providers
+   * @returns {string} HTML markup for the `<ul class="dropdown-menu">` body.
+   */
+  function buildProviderMenuHtml(providers) {
+    const safe = Array.isArray(providers) ? providers : [];
+    if (!safe.length)
+      return '<li><span class="dropdown-item-text text-muted">Sin proveedores</span></li>';
+
+    return safe.map(provider => {
+      const name = escapeHtml(provider.name);
+      const label = escapeHtml(provider.label || provider.name);
+      if (!provider.isCustom) {
+        return `<li><button type="button" class="dropdown-item provider-name" data-name="${name}">${label}</button></li>`;
+      }
+      return `<li class="provider-item d-flex align-items-center" data-custom="true" data-name="${name}">
+        <button type="button" class="dropdown-item provider-name flex-grow-1" data-name="${name}">${label}</button>
+        <button type="button" class="provider-delete btn btn-link text-secondary px-2 py-0" data-name="${name}" aria-label="Eliminar proveedor ${label}" title="Eliminar proveedor">&times;</button>
+      </li>`;
+    }).join("");
   }
 
   /**
@@ -334,12 +456,19 @@
   }
 
   /**
-   * Decides whether a provider's model catalog can be queried live (US-35).
+   * Decides whether a provider's model catalog can be queried live (US-35,
+   * US-36). Built-in providers all support it; user-defined providers also
+   * surface the picker (best-effort OpenAI-compatible catalog) so the user
+   * can try the dropdown before falling back to manual entry.
+   *
    * @param {*} provider - Canonical provider id.
    * @returns {boolean} True when the model picker applies.
    */
   function providerSupportsModelCatalog(provider) {
-    return MODEL_CATALOG_PROVIDERS.includes(String(provider || "").trim().toLowerCase());
+    const canonical = String(provider || "").trim().toLowerCase();
+    if (!canonical)
+      return false;
+    return PROVIDER_NAME_PATTERN.test(canonical);
   }
 
   /**
@@ -359,54 +488,50 @@
   }
 
   /**
-   * Resolves the effective model value of the form: the manual input when the
-   * provider has no catalog or the manual option is selected, the dropdown
-   * value otherwise. Pure (no DOM), so the precedence is unit-testable.
-   * @param {{catalogSupported:boolean, selectValue:*, manualValue:*}} input
+   * Resolves the effective model value of the form. The form-based flow only
+   * supports picking from the live catalog (the manual input was removed); the
+   * "Cargar desde JSON" importer bypasses this helper and posts the model
+   * straight from the file. Pure (no DOM), so the precedence stays testable.
+   * @param {{selectValue:*}} input
    * @returns {string} Trimmed model id (possibly empty).
    */
   function resolveModelFieldValue(input) {
     const source = input && typeof input === "object" ? input : {};
-    const selectValue = String(source.selectValue || "").trim();
-    const manualValue = String(source.manualValue || "").trim();
-
-    if (!source.catalogSupported || !selectValue || selectValue === MANUAL_MODEL_OPTION)
-      return manualValue;
-    return selectValue;
+    return String(source.selectValue || "").trim();
   }
 
   /**
    * Builds the body for `POST /llm-credentials/models`, omitting empty fields
-   * so the backend can fall back to the stored credential key. Pure (no DOM).
-   * @param {{provider:*, apiKey:*, apiBase:*}} input - Raw form values.
-   * @returns {{provider:string, apiKey?:string, apiBase?:string}} Payload.
+   * so the backend can fall back to the stored credential key. The base URL is
+   * not part of the payload anymore (US-36): the server derives it from the
+   * provider. Pure (no DOM).
+   * @param {{provider:*, apiKey:*}} input - Raw form values.
+   * @returns {{provider:string, apiKey?:string}} Payload.
    */
   function buildModelsRequestPayload(input) {
     const source = input && typeof input === "object" ? input : {};
     const payload = { provider: String(source.provider || "").trim().toLowerCase() };
     const apiKey = String(source.apiKey || "").trim();
-    const apiBase = String(source.apiBase || "").trim();
     if (apiKey) payload.apiKey = apiKey;
-    if (apiBase) payload.apiBase = apiBase;
     return payload;
   }
 
   /**
-   * Builds the `<option>` markup for the model dropdown: the catalog entries
-   * plus the always-present manual-entry escape hatch. Pure string building,
-   * so the option set is unit-testable.
+   * Builds the `<option>` markup for the model dropdown using the catalog
+   * entries returned by the provider. The "manual entry" escape hatch was
+   * removed; callers should hide the picker entirely when the catalog is empty
+   * (the form-based flow then asks the user to type the API key first, or to
+   * use "Cargar desde JSON" for providers without a queryable catalog).
    * @param {Array<{id:string, label:string}>} models - Normalized models.
    * @param {string} [selectedId] - Model id to preselect when present.
    * @returns {string} HTML options markup.
    */
   function buildModelOptionsHtml(models, selectedId) {
     const safeModels = Array.isArray(models) ? models : [];
-    const options = safeModels.map(model => {
+    return safeModels.map(model => {
       const selected = model.id === selectedId ? " selected" : "";
       return `<option value="${escapeHtml(model.id)}"${selected}>${escapeHtml(model.label)}</option>`;
-    });
-    options.push(`<option value="${MANUAL_MODEL_OPTION}">Otro (escribir manualmente)</option>`);
-    return options.join("");
+    }).join("");
   }
 
   /**
@@ -493,6 +618,14 @@
   }
 
   /**
+   * Custom-providers URL for the current dataset (US-36).
+   * @returns {string} URL.
+   */
+  function customProvidersUrl() {
+    return `/api/datasets/${encodeURIComponent(state.datasetId)}/custom-providers`;
+  }
+
+  /**
    * Statistics URL for the current dataset.
    * @returns {string} URL.
    */
@@ -530,17 +663,19 @@
 
   /**
    * Shows or hides the AI credentials panel based on llm_mode and loads the
-   * credentials when the panel applies.
+   * credentials and the custom providers when the panel applies.
    * @param {*} llmMode - Dataset llm_mode value.
    */
   function applyCredentialsPanelVisibility(llmMode) {
     const visible = shouldShowCredentialsPanel(llmMode);
     $llmCredentialsPanel.toggleClass("d-none", !visible);
     if (visible) {
-      loadCredentials();
+      loadCustomProviders().always(loadCredentials);
     } else {
       state.credentials = [];
+      state.customProviders = [];
       $credentialsTableBody.empty();
+      renderProviderMenu();
     }
   }
 
@@ -582,11 +717,12 @@
 
   /**
    * Loads the dataset's masked credentials.
+   * @returns {*} jQuery deferred.
    */
   function loadCredentials() {
     $credentialsTableBody.html('<tr><td colspan="5" class="text-muted">Cargando credenciales...</td></tr>');
 
-    $.ajax({
+    return $.ajax({
       url: credentialsUrl(),
       method: "GET",
       dataType: "json"
@@ -596,6 +732,7 @@
           ? payload.map(normaliseCredential)
           : [];
         renderCredentials();
+        renderProviderMenu();
         applyModelFieldMode();
       })
       .fail(function () {
@@ -604,11 +741,68 @@
   }
 
   /**
+   * Loads the dataset's user-defined providers (US-36).
+   * @returns {*} jQuery deferred.
+   */
+  function loadCustomProviders() {
+    return $.ajax({
+      url: customProvidersUrl(),
+      method: "GET",
+      dataType: "json"
+    })
+      .done(function (payload) {
+        state.customProviders = Array.isArray(payload)
+          ? payload.map(normaliseCustomProvider)
+          : [];
+        renderProviderMenu();
+      })
+      .fail(function () {
+        state.customProviders = [];
+        renderProviderMenu();
+      });
+  }
+
+  /**
+   * Renders the provider dropdown (built-in + custom). Preserves the current
+   * selection when possible; falls back to the first entry otherwise.
+   */
+  function renderProviderMenu() {
+    const providers = composeProviderList(state.customProviders);
+    $credProviderMenu.html(buildProviderMenuHtml(providers));
+
+    const currentName = selectedProvider();
+    const stillPresent = providers.some(provider => provider.name === currentName);
+    const targetName = stillPresent ? currentName : (providers[0] ? providers[0].name : "");
+
+    if (targetName)
+      selectProvider(targetName, /* applyMode */ false);
+    else
+      $credProviderToggle.text("Selecciona un proveedor").attr("data-provider", "");
+  }
+
+  /**
    * Canonical provider currently selected in the credentials form.
    * @returns {string} Provider id.
    */
   function selectedProvider() {
-    return String($credProvider.val() || "").trim().toLowerCase();
+    return String($credProviderToggle.attr("data-provider") || "").trim().toLowerCase();
+  }
+
+  /**
+   * Updates the dropdown toggle label and `data-provider` to reflect a new
+   * selection. When `applyMode` is true (the default), re-applies the model
+   * field mode so the picker reloads its catalog.
+   * @param {string} providerName - Canonical provider id.
+   * @param {boolean} [applyMode] - When false, callers will re-apply manually.
+   */
+  function selectProvider(providerName, applyMode) {
+    const name = String(providerName || "").trim().toLowerCase();
+    const providers = composeProviderList(state.customProviders);
+    const entry = providers.find(provider => provider.name === name);
+    const label = entry ? entry.label : (name || "Selecciona un proveedor");
+    $credProviderToggle.attr("data-provider", name).text(label);
+    if (applyMode !== false)
+      applyModelFieldMode();
   }
 
   /**
@@ -638,18 +832,8 @@
   }
 
   /**
-   * Reveals or hides the manual model input under the picker.
-   * @param {boolean} visible - True to show the text input.
-   */
-  function setManualModelVisible(visible) {
-    $credModel.toggleClass("d-none", !visible);
-  }
-
-  /**
-   * Renders the model dropdown with the given catalog (the manual-entry option
-   * is always appended). Preselects the stored credential's model when it is
-   * in the list; with an empty catalog the manual input is revealed so saving
-   * is never blocked (US-35).
+   * Renders the model dropdown with the given catalog. Preselects the stored
+   * credential's model when it is in the list, otherwise the first entry.
    * @param {Array<{id:string, label:string}>} models - Normalized models.
    */
   function renderModelSelect(models) {
@@ -657,39 +841,52 @@
     const stored = state.credentials.find(credential => credential.provider === selectedProvider());
     const preferred = stored && list.some(model => model.id === stored.model)
       ? stored.model
-      : (list[0] ? list[0].id : MANUAL_MODEL_OPTION);
+      : (list[0] ? list[0].id : "");
 
     $credModelSelect.html(buildModelOptionsHtml(list, preferred));
-    $credModelSelect.val(preferred);
-    setManualModelVisible(preferred === MANUAL_MODEL_OPTION);
+    if (preferred)
+      $credModelSelect.val(preferred);
   }
 
   /**
-   * Applies the model-field mode for the selected provider: dropdown + reload
-   * button for catalog providers (Groq, Google AI Studio), plain text input
-   * for the rest. Triggers the catalog load when the picker applies.
+   * Hides or shows the whole model picker group (label + select + reload button).
+   * @param {boolean} visible - True to reveal the picker.
+   */
+  function setModelPickerVisible(visible) {
+    $credModelPickerGroup.toggleClass("d-none", !visible);
+  }
+
+  /**
+   * Applies the model-field mode for the selected provider. The picker stays
+   * hidden until the user has entered an API key (or a stored credential for
+   * this provider already exists, in which case the server can fetch the
+   * catalog with the saved key).
    */
   function applyModelFieldMode() {
     const provider = selectedProvider();
-    const supported = providerSupportsModelCatalog(provider);
-
-    $credModel.attr("placeholder", MODEL_PLACEHOLDERS[provider] || "");
-    $credModelPickerGroup.toggleClass("d-none", !supported);
-
-    if (!supported) {
-      setManualModelVisible(true);
+    if (!provider || !providerSupportsModelCatalog(provider)) {
+      setModelPickerVisible(false);
       setModelStatus("");
       return;
     }
+
+    const hasKeySource = Boolean(String($credApiKey.val() || "").trim()) || hasStoredCredential(provider);
+    if (!hasKeySource) {
+      setModelPickerVisible(false);
+      setModelStatus("Introduce la API key del proveedor para cargar sus modelos.", "muted");
+      return;
+    }
+
+    setModelPickerVisible(true);
     loadModelCatalog({});
   }
 
   /**
    * Loads the provider's model catalog through the backend proxy
-   * (`POST /llm-credentials/models`). Serves the page cache unless `force`;
-   * when no key is available yet (neither typed nor stored) it only shows a
-   * hint. Catalog failures (invalid key, rate limit, provider down) surface
-   * inline and fall back to manual entry.
+   * (`POST /llm-credentials/models`). Serves the page cache unless `force`.
+   * Assumes the caller has already gated visibility on the presence of a key;
+   * catalog failures (invalid key, rate limit, provider down) hide the picker
+   * and surface the reason inline so the user can fix the key.
    * @param {{force?:boolean}} options
    */
   function loadModelCatalog(options) {
@@ -700,6 +897,7 @@
 
     const typedKey = String($credApiKey.val() || "").trim();
     if (!typedKey && !hasStoredCredential(provider)) {
+      setModelPickerVisible(false);
       renderModelSelect([]);
       setModelStatus("Introduce la API key del proveedor para cargar sus modelos.", "muted");
       return;
@@ -708,10 +906,14 @@
     const cacheKey = catalogCacheKey(provider, typedKey);
     if (!force && state.modelCatalogCache[cacheKey]) {
       renderModelSelect(state.modelCatalogCache[cacheKey]);
-      setModelStatus("");
+      setModelPickerVisible(state.modelCatalogCache[cacheKey].length > 0);
+      setModelStatus(state.modelCatalogCache[cacheKey].length
+        ? ""
+        : "El proveedor no devolvió modelos compatibles. Usa \"Cargar desde JSON\" para registrar la credencial.", "muted");
       return;
     }
 
+    setModelPickerVisible(true);
     $credModelSelect.prop("disabled", true).html('<option value="">Cargando modelos...</option>');
     $btnReloadModels.prop("disabled", true);
     setModelStatus("Consultando los modelos disponibles del proveedor...", "muted");
@@ -723,8 +925,7 @@
       dataType: "json",
       data: JSON.stringify(buildModelsRequestPayload({
         provider,
-        apiKey: typedKey,
-        apiBase: $credApiBase.val()
+        apiKey: typedKey
       }))
     })
       .done(function (payload) {
@@ -734,16 +935,21 @@
           const models = normaliseCatalogModels(payload);
           state.modelCatalogCache[cacheKey] = models;
           renderModelSelect(models);
-          setModelStatus(models.length ? "" : "El proveedor no devolvió modelos compatibles; escribe el modelo manualmente.", "muted");
+          setModelPickerVisible(models.length > 0);
+          setModelStatus(models.length
+            ? ""
+            : "El proveedor no devolvió modelos compatibles. Usa \"Cargar desde JSON\" para registrar la credencial.", "muted");
           return;
         }
         renderModelSelect([]);
+        setModelPickerVisible(false);
         setModelStatus((payload && payload.error) || "No se pudieron cargar los modelos del proveedor.", "danger");
       })
       .fail(function (xhr) {
         if (selectedProvider() !== provider)
           return;
         renderModelSelect([]);
+        setModelPickerVisible(false);
         setModelStatus(extractErrorMessage(xhr, "No se pudieron cargar los modelos del proveedor."), "danger");
       })
       .always(function () {
@@ -771,18 +977,13 @@
    */
   function addCredential() {
     const payload = buildCredentialPayload({
-      provider: $credProvider.val(),
-      model: resolveModelFieldValue({
-        catalogSupported: providerSupportsModelCatalog(selectedProvider()),
-        selectValue: $credModelSelect.val(),
-        manualValue: $credModel.val()
-      }),
-      apiBase: $credApiBase.val(),
+      provider: selectedProvider(),
+      model: resolveModelFieldValue({ selectValue: $credModelSelect.val() }),
       apiKey: $credApiKey.val()
     });
 
     if (!payload.provider || !payload.model || !payload.apiKey) {
-      showCredentialMessage("Proveedor, modelo y API key son obligatorios.", "danger");
+      showCredentialMessage("Proveedor, modelo y API key son obligatorios. Para proveedores sin catálogo accesible usa \"Cargar desde JSON\".", "danger");
       return;
     }
 
@@ -847,22 +1048,270 @@
   }
 
   /**
+   * Resets the "Add provider" modal to a clean state (empty fields, no errors).
+   */
+  function resetCustomProviderModal() {
+    $customProviderName.val("");
+    $customProviderUrl.val("");
+    $customProviderName.removeClass("is-invalid");
+    $customProviderUrl.removeClass("is-invalid");
+    $customProviderNameError.addClass("d-none").text("");
+    $customProviderUrlError.addClass("d-none").text("");
+    $customProviderMessage.addClass("d-none alert-danger alert-success alert-info").text("");
+    $btnConfirmAddCustomProvider.prop("disabled", true);
+  }
+
+  /**
+   * Validates the current modal inputs and paints the per-field error hints,
+   * enabling the Accept button only when both fields are valid.
+   */
+  function validateAndPaintCustomProviderInputs() {
+    const validation = validateCustomProviderInput({
+      name: $customProviderName.val(),
+      urlBase: $customProviderUrl.val(),
+      builtinNames: BUILTIN_PROVIDER_NAMES,
+      customNames: state.customProviders.map(provider => provider.name)
+    });
+
+    if (validation.name) {
+      $customProviderName.addClass("is-invalid");
+      $customProviderNameError.removeClass("d-none").text(validation.name);
+    } else {
+      $customProviderName.removeClass("is-invalid");
+      $customProviderNameError.addClass("d-none").text("");
+    }
+
+    if (validation.urlBase) {
+      $customProviderUrl.addClass("is-invalid");
+      $customProviderUrlError.removeClass("d-none").text(validation.urlBase);
+    } else {
+      $customProviderUrl.removeClass("is-invalid");
+      $customProviderUrlError.addClass("d-none").text("");
+    }
+
+    $btnConfirmAddCustomProvider.prop("disabled", validation.hasError);
+  }
+
+  /**
+   * Posts the "Add provider" modal payload. On success refreshes the dropdown
+   * without reloading the page and selects the new provider.
+   */
+  function submitCustomProviderForm() {
+    const name = String($customProviderName.val() || "").trim().toLowerCase();
+    const urlBase = String($customProviderUrl.val() || "").trim();
+    const validation = validateCustomProviderInput({
+      name,
+      urlBase,
+      builtinNames: BUILTIN_PROVIDER_NAMES,
+      customNames: state.customProviders.map(provider => provider.name)
+    });
+
+    if (validation.hasError) {
+      validateAndPaintCustomProviderInputs();
+      return;
+    }
+
+    $btnConfirmAddCustomProvider.prop("disabled", true);
+
+    $.ajax({
+      url: customProvidersUrl(),
+      method: "POST",
+      contentType: "application/json",
+      dataType: "json",
+      data: JSON.stringify({ name, urlBase })
+    })
+      .done(function (payload) {
+        const added = normaliseCustomProvider(payload);
+        state.customProviders.push(added);
+        renderProviderMenu();
+        selectProvider(added.name);
+        closeBootstrapModal("modalAddCustomProvider");
+        showCredentialMessage(`Proveedor "${added.name}" añadido.`, "success");
+      })
+      .fail(function (xhr) {
+        const message = extractErrorMessage(xhr, "No se pudo añadir el proveedor.");
+        $customProviderMessage
+          .removeClass("d-none alert-success alert-info")
+          .addClass("alert-danger")
+          .text(message);
+      })
+      .always(function () {
+        $btnConfirmAddCustomProvider.prop("disabled", false);
+      });
+  }
+
+  /**
+   * Opens the delete-confirmation modal for the given custom provider name.
+   * @param {string} name - Provider name to delete.
+   */
+  function openDeleteCustomProviderModal(name) {
+    state.pendingDeleteCustomProvider = name;
+    $modalDeleteCustomProviderBody.html(
+      `¿Está seguro de eliminar el proveedor <strong>${escapeHtml(name)}</strong>?
+       <div class="form-text text-muted mt-2">Se eliminará también las credenciales asociadas.</div>`
+    );
+    openBootstrapModal("modalDeleteCustomProvider");
+  }
+
+  /**
+   * Deletes a custom provider via DELETE; closes the modal and refreshes the
+   * dropdown and the credentials table (the credential row, if any, was
+   * cascade-removed by the server).
+   * @param {string} name - Provider name.
+   */
+  function deleteCustomProvider(name) {
+    $btnConfirmDeleteCustomProvider.prop("disabled", true);
+
+    $.ajax({
+      url: `${customProvidersUrl()}/${encodeURIComponent(name)}`,
+      method: "DELETE",
+      dataType: "json"
+    })
+      .done(function () {
+        state.customProviders = state.customProviders.filter(provider => provider.name !== name);
+        state.pendingDeleteCustomProvider = null;
+        closeBootstrapModal("modalDeleteCustomProvider");
+        renderProviderMenu();
+        loadCredentials();
+        showCredentialMessage(`Proveedor "${name}" eliminado.`, "success");
+      })
+      .fail(function (xhr) {
+        showCredentialMessage(extractErrorMessage(xhr, "No se pudo eliminar el proveedor."), "danger");
+      })
+      .always(function () {
+        $btnConfirmDeleteCustomProvider.prop("disabled", false);
+      });
+  }
+
+  /**
+   * Opens a Bootstrap modal. Prefers `bootstrap.Modal` when available; falls
+   * back to a pure-DOM implementation (toggling the `show` class, a manually
+   * managed `.modal-backdrop` and `body.modal-open`) so the modal opens even
+   * when the Bootstrap bundle failed to load. Both paths honour
+   * `[data-bs-dismiss="modal"]` buttons and backdrop / Escape clicks.
+   * @param {string} elementId - Modal element id.
+   */
+  function openBootstrapModal(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element)
+      return;
+
+    try {
+      if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(element).show();
+        return;
+      }
+    } catch (_error) {
+      // Fall through to manual DOM path.
+    }
+
+    showModalManually(element);
+  }
+
+  /**
+   * Closes a Bootstrap modal. Mirrors `openBootstrapModal` with the same
+   * bootstrap-or-fallback strategy.
+   * @param {string} elementId - Modal element id.
+   */
+  function closeBootstrapModal(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element)
+      return;
+
+    try {
+      if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        const instance = bootstrap.Modal.getInstance(element);
+        if (instance) {
+          instance.hide();
+          return;
+        }
+      }
+    } catch (_error) {
+      // Fall through to manual DOM path.
+    }
+
+    hideModalManually(element);
+  }
+
+  /**
+   * Pure-DOM modal show: applies Bootstrap's runtime classes/inline styles
+   * (which Bootstrap CSS already styles) and wires the dismiss interactions.
+   * @param {HTMLElement} element - Modal root element.
+   */
+  function showModalManually(element) {
+    element.style.display = "block";
+    element.classList.add("show");
+    element.removeAttribute("aria-hidden");
+    element.setAttribute("aria-modal", "true");
+    element.setAttribute("role", "dialog");
+    document.body.classList.add("modal-open");
+
+    if (!document.querySelector(".modal-backdrop[data-fallback='1']")) {
+      const backdrop = document.createElement("div");
+      backdrop.className = "modal-backdrop fade show";
+      backdrop.dataset.fallback = "1";
+      document.body.appendChild(backdrop);
+      backdrop.addEventListener("click", () => hideModalManually(element));
+    }
+
+    element.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+      button.addEventListener("click", function onDismiss() {
+        button.removeEventListener("click", onDismiss);
+        hideModalManually(element);
+      }, { once: true });
+    });
+
+    if (!element.dataset.escapeBound) {
+      element.dataset.escapeBound = "1";
+      document.addEventListener("keydown", function onEscape(event) {
+        if (event.key === "Escape" && element.classList.contains("show")) {
+          hideModalManually(element);
+          document.removeEventListener("keydown", onEscape);
+          delete element.dataset.escapeBound;
+        }
+      });
+    }
+  }
+
+  /**
+   * Pure-DOM modal hide. Removes the runtime classes/styles plus the fallback
+   * backdrop appended by {@link showModalManually}.
+   * @param {HTMLElement} element - Modal root element.
+   */
+  function hideModalManually(element) {
+    element.classList.remove("show");
+    element.style.display = "";
+    element.setAttribute("aria-hidden", "true");
+    element.removeAttribute("aria-modal");
+    element.removeAttribute("role");
+    document.body.classList.remove("modal-open");
+    document.querySelectorAll(".modal-backdrop[data-fallback='1']").forEach(backdrop => backdrop.remove());
+  }
+
+  /**
    * Runs the "check" action for a credential and shows the model reply in a modal.
    * @param {string} provider - Provider identifier.
+   * @param {HTMLElement|null|undefined} trigger - Button that launched the check.
    */
-  function checkCredential(provider) {
-    showCheckModal("Comprobando...");
+  function checkCredential(provider, trigger) {
+    const $trigger = trigger ? $(trigger) : $();
+    const originalText = $trigger.text();
+    $trigger.prop("disabled", true).attr("aria-busy", "true").text("Comprobando...");
 
     $.ajax({
       url: `${credentialsUrl()}/${encodeURIComponent(provider)}/check`,
       method: "POST",
-      dataType: "json"
+      dataType: "json",
+      timeout: CREDENTIAL_CHECK_TIMEOUT_MS
     })
       .done(function (payload) {
         showCheckModal(buildCheckResultText(payload));
       })
-      .fail(function (xhr) {
-        showCheckModal(`Error: ${extractErrorMessage(xhr, "no se pudo comprobar la credencial.")}`);
+      .fail(function (xhr, textStatus) {
+        showCheckModal(buildCheckFailureText(xhr, textStatus));
+      })
+      .always(function () {
+        $trigger.prop("disabled", false).removeAttr("aria-busy").text(originalText);
       });
   }
 
@@ -876,6 +1325,19 @@
     if (payload && payload.ok)
       return payload.message || "El modelo respondió correctamente.";
     return `Error: ${(payload && payload.error) || "el modelo no respondió."}`;
+  }
+
+  /**
+   * Builds the modal text for transport-level check failures, including the
+   * frontend timeout that intentionally stops waiting after five seconds.
+   * @param {JQuery.jqXHR|null|undefined} xhr - Failed jQuery request.
+   * @param {string|null|undefined} textStatus - jQuery failure status.
+   * @returns {string} Human-readable failure text.
+   */
+  function buildCheckFailureText(xhr, textStatus) {
+    if (textStatus === "timeout")
+      return "Error: la comprobación ha superado el tiempo máximo de 5 segundos.";
+    return `Error: ${extractErrorMessage(xhr, "no se pudo comprobar la credencial.")}`;
   }
 
   /**
@@ -945,7 +1407,7 @@
   /**
    * Persists one credential via POST. Returns a jQuery promise that always
    * resolves with `{ ok, provider, message? }` so the caller can aggregate.
-   * @param {{provider:string, model:string, apiBase:?string, apiKey:string}} entry
+   * @param {{provider:string, model:string, apiKey:string}} entry
    * @returns {Promise<{ok:boolean, provider:string, message?:string}>}
    */
   function postImportedCredential(entry) {
@@ -958,7 +1420,6 @@
         data: JSON.stringify({
           provider: entry.provider,
           model: entry.model,
-          apiBase: entry.apiBase,
           apiKey: entry.apiKey
         })
       })
@@ -1449,8 +1910,41 @@
       addCredential();
     });
 
-    $credProvider.on("change", function () {
-      applyModelFieldMode();
+    $credProviderMenu.on("click", ".provider-name", function (event) {
+      event.preventDefault();
+      const name = String($(this).data("name") || "");
+      if (name)
+        selectProvider(name);
+    });
+
+    $credProviderMenu.on("click", ".provider-delete", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const name = String($(this).data("name") || "");
+      if (name)
+        openDeleteCustomProviderModal(name);
+    });
+
+    $btnOpenAddCustomProvider.on("click", function () {
+      resetCustomProviderModal();
+      openBootstrapModal("modalAddCustomProvider");
+    });
+
+    $addCustomProviderForm.on("submit", function (event) {
+      event.preventDefault();
+      submitCustomProviderForm();
+    });
+
+    $customProviderName.on("input", validateAndPaintCustomProviderInputs);
+    $customProviderUrl.on("input", validateAndPaintCustomProviderInputs);
+
+    $("#modalAddCustomProvider").on("show.bs.modal", resetCustomProviderModal);
+
+    $btnConfirmDeleteCustomProvider.on("click", function () {
+      const name = state.pendingDeleteCustomProvider;
+      if (!name)
+        return;
+      deleteCustomProvider(name);
     });
 
     $credApiKey.on("input", scheduleModelCatalogReload);
@@ -1459,12 +1953,8 @@
       loadModelCatalog({ force: true });
     });
 
-    $credModelSelect.on("change", function () {
-      const manual = $credModelSelect.val() === MANUAL_MODEL_OPTION;
-      setManualModelVisible(manual);
-      if (manual)
-        $credModel.trigger("focus");
-    });
+    // The model select used to also offer a "write manually" sentinel; that
+    // path was removed. The native change handler now has nothing to do.
 
     $credentialsTableBody.on("click", ".cred-activate", function () {
       activateCredential($(this).data("provider"));
@@ -1475,7 +1965,7 @@
     });
 
     $credentialsTableBody.on("click", ".cred-check", function () {
-      checkCredential($(this).data("provider"));
+      checkCredential($(this).data("provider"), this);
     });
 
     $btnLoadCredentialsJson.on("click", function () {

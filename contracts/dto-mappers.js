@@ -298,6 +298,35 @@ function mapDatasetLlmCredentialDTOs(rows) {
 }
 
 /**
+ * Maps a `DatasetCustomProvider` row to its DTO (US-36). `createdAt` is
+ * normalized to an ISO-8601 string so the frontend does not depend on the
+ * Prisma `Date` instance.
+ *
+ * @param {Record<string, any> | null | undefined} row - Custom-provider row.
+ * @returns {{ name: string, urlBase: string, createdAt: string }}
+ */
+function mapDatasetCustomProviderDTO(row) {
+    const source = row && typeof row === 'object' ? row : {};
+    return {
+        name: trimmedOr(source.name, ''),
+        urlBase: trimmedOr(source.urlBase, ''),
+        createdAt: normalizeIsoDate(source.createdAt || new Date())
+    };
+}
+
+/**
+ * Maps an array of custom-provider rows to DTOs.
+ *
+ * @param {Array<Record<string, any>> | unknown} rows
+ * @returns {Array<{ name: string, urlBase: string, createdAt: string }>}
+ */
+function mapDatasetCustomProviderDTOs(rows) {
+    if (!Array.isArray(rows))
+        return [];
+    return rows.map(mapDatasetCustomProviderDTO);
+}
+
+/**
  * Converts an `EntryContext` received from the frontend into the canonical
  * shape (`entryId`, `englishSentences`, `category`, `triples`) consumed by the
  * services. The frontend already emits the canonical shape
@@ -603,5 +632,7 @@ module.exports = {
     mapSavedAnnotationDTO,
     mapDatasetLlmCredentialDTO,
     mapDatasetLlmCredentialDTOs,
+    mapDatasetCustomProviderDTO,
+    mapDatasetCustomProviderDTOs,
     normalizeIncomingEntryContext
 };

@@ -19,6 +19,7 @@
  * @typedef {Object} DatasetLlmCredentialsServiceDeps
  * @property {Record<string, any>} [datasetsPermissionsRepository]
  * @property {Record<string, any>} [credentialsRepository]
+ * @property {Record<string, any>} [customProvidersRepository]
  * @property {Record<string, any>} [secretCrypto]
  * @property {Record<string, any>} [llmClient]
  * @property {Record<string, any>} [modelCatalog]
@@ -26,6 +27,7 @@
 
 const { createDatasetsPermissionsRepository } = require('../repositories/datasets-permissions-repository');
 const { createDatasetLlmCredentialsRepository } = require('../repositories/dataset-llm-credentials-repository');
+const { createDatasetCustomProvidersRepository } = require('../repositories/dataset-custom-providers-repository');
 const secretCryptoModule = require('../utils/secret-crypto');
 const llmClientModule = require('../utils/llm-client');
 const modelCatalogModule = require('../utils/llm-model-catalog');
@@ -33,15 +35,15 @@ const { assertDatasetAdminPermission } = require('./datasets-permissions-service
 const { ServiceError } = require('./service-error');
 const { mapDatasetLlmCredentialDTO, mapDatasetLlmCredentialDTOs } = require('../contracts/dto-mappers');
 const { trimmedOr } = require('../utils/validators');
+const {
+    PROVIDER_NAME_PATTERN,
+    getBuiltinProvider
+} = require('../constants/llm-providers');
 
 /** Disabled-AI mode where the whole credentials panel does not apply. */
 const LLM_MODE_NONE = 'none';
-/** Allowed provider identifier shape (lowercase, conservative charset). */
-const PROVIDER_PATTERN = /^[a-z0-9._-]{1,40}$/;
 /** Maximum accepted model name length (mirrors the column). */
 const MODEL_MAX_LENGTH = 120;
-/** Maximum accepted API base length (mirrors the column). */
-const API_BASE_MAX_LENGTH = 255;
 
 /**
  * Builds the dataset-LLM-credentials service.
@@ -51,6 +53,7 @@ const API_BASE_MAX_LENGTH = 255;
 function createDatasetLlmCredentialsService({
     datasetsPermissionsRepository,
     credentialsRepository,
+    customProvidersRepository,
     secretCrypto,
     llmClient,
     modelCatalog
@@ -58,6 +61,7 @@ function createDatasetLlmCredentialsService({
     const deps = {
         datasetsPermissionsRepository: datasetsPermissionsRepository || createDatasetsPermissionsRepository(),
         credentialsRepository: credentialsRepository || createDatasetLlmCredentialsRepository(),
+        customProvidersRepository: customProvidersRepository || createDatasetCustomProvidersRepository(),
         secretCrypto: secretCrypto || secretCryptoModule,
         llmClient: llmClient || llmClientModule,
         modelCatalog: modelCatalog || modelCatalogModule
@@ -81,22 +85,27 @@ function createDatasetLlmCredentialsService({
     }
 
     /**
-     * Creates or updates a provider credential. Validates input, encrypts the
-     * key and returns the masked DTO. Rejected when `llm_mode = 'none'`.
+     * Creates or updates a provider credential. Validates input, derives the
+     * provider's `apiBase` (built-in constant or custom-provider row of the
+     * dataset), encrypts the key and returns the masked DTO. Rejected when
+     * `llm_mode = 'none'` or when the provider does not belong to the dataset.
+     *
+     * Note: the legacy `apiBase` field of the input payload is **ignored** —
+     * the URL is tied to the provider, not to the credential (US-36).
      *
      * @param {number} actorId
      * @param {number} datasetId
-     * @param {{ provider?:string, apiBase?:string, model?:string, apiKey?:string }} input
+     * @param {{ provider?:string, model?:string, apiKey?:string }} input
      * @returns {Promise<Record<string, any>>}
      */
     async function saveCredential(actorId, datasetId, input) {
         const permit = await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         assertLlmEnabled(permit);
 
-        const provider = normalizeProvider(input?.provider);
+        const provider = normalizeProviderId(input?.provider);
         const model = normalizeModel(input?.model);
-        const apiBase = normalizeApiBase(input?.apiBase);
         const apiKey = normalizeApiKey(input?.apiKey);
+        const apiBase = await resolveProviderApiBase(datasetId, provider);
 
         const apiKeyCipher = deps.secretCrypto.encryptSecret(apiKey);
         const keyLast4 = apiKey.slice(-4);
@@ -114,6 +123,26 @@ function createDatasetLlmCredentialsService({
     }
 
     /**
+     * Resolves the base URL bound to a provider name within a dataset. Built-in
+     * names return the canonical constant; custom names are looked up in the
+     * dataset's `DatasetCustomProvider` table. Unknown names throw 400.
+     *
+     * @param {number} datasetId
+     * @param {string} provider - Already-normalized provider id.
+     * @returns {Promise<string>} Base URL.
+     */
+    async function resolveProviderApiBase(datasetId, provider) {
+        const builtin = getBuiltinProvider(provider);
+        if (builtin)
+            return builtin.urlBase;
+
+        const custom = await deps.customProvidersRepository.findByName({ datasetId, name: provider });
+        if (!custom)
+            throw invalidPayload('El proveedor no está registrado en este dataset.');
+        return custom.urlBase;
+    }
+
+    /**
      * Activates a provider credential (deactivating the rest). Rejected when
      * `llm_mode = 'none'` or when the provider does not exist.
      *
@@ -126,7 +155,7 @@ function createDatasetLlmCredentialsService({
         const permit = await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         assertLlmEnabled(permit);
 
-        const provider = normalizeProvider(rawProvider);
+        const provider = normalizeProviderId(rawProvider);
         const activatedCount = await deps.credentialsRepository.setActive({ datasetId, provider });
         if (!activatedCount)
             throw credentialNotFound();
@@ -147,7 +176,7 @@ function createDatasetLlmCredentialsService({
         const permit = await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         assertLlmEnabled(permit);
 
-        const provider = normalizeProvider(rawProvider);
+        const provider = normalizeProviderId(rawProvider);
         const result = await deps.credentialsRepository.deleteByProvider({ datasetId, provider });
         if (!result || !result.count)
             throw credentialNotFound();
@@ -168,7 +197,7 @@ function createDatasetLlmCredentialsService({
         const permit = await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         assertLlmEnabled(permit);
 
-        const provider = normalizeProvider(rawProvider);
+        const provider = normalizeProviderId(rawProvider);
         const row = await deps.credentialsRepository.findByProvider({ datasetId, provider });
         if (!row)
             throw credentialNotFound();
@@ -186,36 +215,36 @@ function createDatasetLlmCredentialsService({
     }
 
     /**
-     * Lists the provider's available models for the picker (US-35). The key
-     * typed in the form wins; with no typed key the stored credential of that
-     * provider is decrypted server-side. Provider-side failures are returned
-     * as `{ ok:false, code, error }` (same handled-failure contract as the
-     * "check" action) with the key redacted; bad input throws 400.
+     * Lists the provider's available models for the picker (US-35, US-36). The
+     * key typed in the form wins; with no typed key the stored credential of
+     * that provider is decrypted server-side. The base URL is always derived
+     * from the provider (built-in constant or custom-provider row of the
+     * dataset), never accepted from the input. Provider-side failures are
+     * returned as `{ ok:false, code, error }` (same handled-failure contract
+     * as the "check" action) with the key redacted; bad input throws 400.
      *
      * @param {number} actorId
      * @param {number} datasetId
-     * @param {{ provider?:string, apiKey?:string, apiBase?:string }} input
+     * @param {{ provider?:string, apiKey?:string }} input
      * @returns {Promise<{ ok:true, provider:string, models:Array<{id:string,label:string}> }|{ ok:false, provider:string, code:string, error:string }>}
      */
     async function listProviderModels(actorId, datasetId, input) {
         const permit = await assertDatasetAdminPermission(deps.datasetsPermissionsRepository, actorId, datasetId);
         assertLlmEnabled(permit);
 
-        const provider = normalizeProvider(input?.provider);
+        const provider = normalizeProviderId(input?.provider);
+        const apiBase = await resolveProviderApiBase(datasetId, provider);
+
         if (!deps.modelCatalog.supportsModelCatalog(provider))
             throw invalidPayload('Este proveedor no ofrece un catálogo de modelos consultable.');
 
         let apiKey = trimmedOr(input?.apiKey);
-        let apiBase = normalizeApiBase(input?.apiBase);
-
         if (!apiKey) {
             const row = await deps.credentialsRepository.findByProvider({ datasetId, provider });
             if (!row) {
                 throw invalidPayload('Introduce una API key (o guarda antes una credencial del proveedor) para consultar sus modelos.');
             }
             apiKey = deps.secretCrypto.decryptSecret(row.apiKeyCipher);
-            if (!apiBase)
-                apiBase = row.apiBase || null;
         }
 
         try {
@@ -329,13 +358,16 @@ function assertLlmEnabled(permit) {
 }
 
 /**
- * Validates and normalizes the provider identifier.
+ * Validates and normalizes the provider identifier shape (lowercase, conservative
+ * charset, length 1-40). Existence of the provider in the dataset (built-in or
+ * custom row) is asserted separately by `resolveProviderApiBase`.
+ *
  * @param {*} value - Raw provider.
  * @returns {string} Lowercased provider.
  */
-function normalizeProvider(value) {
+function normalizeProviderId(value) {
     const provider = typeof value === 'string' ? value.trim().toLowerCase() : '';
-    if (!PROVIDER_PATTERN.test(provider))
+    if (!PROVIDER_NAME_PATTERN.test(provider))
         throw invalidPayload('El proveedor de IA es inválido.');
     return provider;
 }
@@ -350,42 +382,6 @@ function normalizeModel(value) {
     if (!model || model.length > MODEL_MAX_LENGTH)
         throw invalidPayload('El modelo de IA es inválido.');
     return model;
-}
-
-/**
- * Validates and normalizes the optional API base URL.
- * @param {*} value - Raw API base.
- * @returns {string|null} Trimmed URL, or null when absent.
- */
-function normalizeApiBase(value) {
-    const apiBase = trimmedOr(value);
-    if (apiBase === null)
-        return null;
-
-    if (apiBase.length > API_BASE_MAX_LENGTH || !(apiBase.startsWith('http://') || apiBase.startsWith('https://')))
-        throw invalidPayload('La URL base del proveedor es inválida.');
-
-    if (isGroqWebsiteHost(apiBase))
-        throw invalidPayload('La URL base apunta a la web de Groq (console.groq.com / groq.com). Usa https://api.groq.com/openai/v1.');
-
-    return apiBase;
-}
-
-/**
- * Detects URLs that point to Groq's website (console/marketing) instead of
- * its API host (`api.groq.com`). These return HTML 404 pages and are a common
- * setup mistake.
- *
- * @param {string} apiBase - Trimmed http(s) URL.
- * @returns {boolean}
- */
-function isGroqWebsiteHost(apiBase) {
-    try {
-        const host = new URL(apiBase).hostname.toLowerCase();
-        return host === 'groq.com' || host === 'www.groq.com' || host === 'console.groq.com';
-    } catch {
-        return false;
-    }
 }
 
 /**

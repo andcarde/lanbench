@@ -1,9 +1,12 @@
 
 # docker-compose.yaml
 
+name: lanbench
 services:
   app:
+    image: ${LANBENCH_IMAGE:-andcarde/lanbench:latest}
     build: .
+    container_name: app
     ports:
       - "3000:3000"
     environment:
@@ -17,10 +20,8 @@ services:
       DB_NAME: lanbench
       # Prisma CLI connection (read by prisma.config.ts for db push / studio)
       DATABASE_URL: mysql://lanbench:${DB_PASSWORD}@db:3306/lanbench
-      # Session
       SESSION_SECRET: ${SESSION_SECRET}
       SESSION_COOKIE_SECURE: "false"
-      # LLM provider: "cloud" (Groq) or "local" (Ollama, not yet containerized)
       MODEL: ${MODEL:-cloud}
       GROQ_API_KEY: ${GROQ_API_KEY}
     volumes:
@@ -32,6 +33,7 @@ services:
 
   db:
     image: mariadb:11
+    container_name: db
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MARIADB_DATABASE: lanbench
@@ -51,6 +53,7 @@ services:
 
   adminer:
     image: adminer
+    container_name: adminer
     ports:
       - "8080:8080"
     depends_on:

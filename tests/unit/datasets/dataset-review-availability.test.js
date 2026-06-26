@@ -16,10 +16,10 @@ const describe = /** @type {Mocha.SuiteFunction} */ (globalThis.describe || test
 const it = /** @type {Mocha.TestFunction} */ (globalThis.it || testApi.it);
 
 /**
- * @param {{ reviewableRows:any[], selfAnnotatedRows?:any[] }} options
+ * @param {{ reviewableRows:any[], selfAnnotatedRows?:any[], annotatedRows?:any[], reviewedRows?:any[] }} options
  * @returns {*}
  */
-function buildService({ reviewableRows, selfAnnotatedRows = [] }) {
+function buildService({ reviewableRows, selfAnnotatedRows = [], annotatedRows = [], reviewedRows = [] }) {
     return createDatasetsService(/** @type {any} */ ({
         datasetsRepository: {
             async findAccessibleById() {
@@ -37,7 +37,8 @@ function buildService({ reviewableRows, selfAnnotatedRows = [] }) {
                     permits: [{ isReviewer: true, isAnnotator: true, isAdmin: false, isOwned: false }]
                 };
             },
-            async countAnnotatedEntriesByDataset() { return []; },
+            async countAnnotatedEntriesByDataset() { return annotatedRows; },
+            async countReviewedEntriesByDataset() { return reviewedRows; },
             async findReviewableEntryDatasetIds() { return reviewableRows; },
             async findSelfAnnotatedReviewableDatasetIds() { return selfAnnotatedRows; },
             async findActiveReviewDatasetIdsForReviewer() { return []; }
@@ -83,5 +84,18 @@ describe('getAccessibleDatasetItem review availability (P5)', () => {
 
         assert.equal(dto.review.reviewAvailable, true);
         assert.equal(dto.review.blockedBySelfAnnotation, false);
+    });
+
+    it('calcula el progreso de revision con entries revisadas reales, no con sectionsCompleted', async () => {
+        const service = buildService({
+            reviewableRows: [{ datasetId: 5 }, { datasetId: 5 }],
+            annotatedRows: [{ datasetId: 5, count: 10 }],
+            reviewedRows: [{ datasetId: 5, count: 4 }]
+        });
+        const dto = await service.getAccessibleDatasetItem(7, 5);
+
+        assert.equal(dto.completedPercent, 40);
+        assert.equal(dto.withoutReviewPercent, 60);
+        assert.equal(dto.remainPercent, 0);
     });
 });

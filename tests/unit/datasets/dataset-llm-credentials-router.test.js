@@ -54,13 +54,25 @@ function buildCredentialsRepo(rows, llmMode) {
  * @param {{ sessionUser?:any, isAdmin?:boolean, llmMode?:string, rows?:any[], llmClient?:any }} [options]
  * @returns {import('express').Express}
  */
-function buildApp({ sessionUser = { id: 7, email: 'admin@example.com' }, isAdmin = true, llmMode = 'generation', rows = [], llmClient, modelCatalog } = {}) {
+function buildApp({ sessionUser = { id: 7, email: 'admin@example.com' }, isAdmin = true, llmMode = 'generation', rows = [], llmClient, modelCatalog, customProviderRows = [] } = {}) {
     const permissionsRepo = {
         async findPermitForUser() { return { isAdmin, isOwned: false, dataset: { id: 1, name: 'D', llmMode } }; }
+    };
+    const customProvidersRepository = {
+        async listByDataset() { return customProviderRows; },
+        async findByName({ name }) { return customProviderRows.find(row => row.name === name) || null; },
+        async create(payload) { customProviderRows.push(payload); return payload; },
+        async deleteByName({ name }) {
+            const before = customProviderRows.length;
+            for (let i = customProviderRows.length - 1; i >= 0; i -= 1)
+                if (customProviderRows[i].name === name) customProviderRows.splice(i, 1);
+            return { count: before - customProviderRows.length, credentialsRemoved: 0 };
+        }
     };
     const service = createDatasetLlmCredentialsService({
         datasetsPermissionsRepository: permissionsRepo,
         credentialsRepository: buildCredentialsRepo(rows, llmMode),
+        customProvidersRepository,
         secretCrypto: crypto,
         llmClient: llmClient || { async generateText() { return "I'm m and I am ready to work"; } },
         modelCatalog
@@ -232,7 +244,7 @@ describe('dataset-llm-credentials router (T7)', () => {
         await withServer(buildApp({ modelCatalog: { supportsModelCatalog: (/** @type {*} */ p) => p === 'groq', async listModels() { return []; } } }), async (baseUrl) => {
             const unsupported = await jsonRequest(`${baseUrl}/api/datasets/1/llm-credentials/models`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider: 'anthropic', apiKey: 'k' })
+                body: JSON.stringify({ provider: 'bedrock', apiKey: 'k' })
             });
             assert.equal(unsupported.status, 400);
 

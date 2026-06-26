@@ -35,15 +35,15 @@ covers. Tests that exercise subsystems outside the scope of the current user
 stories (US-1 … US-6, which are about server vs dataset roles) are marked `—`
 in the **User Story** column.
 
-> **Update (v0.5):** the suite has since grown to **672 tests** (626 unit + 46
-> integration), all passing. The original v0.4 tables below remain accurate for
-> tests that survived unchanged; the **342 tests added since v0.4** are listed
-> in the [Update — v0.5 additions](#update--v05-additions) section at the end
-> of this document, grouped by category and file. A handful of entries in the
-> v0.4 tables now point to tests whose name was tightened or whose file was
-> renamed during ongoing refactors — when in doubt, the
-> [Update — v0.5 additions](#update--v05-additions) section reflects what mocha
-> currently picks up.
+> **Current dry-run (2026-06-25):** Mocha collects **783 tests**:
+> **732 unit tests** under `tests/unit/**` and **51 integration tests** under
+> `tests/integration/**`. The suite currently spans **107 unit test files** and
+> **18 integration test files**.
+>
+> The original v0.4 tables and the [Update — v0.5 additions](#update--v05-additions)
+> section are kept as the historical, human-readable map of the suite. They have
+> not been regenerated row by row after later refactors; when an exact aggregate
+> is needed, the Mocha dry-run commands above are the authoritative source.
 
 ---
 
@@ -651,7 +651,7 @@ the Prisma model. Independent of Mocha — should be run after every
 
 ## Update — v0.5 additions
 
-Tests added after the v0.4 snapshot above. The complete current suite now contains **672** tests (626 unit + 46 integration). The rows below list **only** the entries created since v0.4 — earlier rows remain accurate for tests that survived unchanged.
+Tests added after the v0.4 snapshot above. This section is retained as a historical map of additions since v0.4. The current aggregate verified by Mocha on 2026-06-25 is **783** tests (**732 unit + 51 integration**); the rows below have not been regenerated as a complete append-only inventory after later refactors.
 
 ### Entities (new)
 
@@ -1057,4 +1057,4 @@ Tests added after the v0.4 snapshot above. The complete current suite now contai
 
 ---
 
-Totals: 626 unit + 46 integration = **672** tests in the suite.
+Current dry-run totals (2026-06-25): 732 unit + 51 integration = **783** tests in the suite.

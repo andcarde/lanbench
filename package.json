@@ -1,6 +1,6 @@
 {
     "name": "lanbench",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "The application is a web platform designed to generate, annotate, and evaluate Spanish text from RDF triples based on the WebNLG dataset.",
     "main": "app.js",
     "scripts": {
@@ -8,18 +8,18 @@
         "bootstrap-admin": "node scripts/bootstrap-admin.js",
         "register-code": "node scripts/generate-register-codes.js",
         "db:push": "docker compose exec app npx prisma db push",
-        "db:push:2": "docker compose -f docker-compose-2.yaml exec app npx prisma db push",
-        "up:2": "docker compose -f docker-compose-2.yaml up --build -d",
+        "dockerhub:push-clean": "powershell -ExecutionPolicy Bypass -File scripts/push-dockerhub-clean-db.ps1",
+        "up": "docker compose -f docker-compose.yaml up --build -d",
         "test": "npm run test:unit",
         "test:unit": "mocha \"tests/unit/**/*.test.js\" --exit",
         "test:integration": "mocha \"tests/integration/**/*.test.js\" --exit",
         "test:all": "mocha \"tests/{unit,integration}/**/*.test.js\" --exit",
-        "test:db": "docker compose exec -it app-2 node tests/db/db-schema-check.js",
+        "test:db": "docker compose exec -it app node tests/db/db-schema-check.js",
         "lint:dead": "knip",
         "lint": "eslint .",
         "lint:report": "eslint . -f json -o eslint-report.json",
-        "register-code:1": "docker exec -it app-2 npm run register-code",
-        "test:integration:1": "docker exec -it app-2 npm run test:integration"
+        "register-code:1": "docker exec -it app npm run register-code",
+        "test:integration:1": "docker exec -it app npm run test:integration"
     },
     "repository": {
         "type": "git",
@@ -31,7 +31,7 @@
         "spanish"
     ],
     "author": "andcarde",
-    "license": "UNLICENSED",
+    "license": "EUPL-1.2",
     "bugs": {
         "url": "https://github.com/andcarde/lanbench/issues"
     },

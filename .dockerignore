@@ -11,8 +11,8 @@ pnpm-debug.log
 # ============================================
 api-keys.json
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.pem
 *.key
 
@@ -28,8 +28,10 @@ api-keys.json
 # IDEs and editors
 # ============================================
 .vscode
+.vs
 .idea
 .claude
+.devcontainer
 .sonarlint
 *.swp
 *.swo
@@ -45,6 +47,12 @@ README.md
 CLAUDE.md
 FAILING-TESTS.md
 
+# Local third-party datasets; never send them to the Docker build context
+documentation/webnlg_datasets
+documentation/**/webnlg_datasets
+documentation/webnlg-datasets
+documentation/**/webnlg-datasets
+
 # ============================================
 # Test tooling/artifacts not needed in the image.
 # NOTE: the test suites (tests/, *.test.js, *.spec.js) AND the fixtures
@@ -56,6 +64,7 @@ FAILING-TESTS.md
 front-mocks
 coverage
 jest.config.js
+tests/agentic/results
 
 # ============================================
 # Build artifacts and logs
@@ -67,7 +76,28 @@ logs
 *.log
 
 # ============================================
-# Stale database dumps (schema source of truth is prisma/schema.prisma)
+# Java / JVM crash and build artifacts
+# ============================================
+*.class
+*.ctxt
+.mtj.tmp/
+hs_err_pid*
+replay_pid*
+
+# ============================================
+# Package archives
+# ============================================
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ============================================
+# Stale database dumps and backups
+# (schema source of truth is prisma/schema.prisma)
 # ============================================
 database
 
@@ -79,6 +109,24 @@ prettier.config.js
 knip.json
 .eslintrc*
 .prettierrc*
+eslint-report.json
+
+# ============================================
+# TFM memory (LaTeX) and its build/release artifacts — never in the image
+# ============================================
+memory
+memory-release
+memory-versions
+scripts/memory
+.texbuild/
+.textbuild/
+.overleaf-output/
+memory/_build
+
+# ============================================
+# User uploads (bind-mounted at runtime, not baked into the image)
+# ============================================
+uploads
 
 # ============================================
 # Docker itself (avoid recursion)

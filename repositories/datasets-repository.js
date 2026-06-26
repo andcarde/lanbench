@@ -39,6 +39,7 @@
 
 const defaultPrisma = require('../prisma/client');
 const { ACTIVE_REVIEW_STATUSES } = require('../constants/review-status');
+const { ENTRY_REVIEWED, ENTRY_DISPUTED } = require('../constants/entry-status');
 const { resolveSectionSize } = require('../constants/datasets');
 
 /** Options for the import transaction (maxWait/timeout in ms). */
@@ -580,6 +581,42 @@ function createDatasetsRepository({ prisma } = {}) {
     }
 
     /**
+     * Counts entries whose review flow has reached a terminal entry status.
+     *
+     * Both `reviewed` and `disputed` are terminal for the single-round review
+     * path: neither should keep contributing to "need revision" progress.
+     *
+     * @param {{ datasetIds:number[] }} input
+     * @returns {Promise<Array<{ datasetId:number, count:number }>>}
+     */
+    async function countReviewedEntriesByDataset({ datasetIds }) {
+        const safeDatasetIds = Array.isArray(datasetIds)
+            ? datasetIds.filter(id => Number.isInteger(id) && id > 0)
+            : [];
+
+        if (!safeDatasetIds.length)
+            return [];
+
+        const rows = await deps.prisma.entry.findMany({
+            where: {
+                datasetId: { in: safeDatasetIds },
+                status: { in: [ENTRY_REVIEWED, ENTRY_DISPUTED] }
+            },
+            select: { datasetId: true }
+        });
+
+        const counts = new Map();
+        for (const row of rows) {
+            const datasetId = Number(row?.datasetId);
+            if (!Number.isInteger(datasetId) || datasetId <= 0)
+                continue;
+            counts.set(datasetId, (counts.get(datasetId) || 0) + 1);
+        }
+
+        return [...counts.entries()].map(([datasetId, count]) => ({ datasetId, count }));
+    }
+
+    /**
      * Lists the active reviews assigned to `userId` within the given datasets,
      * returning only the `datasetId` (for aggregate mapping).
      *
@@ -628,7 +665,8 @@ function createDatasetsRepository({ prisma } = {}) {
         findReviewableEntryDatasetIds,
         findSelfAnnotatedReviewableDatasetIds,
         findActiveReviewDatasetIdsForReviewer,
-        countAnnotatedEntriesByDataset
+        countAnnotatedEntriesByDataset,
+        countReviewedEntriesByDataset
     };
 }
 

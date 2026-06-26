@@ -654,7 +654,9 @@ function collectMissingDecisions({ decisions, sentenceIndexes }) {
  */
 function buildReviewContextDTO({ review, entry, decisions, comments, annotatorEmail = null }) {
     const triples = entry && Array.isArray(entry.triplesets)
-        ? entry.triplesets.flatMap((/** @type {*} */ ts) => (ts.triples || []).map((/** @type {*} */ t) => ({
+        ? entry.triplesets
+            .filter((/** @type {*} */ ts) => ts && ts.type === 'modified')
+            .flatMap((/** @type {*} */ ts) => (ts.triples || []).map((/** @type {*} */ t) => ({
             subject: t.subject,
             predicate: t.predicate,
             object: t.object,

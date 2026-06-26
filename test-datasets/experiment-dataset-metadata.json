@@ -1,0 +1,719 @@
+{
+  "seed": 1702391858,
+  "seedHex": "0x65787032",
+  "total": 99,
+  "perStratum": {
+    "short": 33,
+    "medium": 33,
+    "long": 33
+  },
+  "strata": [
+    {
+      "key": "short",
+      "label": "Corto (1-2 tripletas)"
+    },
+    {
+      "key": "medium",
+      "label": "Medio (3-4 tripletas)"
+    },
+    {
+      "key": "long",
+      "label": "Largo (5-7 tripletas)"
+    }
+  ],
+  "entries": [
+    {
+      "eid": 1,
+      "sourceEid": 1,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Place"
+    },
+    {
+      "eid": 2,
+      "sourceEid": 10,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Airport"
+    },
+    {
+      "eid": 3,
+      "sourceEid": 12,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Airport"
+    },
+    {
+      "eid": 4,
+      "sourceEid": 32,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Airport"
+    },
+    {
+      "eid": 5,
+      "sourceEid": 40,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 6,
+      "sourceEid": 45,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 7,
+      "sourceEid": 56,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Building"
+    },
+    {
+      "eid": 8,
+      "sourceEid": 64,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Building"
+    },
+    {
+      "eid": 9,
+      "sourceEid": 73,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Building"
+    },
+    {
+      "eid": 10,
+      "sourceEid": 84,
+      "stratum": "short",
+      "triples": 1,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 11,
+      "sourceEid": 103,
+      "stratum": "short",
+      "triples": 1,
+      "category": "ComicsCharacter"
+    },
+    {
+      "eid": 12,
+      "sourceEid": 114,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Food"
+    },
+    {
+      "eid": 13,
+      "sourceEid": 115,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Food"
+    },
+    {
+      "eid": 14,
+      "sourceEid": 116,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Food"
+    },
+    {
+      "eid": 15,
+      "sourceEid": 123,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Food"
+    },
+    {
+      "eid": 16,
+      "sourceEid": 146,
+      "stratum": "short",
+      "triples": 1,
+      "category": "Monument"
+    },
+    {
+      "eid": 17,
+      "sourceEid": 178,
+      "stratum": "short",
+      "triples": 1,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 18,
+      "sourceEid": 181,
+      "stratum": "short",
+      "triples": 1,
+      "category": "University"
+    },
+    {
+      "eid": 19,
+      "sourceEid": 183,
+      "stratum": "short",
+      "triples": 1,
+      "category": "University"
+    },
+    {
+      "eid": 20,
+      "sourceEid": 198,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Airport"
+    },
+    {
+      "eid": 21,
+      "sourceEid": 209,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Airport"
+    },
+    {
+      "eid": 22,
+      "sourceEid": 225,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Building"
+    },
+    {
+      "eid": 23,
+      "sourceEid": 241,
+      "stratum": "short",
+      "triples": 2,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 24,
+      "sourceEid": 242,
+      "stratum": "short",
+      "triples": 2,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 25,
+      "sourceEid": 260,
+      "stratum": "short",
+      "triples": 2,
+      "category": "ComicsCharacter"
+    },
+    {
+      "eid": 26,
+      "sourceEid": 263,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 27,
+      "sourceEid": 265,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 28,
+      "sourceEid": 272,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 29,
+      "sourceEid": 286,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 30,
+      "sourceEid": 291,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 31,
+      "sourceEid": 296,
+      "stratum": "short",
+      "triples": 2,
+      "category": "Food"
+    },
+    {
+      "eid": 32,
+      "sourceEid": 303,
+      "stratum": "short",
+      "triples": 2,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 33,
+      "sourceEid": 326,
+      "stratum": "short",
+      "triples": 2,
+      "category": "University"
+    },
+    {
+      "eid": 34,
+      "sourceEid": 331,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Airport"
+    },
+    {
+      "eid": 35,
+      "sourceEid": 344,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Airport"
+    },
+    {
+      "eid": 36,
+      "sourceEid": 350,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Airport"
+    },
+    {
+      "eid": 37,
+      "sourceEid": 389,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 38,
+      "sourceEid": 398,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 39,
+      "sourceEid": 408,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 40,
+      "sourceEid": 415,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 41,
+      "sourceEid": 422,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 42,
+      "sourceEid": 423,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 43,
+      "sourceEid": 428,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 44,
+      "sourceEid": 429,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 45,
+      "sourceEid": 434,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 46,
+      "sourceEid": 443,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Food"
+    },
+    {
+      "eid": 47,
+      "sourceEid": 450,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "Monument"
+    },
+    {
+      "eid": 48,
+      "sourceEid": 454,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 49,
+      "sourceEid": 462,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 50,
+      "sourceEid": 463,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 51,
+      "sourceEid": 464,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 52,
+      "sourceEid": 472,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "University"
+    },
+    {
+      "eid": 53,
+      "sourceEid": 474,
+      "stratum": "medium",
+      "triples": 3,
+      "category": "University"
+    },
+    {
+      "eid": 54,
+      "sourceEid": 494,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Airport"
+    },
+    {
+      "eid": 55,
+      "sourceEid": 505,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 56,
+      "sourceEid": 519,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Building"
+    },
+    {
+      "eid": 57,
+      "sourceEid": 527,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Building"
+    },
+    {
+      "eid": 58,
+      "sourceEid": 529,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Building"
+    },
+    {
+      "eid": 59,
+      "sourceEid": 545,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 60,
+      "sourceEid": 558,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "ComicsCharacter"
+    },
+    {
+      "eid": 61,
+      "sourceEid": 564,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Food"
+    },
+    {
+      "eid": 62,
+      "sourceEid": 574,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Food"
+    },
+    {
+      "eid": 63,
+      "sourceEid": 579,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Food"
+    },
+    {
+      "eid": 64,
+      "sourceEid": 581,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "Food"
+    },
+    {
+      "eid": 65,
+      "sourceEid": 606,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 66,
+      "sourceEid": 619,
+      "stratum": "medium",
+      "triples": 4,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 67,
+      "sourceEid": 637,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 68,
+      "sourceEid": 639,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 69,
+      "sourceEid": 640,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 70,
+      "sourceEid": 641,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 71,
+      "sourceEid": 642,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 72,
+      "sourceEid": 645,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 73,
+      "sourceEid": 646,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Airport"
+    },
+    {
+      "eid": 74,
+      "sourceEid": 661,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 75,
+      "sourceEid": 668,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 76,
+      "sourceEid": 669,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Building"
+    },
+    {
+      "eid": 77,
+      "sourceEid": 672,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Building"
+    },
+    {
+      "eid": 78,
+      "sourceEid": 683,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Building"
+    },
+    {
+      "eid": 79,
+      "sourceEid": 685,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Building"
+    },
+    {
+      "eid": 80,
+      "sourceEid": 687,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Building"
+    },
+    {
+      "eid": 81,
+      "sourceEid": 697,
+      "stratum": "long",
+      "triples": 5,
+      "category": "CelestialBody"
+    },
+    {
+      "eid": 82,
+      "sourceEid": 702,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Food"
+    },
+    {
+      "eid": 83,
+      "sourceEid": 708,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Food"
+    },
+    {
+      "eid": 84,
+      "sourceEid": 717,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Food"
+    },
+    {
+      "eid": 85,
+      "sourceEid": 723,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Food"
+    },
+    {
+      "eid": 86,
+      "sourceEid": 724,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Food"
+    },
+    {
+      "eid": 87,
+      "sourceEid": 732,
+      "stratum": "long",
+      "triples": 5,
+      "category": "Monument"
+    },
+    {
+      "eid": 88,
+      "sourceEid": 735,
+      "stratum": "long",
+      "triples": 5,
+      "category": "SportsTeam"
+    },
+    {
+      "eid": 89,
+      "sourceEid": 753,
+      "stratum": "long",
+      "triples": 6,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 90,
+      "sourceEid": 755,
+      "stratum": "long",
+      "triples": 6,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 91,
+      "sourceEid": 758,
+      "stratum": "long",
+      "triples": 6,
+      "category": "Monument"
+    },
+    {
+      "eid": 92,
+      "sourceEid": 763,
+      "stratum": "long",
+      "triples": 6,
+      "category": "University"
+    },
+    {
+      "eid": 93,
+      "sourceEid": 764,
+      "stratum": "long",
+      "triples": 6,
+      "category": "University"
+    },
+    {
+      "eid": 94,
+      "sourceEid": 767,
+      "stratum": "long",
+      "triples": 6,
+      "category": "University"
+    },
+    {
+      "eid": 95,
+      "sourceEid": 769,
+      "stratum": "long",
+      "triples": 6,
+      "category": "University"
+    },
+    {
+      "eid": 96,
+      "sourceEid": 770,
+      "stratum": "long",
+      "triples": 7,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 97,
+      "sourceEid": 773,
+      "stratum": "long",
+      "triples": 7,
+      "category": "Astronaut"
+    },
+    {
+      "eid": 98,
+      "sourceEid": 785,
+      "stratum": "long",
+      "triples": 7,
+      "category": "University"
+    },
+    {
+      "eid": 99,
+      "sourceEid": 788,
+      "stratum": "long",
+      "triples": 7,
+      "category": "University"
+    }
+  ]
+}

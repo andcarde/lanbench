@@ -19,9 +19,10 @@ const { SECTION_SIZE, resolveSectionSize } = require('../constants/datasets');
  * progress.
  *
  * When `reviewEnabled` is false, all annotated entries count as completed.
- * When it is true, only entries from sections marked as `sectionsCompleted`
- * (reviewed) count as completed; the remaining annotations are reported in
- * `withoutReview`.
+ * When it is true, terminally reviewed entries (`reviewed` / `disputed`) count
+ * as completed; the remaining annotations are reported in `withoutReview`.
+ * If the caller cannot provide an entry-level reviewed count, the legacy
+ * section-based approximation (`sectionsCompleted * sectionSize`) is used.
  *
  * @param {*} options - Section counters and, optionally, per-entry counts.
  * @returns {{completed: number, withoutReview: number, remaining: number}}
@@ -32,6 +33,7 @@ function calculatePercentagesFromSectionCounters({
     sectionsPending = 0,
     reviewEnabled = false,
     annotatedEntries = null,
+    reviewedEntries = null,
     totalEntries = null,
     sectionSize = SECTION_SIZE
 } = {}) {
@@ -47,6 +49,7 @@ function calculatePercentagesFromSectionCounters({
     if (canUseEntryBasedMath(annotatedEntries, totalEntryCount))
         return computeEntryBasedPercentages({
             annotatedEntryCount,
+            reviewedEntryCount: reviewedEntries,
             totalEntryCount,
             completedSections,
             reviewEnabled,
@@ -67,18 +70,25 @@ function calculatePercentagesFromSectionCounters({
 
 /**
  * Calculates progress percentages based on entries (not sections).
- * @param {*} options - { annotatedEntryCount, totalEntryCount, completedSections, reviewEnabled }.
+ * @param {*} options - { annotatedEntryCount, reviewedEntryCount, totalEntryCount, completedSections, reviewEnabled }.
  * @returns {{completed:number, withoutReview:number, remaining:number}} Percentages clamped to [0,100].
  */
 function computeEntryBasedPercentages(/** @type {*} */ {
     annotatedEntryCount,
+    reviewedEntryCount = null,
     totalEntryCount,
     completedSections,
     reviewEnabled,
     sectionSize = SECTION_SIZE
 }) {
+    const sectionBasedReviewedEntries = completedSections * sectionSize;
     const reviewedEntries = reviewEnabled
-        ? Math.min(completedSections * sectionSize, totalEntryCount)
+        ? clampToCeiling(
+            reviewedEntryCount === null || reviewedEntryCount === undefined
+                ? sectionBasedReviewedEntries
+                : nonNegativeInteger(reviewedEntryCount),
+            totalEntryCount
+        )
         : 0;
     const completedEntries = reviewEnabled
         ? reviewedEntries
